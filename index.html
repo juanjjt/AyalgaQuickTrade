@@ -2,1061 +2,816 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
-
-    <title>Ayalga Quick Trade</title>
+    <title>Ayalga Quick Trade - Diagnóstico</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
         body {
             margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100%;
-            background: #111111;
-            color: #ffffff;
-            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
         }
 
-        body {
-            padding: 18px;
+        h2 {
+            margin-top: 0;
         }
 
-        .container {
-            width: 100%;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            margin: 0 0 20px 0;
-            font-size: 30px;
-            line-height: 1.1;
-        }
-
-        .version {
-            color: #888888;
-            font-size: 13px;
-            margin-top: -12px;
-            margin-bottom: 20px;
-        }
-
-        .status {
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            background: #252525;
-            color: #f0c933;
-            font-size: 19px;
-            font-weight: 600;
-            margin-bottom: 18px;
-        }
-
-        .status.connected {
-            color: #39d353;
-        }
-
-        .status.error {
-            color: #ff4d4d;
-        }
-
-        .info {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
+        .box {
             background: #1d1d1d;
-            margin-bottom: 18px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #333333;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
 
         .label {
-            color: #999999;
-            font-size: 15px;
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 5px;
         }
 
         .value {
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-all;
         }
 
-        .price {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .log-title {
-            color: #999999;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .log {
-            width: 100%;
-            min-height: 250px;
-            padding: 14px;
-            border-radius: 10px;
-            background: #050505;
-            color: #eeeeee;
+        #log {
+            background: #000;
+            border-radius: 8px;
+            padding: 12px;
             font-family: monospace;
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.5;
+            max-height: 400px;
             overflow-y: auto;
             white-space: pre-wrap;
-            word-break: break-word;
+        }
+
+        .ok {
+            color: #00d26a;
+        }
+
+        .error {
+            color: #ff4d4d;
+        }
+
+        .warning {
+            color: #ffcc00;
         }
     </style>
 </head>
 
 <body>
 
-<div class="container">
+    <h2>Ayalga Quick Trade</h2>
 
-    <h1>Ayalga Quick Trade</h1>
-
-    <div class="version">
-        V0.8 — Símbolo + BID/ASK
+    <div class="box">
+        <div class="label">Símbolo recibido por cTrader</div>
+        <div id="symbol" class="value">Buscando...</div>
     </div>
 
-    <div id="status" class="status">
-        Inicializando...
+    <div class="box">
+        <div class="label">Símbolo encontrado</div>
+        <div id="foundSymbol" class="value">Buscando...</div>
     </div>
 
-    <div class="info">
-
-        <div class="info-row">
-            <span class="label">Plataforma</span>
-            <span id="platform" class="value">-</span>
-        </div>
-
-        <div class="info-row">
-            <span class="label">Símbolo</span>
-            <span id="symbol" class="value">-</span>
-        </div>
-
-        <div class="info-row">
-            <span class="label">BID</span>
-            <span id="bid" class="value price">-</span>
-        </div>
-
-        <div class="info-row">
-            <span class="label">ASK</span>
-            <span id="ask" class="value price">-</span>
-        </div>
-
+    <div class="box">
+        <div class="label">Symbol ID</div>
+        <div id="symbolId" class="value">---</div>
     </div>
 
-    <div class="log-title">
-        Registro
+    <div class="box">
+        <div class="label">Estado</div>
+        <div id="status" class="value">Inicializando...</div>
     </div>
 
-    <div id="log" class="log"></div>
-
-</div>
+    <div class="box">
+        <div class="label">Registro</div>
+        <div id="log"></div>
+    </div>
 
 
 <script type="module">
 
-    /* ============================================================
-       IMPORTS
-       ============================================================ */
+import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api";
 
-    import {
-        createClientAdapter
-    } from "https://esm.sh/@spotware-web-team/sdk-external-api";
+import {
+    handleConfirmEvent,
+    registerEvent,
+    getLightSymbolList,
+    getSymbol,
+    subscribeQuotes,
+    quoteEvent
+} from "https://esm.sh/@spotware-web-team/sdk";
 
+import {
+    take,
+    tap,
+    catchError
+} from "https://esm.sh/rxjs";
 
-    import {
-        handleConfirmEvent,
-        registerEvent,
-        getLightSymbolList,
-        getSymbol,
-        subscribeQuotes,
-        quoteEvent
-    } from "https://esm.sh/@spotware-web-team/sdk";
-
-
-    import {
-        take,
-        catchError
-    } from "https://esm.sh/rxjs";
+import {
+    createLogger
+} from "https://esm.sh/@veksa/logger";
 
 
-    import {
-        createLogger
-    } from "https://esm.sh/@veksa/logger";
+/* ============================================================
+   ELEMENTOS
+============================================================ */
+
+const symbolElement = document.getElementById("symbol");
+const foundSymbolElement = document.getElementById("foundSymbol");
+const symbolIdElement = document.getElementById("symbolId");
+const statusElement = document.getElementById("status");
+const logElement = document.getElementById("log");
 
 
-    /* ============================================================
-       VARIABLES
-       ============================================================ */
+/* ============================================================
+   LOG
+============================================================ */
 
-    let adapter = null;
+function log(message, type = "") {
 
-    let connected = false;
+    const time = new Date().toLocaleTimeString();
 
-    let currentSymbolName = null;
+    const line = document.createElement("div");
 
-    let currentSymbolId = null;
-
-    let currentSymbolDigits = 5;
-
-    let quoteSubscription = null;
-
-
-    /* ============================================================
-       ELEMENTOS
-       ============================================================ */
-
-    const statusElement =
-        document.getElementById("status");
-
-    const platformElement =
-        document.getElementById("platform");
-
-    const symbolElement =
-        document.getElementById("symbol");
-
-    const bidElement =
-        document.getElementById("bid");
-
-    const askElement =
-        document.getElementById("ask");
-
-    const logElement =
-        document.getElementById("log");
-
-
-    /* ============================================================
-       LOG
-       ============================================================ */
-
-    function log(message) {
-
-        const now = new Date();
-
-        const time =
-            now.toLocaleTimeString(
-                "es-ES",
-                {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit"
-                }
-            );
-
-        const text =
-            "[" + time + "] " + message;
-
-        console.log(text);
-
-        logElement.textContent +=
-            text + "\n";
-
-        logElement.scrollTop =
-            logElement.scrollHeight;
+    if (type === "ok") {
+        line.className = "ok";
     }
 
-
-    /* ============================================================
-       ESTADO
-       ============================================================ */
-
-    function setStatus(
-        text,
-        type = ""
-    ) {
-
-        statusElement.textContent =
-            text;
-
-        statusElement.className =
-            "status";
-
-        if (type) {
-            statusElement.classList.add(type);
-        }
+    if (type === "error") {
+        line.className = "error";
     }
 
-
-    /* ============================================================
-       LEER PARÁMETROS DE CTRADER
-       ============================================================ */
-
-    function readUrlParameters() {
-
-        try {
-
-            const params =
-                new URLSearchParams(
-                    window.location.search
-                );
-
-
-            const platform =
-                params.get("platform");
-
-
-            const symbol =
-                params.get("symbol");
-
-
-            platformElement.textContent =
-                platform || "-";
-
-
-            currentSymbolName =
-                symbol || null;
-
-
-            symbolElement.textContent =
-                currentSymbolName || "-";
-
-
-            log(
-                "Plataforma: " +
-                (platform || "no indicada")
-            );
-
-
-            log(
-                "Símbolo recibido: " +
-                (currentSymbolName || "NO RECIBIDO")
-            );
-
-
-        } catch (error) {
-
-            log(
-                "Error leyendo parámetros: " +
-                String(error)
-            );
-
-        }
+    if (type === "warning") {
+        line.className = "warning";
     }
 
+    line.textContent = "[" + time + "] " + message;
 
-    /* ============================================================
-       NORMALIZAR PRECIO
-       ============================================================ */
+    logElement.appendChild(line);
 
-    function normalizePrice(value) {
+    logElement.scrollTop = logElement.scrollHeight;
 
-        if (value === null ||
-            value === undefined) {
-
-            return null;
-        }
+    console.log(message);
+}
 
 
-        let number =
-            Number(value);
+/* ============================================================
+   ESTADO
+============================================================ */
 
+function setStatus(text, type = "") {
 
-        if (!Number.isFinite(number)) {
+    statusElement.textContent = text;
 
-            return null;
-        }
+    statusElement.className = "value";
 
-
-        /*
-         * cTrader utiliza normalmente
-         * precios internos en 1/100000.
-         */
-
-        if (Math.abs(number) > 10000) {
-
-            number =
-                number / 100000;
-        }
-
-
-        return number;
+    if (type === "ok") {
+        statusElement.classList.add("ok");
     }
 
-
-    /* ============================================================
-       MOSTRAR PRECIO
-       ============================================================ */
-
-    function formatPrice(value) {
-
-        if (value === null ||
-            value === undefined) {
-
-            return "-";
-        }
-
-
-        return Number(value)
-            .toFixed(currentSymbolDigits);
+    if (type === "error") {
+        statusElement.classList.add("error");
     }
 
-
-    /* ============================================================
-       BUSCAR SÍMBOLO
-       ============================================================ */
-
-    function loadCurrentSymbol() {
-
-        if (!adapter) {
-
-            log(
-                "ERROR: adapter no disponible"
-            );
-
-            return;
-        }
+    if (type === "warning") {
+        statusElement.classList.add("warning");
+    }
+}
 
 
-        if (!currentSymbolName) {
+/* ============================================================
+   URL
+============================================================ */
 
-            log(
-                "No se recibió nombre de símbolo."
-            );
+const params = new URLSearchParams(window.location.search);
 
-            log(
-                "Se intentará obtener información igualmente."
-            );
+const requestedSymbol = params.get("symbol");
 
-            return;
-        }
+log("URL completa:");
+log(window.location.href);
+
+log("");
+
+if (requestedSymbol) {
+
+    symbolElement.textContent = requestedSymbol;
+
+    log("Símbolo recibido desde cTrader: " + requestedSymbol, "ok");
+
+} else {
+
+    symbolElement.textContent = "NO RECIBIDO";
+
+    log("No se recibió parámetro symbol en la URL", "error");
+
+}
 
 
-        log(
-            "Buscando símbolo: " +
-            currentSymbolName
+/* ============================================================
+   ADAPTER
+============================================================ */
+
+let adapter = null;
+
+
+/* ============================================================
+   INICIALIZACIÓN
+============================================================ */
+
+async function init() {
+
+    try {
+
+        setStatus("Conectando con cTrader...");
+
+        log("Creando Client Adapter...");
+
+        const logger = createLogger(
+            location.href.includes("showLogs")
         );
 
+        adapter = createClientAdapter({
+            logger
+        });
 
-        getLightSymbolList(
+        log("Client Adapter creado.", "ok");
+
+
+        /* ----------------------------------------------------
+           HANDSHAKE
+        ---------------------------------------------------- */
+
+        log("Enviando confirmación...");
+
+        handleConfirmEvent(
             adapter,
             {}
         )
         .pipe(
-            take(1),
-            catchError(error => {
-
-                log(
-                    "ERROR getLightSymbolList:"
-                );
-
-                log(
-                    String(error)
-                );
-
-                setStatus(
-                    "Error obteniendo símbolos",
-                    "error"
-                );
-
-                return [];
-
-            })
+            take(1)
         )
         .subscribe({
 
-            next: (response) => {
+            next: () => {
+
+                log("Confirmación enviada.", "ok");
+
+            },
+
+            error: (err) => {
 
                 log(
-                    "Lista de símbolos recibida"
+                    "Error en confirmación: " + JSON.stringify(err),
+                    "error"
                 );
-
-
-                const symbols =
-                    response?.symbol ||
-                    response?.symbols ||
-                    [];
-
-
-                if (!Array.isArray(symbols)) {
-
-                    log(
-                        "Formato inesperado de lista de símbolos"
-                    );
-
-                    log(
-                        JSON.stringify(
-                            response
-                        )
-                    );
-
-                    return;
-                }
-
-
-                log(
-                    "Símbolos recibidos: " +
-                    symbols.length
-                );
-
-
-                const found =
-                    symbols.find(
-                        s =>
-                            String(s.name)
-                            .toUpperCase() ===
-                            String(currentSymbolName)
-                            .toUpperCase()
-                    );
-
-
-                if (!found) {
-
-                    log(
-                        "NO se encontró el símbolo: " +
-                        currentSymbolName
-                    );
-
-                    /*
-                     * Mostramos los primeros símbolos
-                     * para poder diagnosticar si cTrader
-                     * está devolviendo la lista correctamente.
-                     */
-
-                    const sample =
-                        symbols
-                            .slice(0, 10)
-                            .map(s => s.name)
-                            .join(", ");
-
-
-                    log(
-                        "Ejemplos recibidos: " +
-                        sample
-                    );
-
-                    return;
-                }
-
-
-                currentSymbolId =
-                    Number(found.symbolId);
-
-
-                log(
-                    "Símbolo encontrado: " +
-                    found.name
-                );
-
-
-                log(
-                    "Symbol ID: " +
-                    currentSymbolId
-                );
-
-
-                loadSymbolDetails();
 
             }
 
         });
 
-    }
 
+        /* ----------------------------------------------------
+           REGISTER EVENT
+        ---------------------------------------------------- */
 
-    /* ============================================================
-       OBTENER DETALLES DEL SÍMBOLO
-       ============================================================ */
+        log("Registrando plugin...");
 
-    function loadSymbolDetails() {
-
-        if (!currentSymbolId) {
-
-            log(
-                "ERROR: Symbol ID inválido"
-            );
-
-            return;
-        }
-
-
-        log(
-            "Obteniendo detalles del símbolo..."
-        );
-
-
-        getSymbol(
-            adapter,
-            {
-                symbolId: [
-                    currentSymbolId
-                ]
-            }
-        )
-        .pipe(
-            take(1),
-            catchError(error => {
-
-                log(
-                    "ERROR getSymbol:"
-                );
-
-                log(
-                    String(error)
-                );
-
-                setStatus(
-                    "Error obteniendo símbolo",
-                    "error"
-                );
-
-                return [];
-
-            })
-        )
-        .subscribe({
-
-            next: (response) => {
-
-                log(
-                    "Detalles del símbolo recibidos"
-                );
-
-
-                const detailedSymbols =
-                    response?.symbol ||
-                    response?.symbols ||
-                    [];
-
-
-                let symbol = null;
-
-
-                if (Array.isArray(
-                    detailedSymbols
-                )) {
-
-                    symbol =
-                        detailedSymbols.find(
-                            s =>
-                                Number(s.symbolId) ===
-                                Number(currentSymbolId)
-                        );
-
-                } else {
-
-                    symbol =
-                        detailedSymbols;
-                }
-
-
-                if (!symbol) {
-
-                    log(
-                        "No se pudieron interpretar los detalles del símbolo."
-                    );
-
-                    log(
-                        JSON.stringify(
-                            response
-                        )
-                    );
-
-                    return;
-                }
-
-
-                log(
-                    "Detalles encontrados correctamente"
-                );
-
-
-                /*
-                 * Intentamos obtener los dígitos
-                 * del símbolo.
-                 */
-
-                if (
-                    symbol.digits !== undefined
-                ) {
-
-                    currentSymbolDigits =
-                        Number(symbol.digits);
-
-                } else if (
-                    symbol.precision !== undefined
-                ) {
-
-                    currentSymbolDigits =
-                        Number(symbol.precision);
-
-                }
-
-
-                /*
-                 * Para forex normalmente será 5.
-                 */
-
-                if (
-                    !Number.isFinite(
-                        currentSymbolDigits
-                    ) ||
-                    currentSymbolDigits < 0 ||
-                    currentSymbolDigits > 10
-                ) {
-
-                    currentSymbolDigits = 5;
-                }
-
-
-                log(
-                    "Decimales: " +
-                    currentSymbolDigits
-                );
-
-
-                subscribeToQuotes();
-
-            }
-
-        });
-
-    }
-
-
-    /* ============================================================
-       SUSCRIBIR COTIZACIONES
-       ============================================================ */
-
-    function subscribeToQuotes() {
-
-        if (!currentSymbolId) {
-
-            log(
-                "ERROR: no hay Symbol ID para las cotizaciones"
-            );
-
-            return;
-        }
-
-
-        log(
-            "Suscribiendo BID/ASK..."
-        );
-
-
-        try {
-
-            quoteEvent(
-                adapter
-            )
-            .pipe(
-
-                catchError(error => {
-
-                    log(
-                        "ERROR quoteEvent:"
-                    );
-
-                    log(
-                        String(error)
-                    );
-
-                    return [];
-
-                })
-
-            )
-            .subscribe({
-
-                next: (event) => {
-
-                    processQuote(
-                        event
-                    );
-
-                },
-
-                error: (error) => {
-
-                    log(
-                        "ERROR en stream de cotizaciones:"
-                    );
-
-                    log(
-                        String(error)
-                    );
-
-                }
-
-            });
-
-
-            /*
-             * IMPORTANTE:
-             * symbolId es un ARRAY.
-             */
-
-            subscribeQuotes(
-                adapter,
-                {
-                    symbolId: [
-                        currentSymbolId
-                    ]
-                }
-            )
+        registerEvent(adapter)
             .pipe(
                 take(1),
-                catchError(error => {
+
+                tap(() => {
 
                     log(
-                        "ERROR subscribeQuotes:"
+                        "Plugin registrado correctamente.",
+                        "ok"
                     );
 
+                    handleConfirmEvent(
+                        adapter,
+                        {}
+                    )
+                    .pipe(
+                        take(1)
+                    )
+                    .subscribe();
+
+                }),
+
+                catchError(err => {
+
                     log(
-                        String(error)
+                        "Error registrando plugin: " +
+                        JSON.stringify(err),
+                        "error"
+                    );
+
+                    setStatus(
+                        "Error registrando plugin",
+                        "error"
                     );
 
                     return [];
 
                 })
+
             )
             .subscribe({
 
                 next: () => {
 
+                    loadSymbols();
+
+                },
+
+                error: (err) => {
+
                     log(
-                        "Suscripción BID/ASK realizada"
+                        "Error general registerEvent: " +
+                        JSON.stringify(err),
+                        "error"
                     );
 
                     setStatus(
-                        "CONECTADO",
-                        "connected"
-                    );
-
-                    log(
-                        "Esperando cotizaciones en tiempo real..."
+                        "Error de conexión",
+                        "error"
                     );
 
                 }
 
             });
 
-        } catch (error) {
+    }
 
-            log(
-                "ERROR suscribiendo cotizaciones:"
-            );
+    catch (err) {
 
-            log(
-                String(error)
-            );
+        log(
+            "ERROR INICIALIZANDO: " +
+            (err?.message || JSON.stringify(err)),
+            "error"
+        );
 
-            setStatus(
-                "Error en cotizaciones",
-                "error"
-            );
-
-        }
+        setStatus(
+            "Error inicializando",
+            "error"
+        );
 
     }
 
-
-    /* ============================================================
-       PROCESAR QUOTE
-       ============================================================ */
-
-    function processQuote(event) {
-
-        if (!event) {
-            return;
-        }
+}
 
 
-        /*
-         * Dependiendo de la versión del SDK,
-         * el quote puede llegar directamente
-         * o dentro de diferentes propiedades.
-         */
+/* ============================================================
+   OBTENER LISTA DE SÍMBOLOS
+============================================================ */
 
-        const quote =
-            event.quote ||
-            event;
+function loadSymbols() {
 
+    setStatus("Buscando símbolos...");
 
-        const eventSymbolId =
-            quote.symbolId !== undefined
-                ? Number(quote.symbolId)
-                : null;
+    log("Solicitando lista de símbolos...");
 
+    getLightSymbolList(
+        adapter,
+        {}
+    )
+    .pipe(
+        take(1)
+    )
+    .subscribe({
 
-        /*
-         * Si el evento tiene Symbol ID y no
-         * corresponde al nuestro, lo ignoramos.
-         */
+        next: (response) => {
 
-        if (
-            eventSymbolId !== null &&
-            currentSymbolId !== null &&
-            eventSymbolId !== currentSymbolId
-        ) {
+            try {
 
-            return;
-        }
-
-
-        let bid =
-            normalizePrice(
-                quote.bid
-            );
-
-
-        let ask =
-            normalizePrice(
-                quote.ask
-            );
-
-
-        /*
-         * Algunas respuestas pueden traer
-         * bid/ask dentro de otros objetos.
-         */
-
-        if (
-            bid === null &&
-            quote.bidPrice !== undefined
-        ) {
-
-            bid =
-                normalizePrice(
-                    quote.bidPrice
+                log(
+                    "Respuesta recibida de getLightSymbolList.",
+                    "ok"
                 );
-        }
 
-
-        if (
-            ask === null &&
-            quote.askPrice !== undefined
-        ) {
-
-            ask =
-                normalizePrice(
-                    quote.askPrice
+                log(
+                    "Tipo de respuesta: " +
+                    typeof response
                 );
-        }
+
+                log(
+                    "Claves de la respuesta: " +
+                    Object.keys(response || {}).join(", ")
+                );
 
 
-        if (bid !== null) {
+                /* ------------------------------------------------
+                   EXTRAER ARRAY DE SÍMBOLOS
+                ------------------------------------------------ */
 
-            bidElement.textContent =
-                formatPrice(bid);
-        }
+                let symbols = [];
 
+                if (response && Array.isArray(response.symbol)) {
 
-        if (ask !== null) {
+                    symbols = response.symbol;
 
-            askElement.textContent =
-                formatPrice(ask);
-        }
+                }
+                else if (
+                    response &&
+                    Array.isArray(response.symbols)
+                ) {
 
-    }
+                    symbols = response.symbols;
 
+                }
+                else if (
+                    response &&
+                    response.symbol
+                ) {
 
-    /* ============================================================
-       INICIALIZAR CTRADER
-       ============================================================ */
+                    symbols = [response.symbol];
 
-    function initializePlugin() {
-
-        log(
-            "Ayalga Quick Trade V0.8 iniciando..."
-        );
-
-
-        readUrlParameters();
-
-
-        /* --------------------------------------------------------
-           1. LOGGER
-           -------------------------------------------------------- */
-
-        log(
-            "1. Creando logger..."
-        );
+                }
 
 
-        const logger =
-            createLogger(
-                window.location.href.includes(
-                    "showLogs"
-                )
-            );
+                log(
+                    "Cantidad de símbolos recibidos: " +
+                    symbols.length
+                );
 
 
-        /* --------------------------------------------------------
-           2. CLIENT ADAPTER
-           -------------------------------------------------------- */
+                if (symbols.length === 0) {
 
-        log(
-            "2. Creando Client Adapter..."
-        );
+                    log(
+                        "No se encontraron símbolos en la respuesta.",
+                        "error"
+                    );
+
+                    log(
+                        "Respuesta completa:"
+                    );
+
+                    log(
+                        JSON.stringify(response)
+                    );
+
+                    setStatus(
+                        "No hay símbolos disponibles",
+                        "error"
+                    );
+
+                    return;
+                }
 
 
-        try {
+                /* ------------------------------------------------
+                   MOSTRAR PRIMEROS SÍMBOLOS
+                ------------------------------------------------ */
 
-            adapter =
-                createClientAdapter({
-                    logger
+                log("");
+                log("Primeros símbolos recibidos:");
+
+                symbols.slice(0, 30).forEach((s, index) => {
+
+                    log(
+                        index +
+                        " -> " +
+                        JSON.stringify(s)
+                    );
+
                 });
 
-        } catch (error) {
+
+                /* ------------------------------------------------
+                   BUSCAR SÍMBOLO
+                ------------------------------------------------ */
+
+                if (!requestedSymbol) {
+
+                    foundSymbolElement.textContent =
+                        "No identificado";
+
+                    setStatus(
+                        "Falta símbolo",
+                        "warning"
+                    );
+
+                    return;
+                }
+
+
+                const requestedUpper =
+                    requestedSymbol
+                        .trim()
+                        .toUpperCase();
+
+
+                log("");
+
+                log(
+                    "Buscando coincidencia exacta para: " +
+                    requestedUpper
+                );
+
+
+                /* ------------------------------------------------
+                   PRIMERO: COINCIDENCIA EXACTA
+                ------------------------------------------------ */
+
+                let match = symbols.find(s => {
+
+                    const name =
+                        String(
+                            s.name ??
+                            s.symbolName ??
+                            s.symbol ??
+                            ""
+                        )
+                        .trim()
+                        .toUpperCase();
+
+                    return name === requestedUpper;
+
+                });
+
+
+                if (match) {
+
+                    log(
+                        "COINCIDENCIA EXACTA ENCONTRADA: " +
+                        JSON.stringify(match),
+                        "ok"
+                    );
+
+                }
+                else {
+
+                    log(
+                        "No hubo coincidencia exacta.",
+                        "warning"
+                    );
+
+
+                    /* --------------------------------------------
+                       SEGUNDO: CONTIENE
+                    -------------------------------------------- */
+
+                    const partialMatches =
+                        symbols.filter(s => {
+
+                            const name =
+                                String(
+                                    s.name ??
+                                    s.symbolName ??
+                                    s.symbol ??
+                                    ""
+                                )
+                                .trim()
+                                .toUpperCase();
+
+                            return (
+                                name.includes(requestedUpper) ||
+                                requestedUpper.includes(name)
+                            );
+
+                        });
+
+
+                    log(
+                        "Coincidencias parciales encontradas: " +
+                        partialMatches.length
+                    );
+
+
+                    partialMatches
+                        .slice(0, 20)
+                        .forEach((s, index) => {
+
+                            log(
+                                "MATCH " +
+                                index +
+                                ": " +
+                                JSON.stringify(s),
+                                "warning"
+                            );
+
+                        });
+
+
+                    if (partialMatches.length > 0) {
+
+                        match = partialMatches[0];
+
+                        log(
+                            "Utilizando la primera coincidencia parcial.",
+                            "ok"
+                        );
+
+                    }
+
+                }
+
+
+                /* ------------------------------------------------
+                   SI NO ENCONTRÓ NADA
+                ------------------------------------------------ */
+
+                if (!match) {
+
+                    foundSymbolElement.textContent =
+                        "NO ENCONTRADO";
+
+                    setStatus(
+                        "No se encontró " +
+                        requestedSymbol,
+                        "error"
+                    );
+
+                    log(
+                        "NO SE ENCONTRÓ EL SÍMBOLO " +
+                        requestedSymbol,
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                /* ------------------------------------------------
+                   EXTRAER NOMBRE E ID
+                ------------------------------------------------ */
+
+                const foundName =
+                    match.name ??
+                    match.symbolName ??
+                    match.symbol ??
+                    "Desconocido";
+
+
+                const foundId =
+                    match.symbolId ??
+                    match.id;
+
+
+                foundSymbolElement.textContent =
+                    String(foundName);
+
+                symbolIdElement.textContent =
+                    String(foundId ?? "---");
+
+
+                log(
+                    "===================================="
+                );
+
+                log(
+                    "SÍMBOLO ENCONTRADO: " +
+                    foundName,
+                    "ok"
+                );
+
+                log(
+                    "SYMBOL ID: " +
+                    foundId,
+                    "ok"
+                );
+
+                log(
+                    "Objeto completo:"
+                );
+
+                log(
+                    JSON.stringify(match)
+                );
+
+
+                if (
+                    foundId === undefined ||
+                    foundId === null
+                ) {
+
+                    setStatus(
+                        "Símbolo encontrado pero sin ID",
+                        "error"
+                    );
+
+                    log(
+                        "El símbolo existe pero no contiene symbolId.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                /* ------------------------------------------------
+                   OBTENER DETALLES DEL SÍMBOLO
+                ------------------------------------------------ */
+
+                loadSymbolDetails(
+                    Number(foundId),
+                    foundName
+                );
+
+            }
+
+            catch (err) {
+
+                log(
+                    "Error procesando lista de símbolos: " +
+                    (err?.message || JSON.stringify(err)),
+                    "error"
+                );
+
+                setStatus(
+                    "Error procesando símbolos",
+                    "error"
+                );
+
+            }
+
+        },
+
+        error: (err) => {
 
             log(
-                "ERROR creando Client Adapter:"
-            );
-
-            log(
-                String(error)
-            );
-
-            setStatus(
-                "Error creando conexión",
+                "ERROR getLightSymbolList: " +
+                JSON.stringify(err),
                 "error"
             );
 
-            return;
+            setStatus(
+                "Error obteniendo símbolos",
+                "error"
+            );
+
         }
 
+    });
 
-        log(
-            "Client Adapter creado correctamente"
-        );
-
-
-        /* --------------------------------------------------------
-           3. CONFIRMACIÓN INICIAL
-           -------------------------------------------------------- */
-
-        log(
-            "3. Enviando confirmación inicial..."
-        );
+}
 
 
-        try {
+/* ============================================================
+   DETALLES DEL SÍMBOLO
+============================================================ */
 
-            handleConfirmEvent(
+function loadSymbolDetails(symbolId, symbolName) {
+
+    setStatus(
+        "Obteniendo datos de " + symbolName + "..."
+    );
+
+    log("");
+    log(
+        "Solicitando getSymbol para ID: " +
+        symbolId
+    );
+
+
+    getSymbol(
+        adapter,
+        {
+            symbolId: [symbolId]
+        }
+    )
+    .pipe(
+        take(1)
+    )
+    .subscribe({
+
+        next: (response) => {
+
+            log(
+                "getSymbol respondió correctamente.",
+                "ok"
+            );
+
+            log(
+                "Respuesta getSymbol:"
+            );
+
+            log(
+                JSON.stringify(response)
+            );
+
+
+            setStatus(
+                "Símbolo conectado correctamente",
+                "ok"
+            );
+
+
+            /* ------------------------------------------------
+               SUSCRIBIR COTIZACIONES
+            ------------------------------------------------ */
+
+            subscribeQuotes(
                 adapter,
-                {}
+                {
+                    symbolId: [symbolId]
+                }
             )
             .pipe(
                 take(1)
@@ -1066,191 +821,24 @@
                 next: () => {
 
                     log(
-                        "Confirmación inicial recibida"
+                        "Suscripción a cotizaciones realizada.",
+                        "ok"
                     );
+
+                    listenQuotes(symbolId);
 
                 },
 
-                error: (error) => {
+                error: (err) => {
 
                     log(
-                        "Error confirmación inicial:"
-                    );
-
-                    log(
-                        String(error)
-                    );
-
-                }
-
-            });
-
-        } catch (error) {
-
-            log(
-                "ERROR confirmación inicial:"
-            );
-
-            log(
-                String(error)
-            );
-
-            setStatus(
-                "Error de confirmación",
-                "error"
-            );
-
-            return;
-        }
-
-
-        /* --------------------------------------------------------
-           4. REGISTER EVENT
-           -------------------------------------------------------- */
-
-        log(
-            "4. Registrando plugin..."
-        );
-
-
-        try {
-
-            registerEvent(
-                adapter
-            )
-            .pipe(
-
-                take(1),
-
-                catchError(error => {
-
-                    log(
-                        "ERROR registerEvent:"
-                    );
-
-                    log(
-                        String(error)
-                    );
-
-                    setStatus(
-                        "Error de registro",
+                        "Error subscribeQuotes: " +
+                        JSON.stringify(err),
                         "error"
                     );
 
-                    return [];
-
-                })
-
-            )
-            .subscribe({
-
-                next: () => {
-
-                    log(
-                        "5. REGISTER EVENT OK"
-                    );
-
-
-                    /* ------------------------------------------------
-                       6. SEGUNDA CONFIRMACIÓN
-                       ------------------------------------------------ */
-
-                    log(
-                        "6. Enviando confirmación final..."
-                    );
-
-
-                    try {
-
-                        handleConfirmEvent(
-                            adapter,
-                            {}
-                        )
-                        .pipe(
-                            take(1)
-                        )
-                        .subscribe({
-
-                            error: (error) => {
-
-                                log(
-                                    "Error confirmación final:"
-                                );
-
-                                log(
-                                    String(error)
-                                );
-
-                            }
-
-                        });
-
-
-                        log(
-                            "7. Confirmación final enviada"
-                        );
-
-
-                        /* ------------------------------------------------
-                           8. CONECTADO
-                           ------------------------------------------------ */
-
-                        connected = true;
-
-
-                        setStatus(
-                            "CONECTADO",
-                            "connected"
-                        );
-
-
-                        log(
-                            "8. CONECTADO CORRECTAMENTE"
-                        );
-
-
-                        /* ------------------------------------------------
-                           9. AHORA SÍ BUSCAMOS EL SÍMBOLO
-                           ------------------------------------------------ */
-
-                        log(
-                            "9. Buscando símbolo actual..."
-                        );
-
-
-                        loadCurrentSymbol();
-
-                    } catch (error) {
-
-                        log(
-                            "ERROR confirmación final:"
-                        );
-
-                        log(
-                            String(error)
-                        );
-
-                        setStatus(
-                            "Error confirmación final",
-                            "error"
-                        );
-
-                    }
-
-                },
-
-                error: (error) => {
-
-                    log(
-                        "ERROR registerEvent:"
-                    );
-
-                    log(
-                        String(error)
-                    );
-
                     setStatus(
-                        "Error de registro",
+                        "Error suscribiendo precios",
                         "error"
                     );
 
@@ -1258,38 +846,83 @@
 
             });
 
-        } catch (error) {
+        },
+
+        error: (err) => {
 
             log(
-                "ERROR ejecutando registerEvent:"
-            );
-
-            log(
-                String(error)
+                "ERROR getSymbol: " +
+                JSON.stringify(err),
+                "error"
             );
 
             setStatus(
-                "Error de conexión",
+                "Error obteniendo símbolo",
                 "error"
             );
 
         }
 
-    }
+    });
+
+}
 
 
-    /* ============================================================
-       ARRANQUE
-       ============================================================ */
+/* ============================================================
+   ESCUCHAR BID / ASK
+============================================================ */
 
-    window.addEventListener(
-        "load",
-        () => {
+function listenQuotes(symbolId) {
 
-            initializePlugin();
-
-        }
+    log(
+        "Escuchando eventos de cotización..."
     );
+
+    quoteEvent(adapter)
+        .subscribe({
+
+            next: (quote) => {
+
+                try {
+
+                    log(
+                        "QUOTE recibido: " +
+                        JSON.stringify(quote)
+                    );
+
+                }
+                catch (err) {
+
+                    log(
+                        "Error procesando quote: " +
+                        JSON.stringify(err),
+                        "error"
+                    );
+
+                }
+
+            },
+
+            error: (err) => {
+
+                log(
+                    "ERROR quoteEvent: " +
+                    JSON.stringify(err),
+                    "error"
+                );
+
+            }
+
+        });
+
+}
+
+
+/* ============================================================
+   ARRANCAR
+============================================================ */
+
+init();
 
 </script>
 
