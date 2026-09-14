@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -12,50 +14,77 @@
 
     <style>
 
-        body {
-            margin: 0;
-            padding: 20px;
-
-            font-family: Arial, sans-serif;
-
-            background: #111;
-            color: white;
+        * {
+            box-sizing: border-box;
         }
 
-        h2 {
-            margin-top: 0;
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #111;
+            color: #fff;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        h1 {
+            margin: 0 0 14px 0;
+            font-size: 22px;
         }
 
         .status {
-            padding: 10px;
-            margin-bottom: 15px;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 14px;
 
-            border-radius: 6px;
+            border-radius: 7px;
 
-            background: #222;
+            background: #292929;
+
+            font-size: 13px;
         }
 
-        .connected {
+        .status.connected {
             background: #123d22;
         }
 
-        .error {
-            background: #4a1616;
+        .status.error {
+            background: #4a1717;
         }
 
         .panel {
-            background: #1b1b1b;
+            width: 100%;
 
             padding: 15px;
 
-            border-radius: 8px;
+            border-radius: 9px;
+
+            background: #1b1b1b;
+        }
+
+        .section {
+            margin-bottom: 15px;
         }
 
         label {
             display: block;
 
-            margin-top: 12px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
+
+            font-size: 13px;
+            font-weight: bold;
         }
 
         input,
@@ -63,61 +92,17 @@
 
             width: 100%;
 
-            box-sizing: border-box;
+            height: 42px;
 
-            padding: 10px;
-
-            background: #292929;
-            color: white;
+            padding: 8px 10px;
 
             border: 1px solid #444;
-
-            border-radius: 5px;
-        }
-
-        button {
-
-            padding: 15px;
-
-            border: 0;
-
             border-radius: 6px;
 
-            color: white;
+            background: #292929;
+            color: #fff;
 
-            font-size: 16px;
-
-            font-weight: bold;
-
-            cursor: pointer;
-        }
-
-        button:disabled {
-
-            opacity: 0.4;
-
-            cursor: not-allowed;
-        }
-
-        .buttons {
-
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 10px;
-
-            margin-top: 20px;
-        }
-
-        .buy {
-
-            background: #16833b;
-        }
-
-        .sell {
-
-            background: #b32929;
+            font-size: 15px;
         }
 
         .rr-buttons {
@@ -126,57 +111,148 @@
 
             grid-template-columns: 1fr 1fr;
 
-            gap: 10px;
+            gap: 8px;
+        }
 
-            margin-top: 10px;
+        button {
+
+            border: 0;
+
+            border-radius: 7px;
+
+            color: #fff;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
 
         .rr {
 
-            background: #333;
+            height: 44px;
+
+            background: #363636;
         }
 
         .rr.active {
-
             background: #0066cc;
         }
 
         .double {
 
-            margin-top: 15px;
-
             width: 100%;
 
-            background: #444;
+            height: 44px;
+
+            margin-top: 8px;
+
+            background: #3a3a3a;
         }
 
         .double.active {
+            background: #b27a00;
+        }
 
-            background: #c58b00;
+        .trade-buttons {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+
+            margin-top: 18px;
+        }
+
+        .buy {
+
+            height: 60px;
+
+            background: #16833b;
+
+            font-size: 18px;
+        }
+
+        .sell {
+
+            height: 60px;
+
+            background: #b32929;
+
+            font-size: 18px;
         }
 
         .info {
 
-            margin-top: 20px;
+            margin-top: 15px;
+
+            padding: 12px;
+
+            border-radius: 7px;
+
+            background: #242424;
+
+            font-size: 12px;
+
+            line-height: 1.7;
+        }
+
+        .info-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+        }
+
+        .info-value {
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .log {
+
+            margin-top: 15px;
 
             padding: 10px;
 
-            background: #222;
+            border-radius: 7px;
 
-            border-radius: 6px;
+            background: #0d0d0d;
 
-            font-size: 13px;
+            font-family: Consolas, monospace;
 
-            line-height: 1.6;
+            font-size: 11px;
+
+            white-space: pre-wrap;
+
+            word-break: break-word;
+
+            max-height: 180px;
+
+            overflow-y: auto;
         }
 
     </style>
+
 </head>
 
 
 <body>
 
-    <h2>Ayalga Quick Trade</h2>
+<div class="app">
+
+    <h1>
+        Ayalga Quick Trade
+    </h1>
 
 
     <div
@@ -189,121 +265,159 @@
 
     <div class="panel">
 
-        <label>
-            Riesgo base
-        </label>
 
-        <input
-            id="risk"
-            type="number"
-            value="100"
-            min="0"
-            step="1"
-        >
+        <!-- =====================================================
+             RIESGO
+        ====================================================== -->
 
+        <div class="section">
 
-        <label>
-            Número de velas para SL
-        </label>
+            <label>
+                Riesgo base
+            </label>
 
-        <input
-            id="candleCount"
-            type="number"
-            value="10"
-            min="1"
-            step="1"
-        >
-
-
-        <label>
-            Timeframe del SL
-        </label>
-
-        <select id="timeframe">
-
-            <option value="M1" selected>
-                M1
-            </option>
-
-            <option value="M5">
-                M5
-            </option>
-
-            <option value="M15">
-                M15
-            </option>
-
-            <option value="M30">
-                M30
-            </option>
-
-            <option value="H1">
-                H1
-            </option>
-
-            <option value="H4">
-                H4
-            </option>
-
-            <option value="D1">
-                D1
-            </option>
-
-        </select>
-
-
-        <label>
-            Risk / Reward
-        </label>
-
-
-        <div class="rr-buttons">
-
-            <button
-                id="rr1"
-                class="rr active"
-                onclick="setRR(1)"
+            <input
+                id="risk"
+                type="number"
+                value="100"
+                min="0"
+                step="1"
             >
-                RR 1:1
-            </button>
-
-
-            <button
-                id="rr2"
-                class="rr"
-                onclick="setRR(2)"
-            >
-                RR 1:2
-            </button>
 
         </div>
 
 
+        <!-- =====================================================
+             VELAS SL
+        ====================================================== -->
+
+        <div class="section">
+
+            <label>
+                Número de velas cerradas para SL
+            </label>
+
+            <input
+                id="candleCount"
+                type="number"
+                value="10"
+                min="1"
+                step="1"
+            >
+
+        </div>
+
+
+        <!-- =====================================================
+             TIMEFRAME
+        ====================================================== -->
+
+        <div class="section">
+
+            <label>
+                Timeframe del SL
+            </label>
+
+            <select id="timeframe">
+
+                <option value="M1" selected>
+                    M1
+                </option>
+
+                <option value="M5">
+                    M5
+                </option>
+
+                <option value="M15">
+                    M15
+                </option>
+
+                <option value="M30">
+                    M30
+                </option>
+
+                <option value="H1">
+                    H1
+                </option>
+
+                <option value="H4">
+                    H4
+                </option>
+
+                <option value="D1">
+                    D1
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- =====================================================
+             RR
+        ====================================================== -->
+
+        <div class="section">
+
+            <label>
+                Risk / Reward
+            </label>
+
+            <div class="rr-buttons">
+
+                <button
+                    id="rr1"
+                    class="rr active"
+                    type="button"
+                >
+                    RR 1:1
+                </button>
+
+                <button
+                    id="rr2"
+                    class="rr"
+                    type="button"
+                >
+                    RR 1:2
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             DOBLE RIESGO
+        ====================================================== -->
+
         <button
             id="doubleRisk"
             class="double"
-            onclick="toggleDoubleRisk()"
+            type="button"
         >
             DOBLE RIESGO: OFF
         </button>
 
 
-        <div class="buttons">
+        <!-- =====================================================
+             COMPRA / VENTA
+        ====================================================== -->
+
+        <div class="trade-buttons">
 
             <button
                 id="buyButton"
                 class="buy"
-                onclick="executeTrade('BUY')"
+                type="button"
                 disabled
             >
                 COMPRA
             </button>
 
-
             <button
                 id="sellButton"
                 class="sell"
-                onclick="executeTrade('SELL')"
+                type="button"
                 disabled
             >
                 VENTA
@@ -312,50 +426,125 @@
         </div>
 
 
+        <!-- =====================================================
+             INFORMACIÓN
+        ====================================================== -->
+
         <div class="info">
 
-            <div>
-                RR seleccionado:
-                <strong id="rrText">
+            <div class="info-row">
+
+                <span>
+                    Cuenta
+                </span>
+
+                <span
+                    id="accountText"
+                    class="info-value"
+                >
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span>
+                    Símbolo
+                </span>
+
+                <span
+                    id="symbolText"
+                    class="info-value"
+                >
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span>
+                    Plataforma
+                </span>
+
+                <span
+                    id="platformText"
+                    class="info-value"
+                >
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span>
+                    RR
+                </span>
+
+                <span
+                    id="rrText"
+                    class="info-value"
+                >
                     1:1
-                </strong>
+                </span>
+
             </div>
 
 
-            <div>
-                Riesgo próximo trade:
-                <strong id="riskText">
+            <div class="info-row">
+
+                <span>
+                    Riesgo próximo trade
+                </span>
+
+                <span
+                    id="riskText"
+                    class="info-value"
+                >
                     $100
-                </strong>
+                </span>
+
             </div>
 
 
-            <div>
-                Cuenta:
-                <strong id="accountText">
-                    —
-                </strong>
-            </div>
+            <div class="info-row">
 
+                <span>
+                    Estado
+                </span>
 
-            <div>
-                Símbolo:
-                <strong id="symbolText">
-                    —
-                </strong>
-            </div>
+                <span
+                    id="resultText"
+                    class="info-value"
+                >
+                    Esperando...
+                </span>
 
-
-            <div>
-                Estado:
-                <strong id="result">
-                    Esperando conexión...
-                </strong>
             </div>
 
         </div>
 
+
+        <!-- =====================================================
+             LOG
+        ====================================================== -->
+
+        <div
+            id="log"
+            class="log"
+        >
+            Iniciando...
+        </div>
+
+
     </div>
+
+</div>
 
 
 <script type="module">
@@ -364,30 +553,33 @@
 /*
 ====================================================================
  AYALGA QUICK TRADE
- V0.2
- CONEXIÓN CON cTRADER PLUGIN SDK
-====================================================================
+ V0.3
 
- Esta versión todavía NO lanza operaciones.
+ CONEXIÓN REAL CON cTRADER WEBVIEW PLUGIN SDK
 
- Su objetivo es comprobar que:
+ IMPORTANTE:
+ ESTA VERSIÓN NO ENVÍA ÓRDENES.
 
- 1. El plugin puede conectarse con cTrader.
- 2. cTrader autentica automáticamente el plugin.
- 3. Podemos obtener información de la cuenta.
- 4. Podemos obtener símbolos.
+ OBJETIVO:
 
- Después añadiremos:
+ 1. Detectar parámetros enviados por cTrader.
+ 2. Conectar con el host de cTrader.
+ 3. Completar handshake.
+ 4. Obtener información de cuenta.
+ 5. Obtener lista de símbolos.
+ 6. Escuchar cotizaciones.
+ 7. Escuchar eventos de ejecución.
 
- 5. Precio Bid / Ask.
- 6. Velas.
- 7. Máximo absoluto.
- 8. Mínimo absoluto.
- 9. Cálculo de volumen.
-10. Orden MARKET.
-11. SL.
-12. TP.
-13. Doble riesgo de un solo uso.
+ DESPUÉS:
+
+ 8. Obtener velas.
+ 9. Calcular SL absoluto.
+10. Calcular volumen.
+11. Crear MARKET.
+12. Obtener precio REAL de ejecución.
+13. Colocar SL.
+14. Colocar TP.
+15. Gestionar DOBLE RIESGO.
 
 ====================================================================
 */
@@ -406,10 +598,19 @@ from "https://esm.sh/@spotware-web-team/sdk-external-api";
 
 
 import {
-    handleConfirmEvent,
-    registerEvent,
+    cancelOrder,
+    closePosition,
+    createNewOrder,
+    executionEvent,
     getAccountInformation,
-    getLightSymbolList
+    getLightSymbolList,
+    getSymbol,
+    handleConfirmEvent,
+    modifyOrderProtection,
+    quoteEvent,
+    registerEvent,
+    ServerInterfaces,
+    subscribeQuotes
 }
 from "https://esm.sh/@spotware-web-team/sdk";
 
@@ -430,7 +631,7 @@ from "https://esm.sh/@veksa/logger";
 
 /*
 ====================================================================
- VARIABLES
+ ESTADO
 ====================================================================
 */
 
@@ -442,10 +643,14 @@ let selectedRR = 1;
 
 let doubleRisk = false;
 
+let accountData = null;
+
+let symbolsData = null;
+
 
 /*
 ====================================================================
- ELEMENTOS HTML
+ ELEMENTOS
 ====================================================================
 */
 
@@ -479,31 +684,378 @@ const symbolText =
     );
 
 
+const platformText =
+    document.getElementById(
+        "platformText"
+    );
+
+
 const resultText =
     document.getElementById(
-        "result"
+        "resultText"
+    );
+
+
+const logElement =
+    document.getElementById(
+        "log"
     );
 
 
 /*
 ====================================================================
- FUNCIÓN DE LOG
+ LOG
 ====================================================================
 */
 
-function log(message) {
+function writeLog(message) {
+
+    let text;
+
+    if (
+        typeof message === "string"
+    ) {
+
+        text = message;
+
+    } else {
+
+        try {
+
+            text =
+                JSON.stringify(
+                    message,
+                    null,
+                    2
+                );
+
+        } catch {
+
+            text =
+                String(message);
+
+        }
+
+    }
+
 
     console.log(
         "[AYALGA]",
         message
     );
 
+
+    logElement.textContent +=
+        "\n" +
+        text;
+
+
+    logElement.scrollTop =
+        logElement.scrollHeight;
+
 }
 
 
 /*
 ====================================================================
- MANEJO DE ERRORES
+ PARÁMETROS QUE ENVÍA cTRADER
+====================================================================
+*/
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+const ctraderTheme =
+    urlParams.get("theme") || "dark";
+
+
+const ctraderSymbol =
+    urlParams.get("symbol") || "";
+
+
+const ctraderLanguage =
+    urlParams.get("lang") || "es";
+
+
+const ctraderPlatform =
+    urlParams.get("platform") || "";
+
+
+const ctraderPlacement =
+    urlParams.get("placement") || "";
+
+
+const ctraderPluginId =
+    urlParams.get("id") || "";
+
+
+/*
+====================================================================
+ MOSTRAR DATOS RECIBIDOS
+====================================================================
+*/
+
+symbolText.textContent =
+    ctraderSymbol || "Símbolo actual";
+
+
+platformText.textContent =
+    ctraderPlatform || "cTrader";
+
+
+writeLog(
+    "Parámetros recibidos:"
+);
+
+
+writeLog({
+    theme: ctraderTheme,
+    symbol: ctraderSymbol,
+    lang: ctraderLanguage,
+    platform: ctraderPlatform,
+    placement: ctraderPlacement,
+    id: ctraderPluginId
+});
+
+
+/*
+====================================================================
+ TEMA CLARO / OSCURO
+====================================================================
+*/
+
+function applyTheme() {
+
+    if (
+        ctraderTheme === "light"
+    ) {
+
+        document.body.style.background =
+            "#f2f2f2";
+
+        document.body.style.color =
+            "#111";
+
+        document
+            .querySelectorAll(
+                ".panel, .info"
+            )
+            .forEach(element => {
+
+                element.style.background =
+                    "#ffffff";
+
+            });
+
+
+        document
+            .querySelectorAll(
+                "input, select"
+            )
+            .forEach(element => {
+
+                element.style.background =
+                    "#ffffff";
+
+                element.style.color =
+                    "#111";
+
+                element.style.borderColor =
+                    "#cccccc";
+
+            });
+
+
+        logElement.style.background =
+            "#eeeeee";
+
+        logElement.style.color =
+            "#111";
+
+    }
+
+}
+
+
+/*
+====================================================================
+ APLICAR TEMA
+====================================================================
+*/
+
+applyTheme();
+
+
+/*
+====================================================================
+ DOBLE RIESGO
+====================================================================
+*/
+
+function updateRiskText() {
+
+    const baseRisk =
+        Number(
+            document.getElementById(
+                "risk"
+            ).value
+        ) || 0;
+
+
+    const effectiveRisk =
+        doubleRisk
+            ? baseRisk * 2
+            : baseRisk;
+
+
+    document.getElementById(
+        "riskText"
+    ).textContent =
+        "$" +
+        effectiveRisk;
+
+}
+
+
+document
+    .getElementById("risk")
+    .addEventListener(
+        "input",
+        updateRiskText
+    );
+
+
+/*
+====================================================================
+ RR 1:1
+====================================================================
+*/
+
+document
+    .getElementById("rr1")
+    .addEventListener(
+        "click",
+        () => {
+
+            selectedRR = 1;
+
+
+            document
+                .getElementById("rr1")
+                .classList.add(
+                    "active"
+                );
+
+
+            document
+                .getElementById("rr2")
+                .classList.remove(
+                    "active"
+                );
+
+
+            document
+                .getElementById("rrText")
+                .textContent =
+                    "1:1";
+
+        }
+    );
+
+
+/*
+====================================================================
+ RR 1:2
+====================================================================
+*/
+
+document
+    .getElementById("rr2")
+    .addEventListener(
+        "click",
+        () => {
+
+            selectedRR = 2;
+
+
+            document
+                .getElementById("rr2")
+                .classList.add(
+                    "active"
+                );
+
+
+            document
+                .getElementById("rr1")
+                .classList.remove(
+                    "active"
+                );
+
+
+            document
+                .getElementById("rrText")
+                .textContent =
+                    "1:2";
+
+        }
+    );
+
+
+/*
+====================================================================
+ DOBLE RIESGO
+====================================================================
+*/
+
+document
+    .getElementById("doubleRisk")
+    .addEventListener(
+        "click",
+        () => {
+
+            doubleRisk =
+                !doubleRisk;
+
+
+            const button =
+                document.getElementById(
+                    "doubleRisk"
+                );
+
+
+            if (doubleRisk) {
+
+                button.classList.add(
+                    "active"
+                );
+
+                button.textContent =
+                    "DOBLE RIESGO: ON";
+
+            } else {
+
+                button.classList.remove(
+                    "active"
+                );
+
+                button.textContent =
+                    "DOBLE RIESGO: OFF";
+
+            }
+
+
+            updateRiskText();
+
+        }
+    );
+
+
+/*
+====================================================================
+ ERROR DE CONEXIÓN
 ====================================================================
 */
 
@@ -514,19 +1066,216 @@ function connectionError(error) {
         error
     );
 
+
+    writeLog(
+        "ERROR DE CONEXIÓN:"
+    );
+
+
+    writeLog(error);
+
+
     connectionStatus.textContent =
-        "Error de conexión con cTrader";
+        "✕ Error de conexión con cTrader";
+
 
     connectionStatus.classList.remove(
         "connected"
     );
 
+
     connectionStatus.classList.add(
         "error"
     );
 
+
     resultText.textContent =
-        "Error de conexión";
+        "Error";
+
+}
+
+
+/*
+====================================================================
+ OBTENER INFORMACIÓN DE CUENTA
+====================================================================
+*/
+
+function loadAccountInformation() {
+
+    if (
+        !connectedToHost
+    ) {
+
+        return;
+
+    }
+
+
+    writeLog(
+        "Solicitando información de cuenta..."
+    );
+
+
+    getAccountInformation(
+        adapter,
+        {}
+    )
+    .pipe(
+
+        take(1),
+
+        tap(response => {
+
+            accountData =
+                response;
+
+
+            writeLog(
+                "INFORMACIÓN DE CUENTA RECIBIDA:"
+            );
+
+
+            writeLog(
+                response
+            );
+
+
+            const account =
+                response?.account;
+
+
+            if (
+                account
+            ) {
+
+                /*
+                 * De momento no forzamos
+                 * una estructura concreta.
+                 *
+                 * Guardamos toda la respuesta.
+                 */
+
+                if (
+                    account.accountId !== undefined
+                ) {
+
+                    accountText.textContent =
+                        String(
+                            account.accountId
+                        );
+
+                } else {
+
+                    accountText.textContent =
+                        "Conectada";
+
+                }
+
+            } else {
+
+                accountText.textContent =
+                    "Conectada";
+
+            }
+
+
+            resultText.textContent =
+                "Cuenta conectada";
+
+        }),
+
+        catchError(error => {
+
+            writeLog(
+                "Error obteniendo cuenta:"
+            );
+
+
+            writeLog(error);
+
+
+            resultText.textContent =
+                "Error cuenta";
+
+
+            return [];
+
+        })
+
+    )
+    .subscribe();
+
+}
+
+
+/*
+====================================================================
+ OBTENER SÍMBOLOS
+====================================================================
+*/
+
+function loadSymbols() {
+
+    if (
+        !connectedToHost
+    ) {
+
+        return;
+
+    }
+
+
+    writeLog(
+        "Solicitando lista de símbolos..."
+    );
+
+
+    getLightSymbolList(
+        adapter,
+        {}
+    )
+    .pipe(
+
+        take(1),
+
+        tap(response => {
+
+            symbolsData =
+                response;
+
+
+            writeLog(
+                "LISTA DE SÍMBOLOS RECIBIDA."
+            );
+
+
+            writeLog(
+                response
+            );
+
+
+            resultText.textContent =
+                "Símbolos recibidos";
+
+        }),
+
+        catchError(error => {
+
+            writeLog(
+                "Error obteniendo símbolos:"
+            );
+
+
+            writeLog(error);
+
+
+            return [];
+
+        })
+
+    )
+    .subscribe();
 
 }
 
@@ -535,21 +1284,44 @@ function connectionError(error) {
 ====================================================================
  CONEXIÓN CON cTRADER
 ====================================================================
+
+ SECUENCIA OFICIAL:
+
+ CONFIRM
+    ↓
+REGISTER
+    ↓
+CONFIRM
+    ↓
+CONNECTED
+
+====================================================================
 */
 
 function connectToCTrader() {
 
     try {
 
+        writeLog(
+            "Creando conexión con cTrader..."
+        );
+
+
         /*
-         * Creamos el adaptador que permite
-         * comunicación entre nuestra página
-         * y cTrader.
+         * Logger oficial.
          */
 
         const logger =
-            createLogger(true);
+            createLogger(
+                window.location.href.includes(
+                    "showLogs"
+                )
+            );
 
+
+        /*
+         * Crear adaptador.
+         */
 
         adapter =
             createClientAdapter({
@@ -557,13 +1329,13 @@ function connectToCTrader() {
             });
 
 
-        log(
+        writeLog(
             "Adaptador creado."
         );
 
 
         /*
-         * Primera confirmación.
+         * Primer CONFIRM.
          */
 
         handleConfirmEvent(
@@ -576,13 +1348,13 @@ function connectToCTrader() {
         .subscribe();
 
 
-        log(
-            "Primera confirmación enviada."
+        writeLog(
+            "CONFIRM inicial enviado."
         );
 
 
         /*
-         * Registramos el plugin.
+         * REGISTER.
          */
 
         registerEvent(
@@ -594,8 +1366,13 @@ function connectToCTrader() {
 
             tap(() => {
 
+                writeLog(
+                    "cTrader ha registrado el plugin."
+                );
+
+
                 /*
-                 * Segunda confirmación.
+                 * Segundo CONFIRM.
                  */
 
                 handleConfirmEvent(
@@ -609,10 +1386,11 @@ function connectToCTrader() {
 
 
                 /*
-                 * CONEXIÓN COMPLETADA
+                 * CONEXIÓN COMPLETADA.
                  */
 
-                connectedToHost = true;
+                connectedToHost =
+                    true;
 
 
                 connectionStatus.textContent =
@@ -636,21 +1414,16 @@ function connectToCTrader() {
                     "Conectado";
 
 
-                log(
-                    "Conexión con cTrader establecida."
+                writeLog(
+                    "✓ CONEXIÓN COMPLETADA."
                 );
 
 
                 /*
-                 * Ahora obtenemos la cuenta.
+                 * Ahora pedimos datos.
                  */
 
                 loadAccountInformation();
-
-
-                /*
-                 * Y posteriormente los símbolos.
-                 */
 
                 loadSymbols();
 
@@ -661,6 +1434,7 @@ function connectToCTrader() {
                 connectionError(
                     error
                 );
+
 
                 return [];
 
@@ -684,100 +1458,43 @@ function connectToCTrader() {
 
 /*
 ====================================================================
- INFORMACIÓN DE CUENTA
+ ESCUCHAR COTIZACIONES
 ====================================================================
 */
 
-function loadAccountInformation() {
+function startQuoteStream() {
 
-    if (!connectedToHost) {
+    if (
+        !connectedToHost
+    ) {
 
         return;
 
     }
 
 
-    log(
-        "Solicitando información de cuenta..."
+    writeLog(
+        "Activando stream de cotizaciones..."
     );
 
 
-    getAccountInformation(
-        adapter,
-        {}
+    quoteEvent(
+        adapter
     )
     .pipe(
 
-        take(1),
-
-        tap(response => {
-
-            console.log(
-                "INFORMACIÓN DE CUENTA:",
-                response
-            );
-
+        tap(quote => {
 
             /*
-             * Mostramos una pequeña información
-             * si está disponible.
+             * No escribimos cada tick
+             * permanentemente en pantalla,
+             * porque llenaría el log.
              */
 
-            const account =
-                response?.account;
-
-
-            if (account) {
-
-                /*
-                 * Dependiendo de la respuesta de cTrader,
-                 * pueden existir diferentes campos.
-                 */
-
-                const balance =
-                    account.balance;
-
-
-                if (
-                    balance !== undefined
-                ) {
-
-                    accountText.textContent =
-                        String(balance);
-
-                }
-                else {
-
-                    accountText.textContent =
-                        "Conectada";
-
-                }
-
-            }
-            else {
-
-                accountText.textContent =
-                    "Conectada";
-
-            }
-
-
-            resultText.textContent =
-                "Cuenta recibida";
-
-        }),
-
-        catchError(error => {
-
-            console.error(
-                "Error obteniendo cuenta:",
-                error
+            console.log(
+                "[AYALGA QUOTE]",
+                quote
             );
-
-            resultText.textContent =
-                "Conectado, pero sin datos de cuenta";
-
-            return [];
 
         })
 
@@ -789,74 +1506,41 @@ function loadAccountInformation() {
 
 /*
 ====================================================================
- LISTA DE SÍMBOLOS
+ ESCUCHAR EJECUCIONES
 ====================================================================
 */
 
-function loadSymbols() {
+function startExecutionStream() {
 
-    if (!connectedToHost) {
+    if (
+        !connectedToHost
+    ) {
 
         return;
 
     }
 
 
-    log(
-        "Solicitando símbolos..."
+    writeLog(
+        "Activando stream de ejecuciones..."
     );
 
 
-    getLightSymbolList(
-        adapter,
-        {}
+    executionEvent(
+        adapter
     )
     .pipe(
 
-        take(1),
+        tap(event => {
 
-        tap(response => {
-
-            console.log(
-                "SÍMBOLOS DE cTRADER:",
-                response
+            writeLog(
+                "EVENTO DE EJECUCIÓN:"
             );
 
 
-            /*
-             * De momento solamente mostramos
-             * que hemos recibido la información.
-             */
-
-            if (
-                response
-            ) {
-
-                symbolText.textContent =
-                    "Símbolos recibidos";
-
-            }
-
-            else {
-
-                symbolText.textContent =
-                    "—";
-
-            }
-
-        }),
-
-        catchError(error => {
-
-            console.error(
-                "Error obteniendo símbolos:",
-                error
+            writeLog(
+                event
             );
-
-            symbolText.textContent =
-                "Error";
-
-            return [];
 
         })
 
@@ -868,235 +1552,140 @@ function loadSymbols() {
 
 /*
 ====================================================================
- RR
+ BOTÓN COMPRA
 ====================================================================
 */
 
-window.setRR = function(rr) {
+buyButton.addEventListener(
+    "click",
+    () => {
 
-    selectedRR = rr;
+        if (
+            !connectedToHost
+        ) {
 
+            return;
 
-    const rr1 =
-        document.getElementById(
-            "rr1"
-        );
-
-
-    const rr2 =
-        document.getElementById(
-            "rr2"
-        );
+        }
 
 
-    rr1.classList.remove(
-        "active"
-    );
+        const risk =
+            Number(
+                document.getElementById(
+                    "risk"
+                ).value
+            ) || 0;
 
 
-    rr2.classList.remove(
-        "active"
-    );
+        const candleCount =
+            Number(
+                document.getElementById(
+                    "candleCount"
+                ).value
+            ) || 1;
 
 
-    if (rr === 1) {
-
-        rr1.classList.add(
-            "active"
-        );
-
-        document.getElementById(
-            "rrText"
-        ).textContent =
-            "1:1";
-
-    }
-
-
-    if (rr === 2) {
-
-        rr2.classList.add(
-            "active"
-        );
-
-        document.getElementById(
-            "rrText"
-        ).textContent =
-            "1:2";
-
-    }
-
-};
-
-
-/*
-====================================================================
- DOBLE RIESGO
-====================================================================
-*/
-
-window.toggleDoubleRisk = function() {
-
-    doubleRisk =
-        !doubleRisk;
-
-
-    const button =
-        document.getElementById(
-            "doubleRisk"
-        );
-
-
-    if (doubleRisk) {
-
-        button.classList.add(
-            "active"
-        );
-
-        button.textContent =
-            "DOBLE RIESGO: ON";
-
-    }
-
-    else {
-
-        button.classList.remove(
-            "active"
-        );
-
-        button.textContent =
-            "DOBLE RIESGO: OFF";
-
-    }
-
-
-    updateRiskText();
-
-};
-
-
-/*
-====================================================================
- RIESGO
-====================================================================
-*/
-
-function updateRiskText() {
-
-    const baseRisk =
-        Number(
+        const timeframe =
             document.getElementById(
-                "risk"
-            ).value
-        ) || 0;
+                "timeframe"
+            ).value;
 
 
-    const nextRisk =
-        doubleRisk
-            ? baseRisk * 2
-            : baseRisk;
+        const effectiveRisk =
+            doubleRisk
+                ? risk * 2
+                : risk;
 
 
-    document.getElementById(
-        "riskText"
-    ).textContent =
-        "$" + nextRisk;
-
-}
-
-
-document
-    .getElementById("risk")
-    .addEventListener(
-        "input",
-        updateRiskText
-    );
-
-
-/*
-====================================================================
- COMPRA / VENTA
-====================================================================
-*/
-
-window.executeTrade = function(side) {
-
-    /*
-     * TODAVÍA NO SE ENVÍA NINGUNA ORDEN.
-     */
-
-    if (!connectedToHost) {
-
-        alert(
-            "El plugin todavía no está conectado a cTrader."
-        );
-
-        return;
-
-    }
-
-
-    const baseRisk =
-        Number(
-            document.getElementById(
-                "risk"
-            ).value
-        ) || 0;
-
-
-    const candleCount =
-        Number(
-            document.getElementById(
-                "candleCount"
-            ).value
-        ) || 1;
-
-
-    const timeframe =
-        document.getElementById(
-            "timeframe"
-        ).value;
-
-
-    const effectiveRisk =
-        doubleRisk
-            ? baseRisk * 2
-            : baseRisk;
-
-
-    console.log(
-        "OPERACIÓN:",
-        {
-            side,
-            effectiveRisk,
+        writeLog({
+            action: "BUY_TEST",
+            risk: effectiveRisk,
             candleCount,
             timeframe,
-            rr: selectedRR
+            rr: selectedRR,
+            symbol: ctraderSymbol
+        });
+
+
+        resultText.textContent =
+            "COMPRA preparada";
+
+
+        /*
+         * NO SE ENVÍA NINGUNA ORDEN TODAVÍA.
+         */
+
+    }
+);
+
+
+/*
+====================================================================
+ BOTÓN VENTA
+====================================================================
+*/
+
+sellButton.addEventListener(
+    "click",
+    () => {
+
+        if (
+            !connectedToHost
+        ) {
+
+            return;
+
         }
-    );
 
 
-    resultText.textContent =
-        side +
-        " preparada";
+        const risk =
+            Number(
+                document.getElementById(
+                    "risk"
+                ).value
+            ) || 0;
 
 
-    /*
-     * AQUÍ irá posteriormente:
-     *
-     * 1. Obtener precio real.
-     * 2. Obtener N velas cerradas.
-     * 3. Calcular SL.
-     * 4. Calcular distancia SL.
-     * 5. Calcular volumen.
-     * 6. Enviar MARKET.
-     * 7. Obtener precio REAL de ejecución.
-     * 8. Calcular TP desde ese precio.
-     * 9. Aplicar SL/TP.
-     * 10. Apagar DOBLE RIESGO.
-     */
+        const candleCount =
+            Number(
+                document.getElementById(
+                    "candleCount"
+                ).value
+            ) || 1;
 
-};
+
+        const timeframe =
+            document.getElementById(
+                "timeframe"
+            ).value;
+
+
+        const effectiveRisk =
+            doubleRisk
+                ? risk * 2
+                : risk;
+
+
+        writeLog({
+            action: "SELL_TEST",
+            risk: effectiveRisk,
+            candleCount,
+            timeframe,
+            rr: selectedRR,
+            symbol: ctraderSymbol
+        });
+
+
+        resultText.textContent =
+            "VENTA preparada";
+
+
+        /*
+         * NO SE ENVÍA NINGUNA ORDEN TODAVÍA.
+         */
+
+    }
+);
 
 
 /*
@@ -1105,9 +1694,56 @@ window.executeTrade = function(side) {
 ====================================================================
 */
 
+writeLog(
+    "Ayalga Quick Trade iniciado."
+);
+
+
+writeLog(
+    "Esperando conexión con cTrader..."
+);
+
+
+updateRiskText();
+
+
 connectToCTrader();
+
+
+/*
+ * Cuando el handshake termine,
+ * activamos los streams.
+ *
+ * Usamos una pequeña comprobación porque
+ * registerEvent es asíncrono.
+ */
+
+const streamTimer =
+    setInterval(
+        () => {
+
+            if (
+                connectedToHost
+            ) {
+
+                clearInterval(
+                    streamTimer
+                );
+
+
+                startQuoteStream();
+
+                startExecutionStream();
+
+            }
+
+        },
+        100
+    );
+
 
 </script>
 
 </body>
+
 </html>
