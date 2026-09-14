@@ -1,1 +1,311 @@
-https://juanjjt.github.io/AyalgaQuickTrade/?placement=wl_bs&platform=ios&theme=light&lang=en&id=3824661
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ayalga Quick Trade</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 16px;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            background: #222;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .ok {
+            color: #00d26a;
+        }
+
+        .error {
+            color: #ff4d4d;
+        }
+
+        .waiting {
+            color: #ffc107;
+        }
+
+        .log {
+            margin-top: 15px;
+            padding: 10px;
+            background: #050505;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Ayalga Quick Trade</h2>
+
+    <div id="status" class="status waiting">
+        Inicializando...
+    </div>
+
+    <div id="log" class="log"></div>
+
+</div>
+
+
+<script type="module">
+
+import {
+    createClientAdapter
+} from "https://esm.sh/@spotware-web-team/sdk-external-api";
+
+import {
+    handleConfirmEvent,
+    registerEvent
+} from "https://esm.sh/@spotware-web-team/sdk";
+
+import {
+    take,
+    catchError
+} from "https://esm.sh/rxjs";
+
+import {
+    createLogger
+} from "https://esm.sh/@veksa/logger";
+
+
+// ═══════════════════════════════════════════════════════════════
+// ELEMENTOS
+// ═══════════════════════════════════════════════════════════════
+
+const statusElement = document.getElementById("status");
+const logElement = document.getElementById("log");
+
+
+// ═══════════════════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════════════════
+
+function log(message) {
+
+    const time = new Date().toLocaleTimeString();
+
+    let text;
+
+    if (typeof message === "string") {
+        text = message;
+    } else {
+        try {
+            text = JSON.stringify(message, null, 2);
+        } catch {
+            text = String(message);
+        }
+    }
+
+    logElement.textContent += `[${time}] ${text}\n`;
+    logElement.scrollTop = logElement.scrollHeight;
+
+    console.log(message);
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════════
+
+let adapter = null;
+let connected = false;
+
+
+// ═══════════════════════════════════════════════════════════════
+// ESTADO VISUAL
+// ═══════════════════════════════════════════════════════════════
+
+function setStatus(text, type) {
+
+    statusElement.textContent = text;
+
+    statusElement.className = "status " + type;
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// INICIALIZACIÓN
+// ═══════════════════════════════════════════════════════════════
+
+function initialize() {
+
+    try {
+
+        log("1. Creando logger...");
+
+        const logger = createLogger(
+            location.href.includes("showLogs")
+        );
+
+
+        log("2. Creando Client Adapter...");
+
+        adapter = createClientAdapter({
+            logger
+        });
+
+
+        log("3. Enviando confirmación inicial...");
+
+        handleConfirmEvent(
+            adapter,
+            {}
+        )
+        .pipe(
+            take(1)
+        )
+        .subscribe({
+
+            next: () => {
+                log("Confirmación inicial enviada.");
+            },
+
+            error: (error) => {
+                log("ERROR en confirmación inicial:");
+                log(error);
+            }
+
+        });
+
+
+        log("4. Registrando plugin en cTrader...");
+
+        registerEvent(adapter)
+        .pipe(
+            take(1),
+            catchError(error => {
+
+                log("ERROR en registerEvent:");
+                log(error);
+
+                setStatus(
+                    "Error conectando con cTrader",
+                    "error"
+                );
+
+                throw error;
+            })
+        )
+        .subscribe({
+
+            next: (result) => {
+
+                log("5. REGISTER EVENT OK");
+                log(result);
+
+                log("6. Enviando confirmación final...");
+
+                handleConfirmEvent(
+                    adapter,
+                    {}
+                )
+                .pipe(
+                    take(1)
+                )
+                .subscribe({
+
+                    next: () => {
+
+                        connected = true;
+
+                        log("7. CONFIRMACIÓN FINAL OK");
+
+                        setStatus(
+                            "CONECTADO A cTRADER",
+                            "ok"
+                        );
+
+                        log("--------------------------------");
+                        log("PLUGIN INICIALIZADO CORRECTAMENTE");
+                        log("--------------------------------");
+                    },
+
+                    error: (error) => {
+
+                        log("ERROR en confirmación final:");
+                        log(error);
+
+                        setStatus(
+                            "Error en confirmación",
+                            "error"
+                        );
+                    }
+
+                });
+
+            },
+
+            error: (error) => {
+
+                log("ERROR GENERAL:");
+                log(error);
+
+                setStatus(
+                    "Error inicializando",
+                    "error"
+                );
+            }
+
+        });
+
+    } catch (error) {
+
+        log("EXCEPCIÓN DURANTE LA INICIALIZACIÓN:");
+
+        log(error);
+
+        setStatus(
+            "Error inicializando",
+            "error"
+        );
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ARRANQUE
+// ═══════════════════════════════════════════════════════════════
+
+log("Ayalga Quick Trade iniciando...");
+
+initialize();
+
+</script>
+
+</body>
+</html>
