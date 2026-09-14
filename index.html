@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Ayalga Quick Trade v12</title>
+    <title>Ayalga Quick Trade v13</title>
 
     <style>
 
@@ -60,7 +60,7 @@
         .label {
             font-size: 12px;
             color: #999999;
-            margin-bottom: 6px;
+            margin-bottom: 7px;
         }
 
         .value {
@@ -110,7 +110,7 @@
     <div class="title">
 
         Ayalga Quick Trade
-        <span class="version">v12</span>
+        <span class="version">v13</span>
 
     </div>
 
@@ -122,7 +122,7 @@
     <div class="card">
 
         <div class="label">
-            Símbolo recibido por cTrader
+            Símbolo
         </div>
 
         <div
@@ -142,7 +142,7 @@
     <div class="card">
 
         <div class="label">
-            Estado de conexión
+            Estado
         </div>
 
         <div
@@ -180,15 +180,13 @@
 
 
     // ============================================================
-    // IMPORTACIONES OFICIALES CTRADER
+    // SDK CTRADER
     // ============================================================
 
     import {
 
         createClientAdapter,
-
         handleConfirmEvent,
-
         registerEvent
 
     } from "https://esm.sh/@spotware-web-team/sdk";
@@ -201,9 +199,7 @@
     import {
 
         take,
-
         tap,
-
         catchError
 
     } from "https://esm.sh/rxjs";
@@ -235,7 +231,7 @@
 
 
     // ============================================================
-    // FUNCIÓN LOG
+    // LOG
     // ============================================================
 
     function log(message) {
@@ -259,7 +255,7 @@
 
 
     // ============================================================
-    // CAMBIAR ESTADO
+    // ESTADO
     // ============================================================
 
     function setStatus(
@@ -271,14 +267,13 @@
             message;
 
         statusElement.className =
-            "value " +
-            type;
+            "value " + type;
 
     }
 
 
     // ============================================================
-    // LEER PARÁMETROS DE CTRADER
+    // LEER SYMBOL DE CTRADER
     // ============================================================
 
     const params =
@@ -297,7 +292,7 @@
             symbol.toUpperCase();
 
         log(
-            "Símbolo recibido: " +
+            "Symbol recibido: " +
             symbol.toUpperCase()
         );
 
@@ -307,14 +302,14 @@
             "NO RECIBIDO";
 
         log(
-            "No se recibió symbol en la URL."
+            "No hay symbol en la URL."
         );
 
     }
 
 
     // ============================================================
-    // LOGGER CTRADER
+    // LOGGER
     // ============================================================
 
     const logger =
@@ -331,21 +326,21 @@
 
 
     // ============================================================
-    // INICIALIZACIÓN
+    // INICIO
     // ============================================================
 
     function initialize() {
 
         try {
 
+            // ----------------------------------------------------
+            // 1. CREAR ADAPTER
+            // ----------------------------------------------------
+
             log(
-                "1. Creando Client Adapter..."
+                "Creando Client Adapter..."
             );
 
-
-            // ----------------------------------------------------
-            // CREAR ADAPTER
-            // ----------------------------------------------------
 
             adapter =
                 createClientAdapter({
@@ -354,60 +349,16 @@
 
 
             log(
-                "2. Client Adapter creado."
-            );
-
-
-            setStatus(
-                "Conectando...",
-                "waiting"
+                "Client Adapter creado."
             );
 
 
             // ----------------------------------------------------
-            // CONFIRMACIÓN
+            // 2. REGISTER
             // ----------------------------------------------------
 
             log(
-                "3. Esperando confirmación de cTrader..."
-            );
-
-
-            handleConfirmEvent(
-                adapter,
-                {}
-            )
-            .pipe(
-                take(1)
-            )
-            .subscribe({
-
-                next: () => {
-
-                    log(
-                        "4. Confirmación recibida."
-                    );
-
-                },
-
-                error: error => {
-
-                    log(
-                        "ERROR en confirmación: " +
-                        safeStringify(error)
-                    );
-
-                }
-
-            });
-
-
-            // ----------------------------------------------------
-            // REGISTRO DEL PLUGIN
-            // ----------------------------------------------------
-
-            log(
-                "5. Registrando plugin..."
+                "Registrando plugin..."
             );
 
 
@@ -421,19 +372,18 @@
                 tap(() => {
 
                     log(
-                        "6. REGISTER CORRECTO."
-                    );
-
-
-                    setStatus(
-                        "CONECTADO",
-                        "success"
+                        "REGISTER recibido correctamente."
                     );
 
 
                     // ------------------------------------------------
-                    // SEGUNDO HANDSHAKE
+                    // 3. CONFIRM
                     // ------------------------------------------------
+
+                    log(
+                        "Enviando confirmación..."
+                    );
+
 
                     handleConfirmEvent(
                         adapter,
@@ -447,7 +397,13 @@
                         next: () => {
 
                             log(
-                                "7. Handshake completado."
+                                "Confirmación completada."
+                            );
+
+
+                            setStatus(
+                                "CONECTADO",
+                                "success"
                             );
 
                         },
@@ -455,13 +411,19 @@
                         error: error => {
 
                             log(
-                                "ERROR segundo handshake: " +
-                                safeStringify(error)
+                                "ERROR confirmación: " +
+                                stringify(error)
+                            );
+
+
+                            setStatus(
+                                "ERROR CONFIRMACIÓN",
+                                "error"
                             );
 
                         }
 
-                    );
+                    });
 
                 }),
 
@@ -469,12 +431,12 @@
 
                     log(
                         "ERROR REGISTER: " +
-                        safeStringify(error)
+                        stringify(error)
                     );
 
 
                     setStatus(
-                        "ERROR DE CONEXIÓN",
+                        "ERROR REGISTER",
                         "error"
                     );
 
@@ -489,13 +451,13 @@
                 error: error => {
 
                     log(
-                        "ERROR final: " +
-                        safeStringify(error)
+                        "ERROR SUBSCRIBE: " +
+                        stringify(error)
                     );
 
 
                     setStatus(
-                        "ERROR DE CONEXIÓN",
+                        "ERROR",
                         "error"
                     );
 
@@ -509,12 +471,12 @@
 
             log(
                 "ERROR GENERAL: " +
-                safeStringify(error)
+                stringify(error)
             );
 
 
             setStatus(
-                "ERROR DE CONEXIÓN",
+                "ERROR",
                 "error"
             );
 
@@ -524,27 +486,22 @@
 
 
     // ============================================================
-    // CONVERTIR ERRORES A TEXTO
+    // CONVERTIR ERROR A TEXTO
     // ============================================================
 
-    function safeStringify(value) {
+    function stringify(value) {
 
         try {
 
-            if (
-                value instanceof Error
-            ) {
+            if (value instanceof Error) {
 
                 return value.message;
 
             }
 
-            return JSON.stringify(
-                value
-            );
+            return JSON.stringify(value);
 
         }
-
         catch (e) {
 
             return String(value);
@@ -559,7 +516,7 @@
     // ============================================================
 
     log(
-        "Ayalga Quick Trade v12 iniciando..."
+        "Ayalga Quick Trade v13 iniciando..."
     );
 
 
