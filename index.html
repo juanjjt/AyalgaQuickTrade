@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ayalga Quick Trade</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 20px;
+
+            font-family: Arial, sans-serif;
+
+            background: #111;
+            color: white;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .status {
+            padding: 10px;
+            margin-bottom: 15px;
+
+            border-radius: 6px;
+
+            background: #222;
+        }
+
+        .connected {
+            background: #123d22;
+        }
+
+        .error {
+            background: #4a1616;
+        }
+
+        .panel {
+            background: #1b1b1b;
+
+            padding: 15px;
+
+            border-radius: 8px;
+        }
+
+        label {
+            display: block;
+
+            margin-top: 12px;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding: 10px;
+
+            background: #292929;
+            color: white;
+
+            border: 1px solid #444;
+
+            border-radius: 5px;
+        }
+
+        button {
+
+            padding: 15px;
+
+            border: 0;
+
+            border-radius: 6px;
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        button:disabled {
+
+            opacity: 0.4;
+
+            cursor: not-allowed;
+        }
+
+        .buttons {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+
+            margin-top: 20px;
+        }
+
+        .buy {
+
+            background: #16833b;
+        }
+
+        .sell {
+
+            background: #b32929;
+        }
+
+        .rr-buttons {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+
+            margin-top: 10px;
+        }
+
+        .rr {
+
+            background: #333;
+        }
+
+        .rr.active {
+
+            background: #0066cc;
+        }
+
+        .double {
+
+            margin-top: 15px;
+
+            width: 100%;
+
+            background: #444;
+        }
+
+        .double.active {
+
+            background: #c58b00;
+        }
+
+        .info {
+
+            margin-top: 20px;
+
+            padding: 10px;
+
+            background: #222;
+
+            border-radius: 6px;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <h2>Ayalga Quick Trade</h2>
+
+
+    <div
+        id="connectionStatus"
+        class="status"
+    >
+        Conectando con cTrader...
+    </div>
+
+
+    <div class="panel">
+
+        <label>
+            Riesgo base
+        </label>
+
+        <input
+            id="risk"
+            type="number"
+            value="100"
+            min="0"
+            step="1"
+        >
+
+
+        <label>
+            Número de velas para SL
+        </label>
+
+        <input
+            id="candleCount"
+            type="number"
+            value="10"
+            min="1"
+            step="1"
+        >
+
+
+        <label>
+            Timeframe del SL
+        </label>
+
+        <select id="timeframe">
+
+            <option value="M1" selected>
+                M1
+            </option>
+
+            <option value="M5">
+                M5
+            </option>
+
+            <option value="M15">
+                M15
+            </option>
+
+            <option value="M30">
+                M30
+            </option>
+
+            <option value="H1">
+                H1
+            </option>
+
+            <option value="H4">
+                H4
+            </option>
+
+            <option value="D1">
+                D1
+            </option>
+
+        </select>
+
+
+        <label>
+            Risk / Reward
+        </label>
+
+
+        <div class="rr-buttons">
+
+            <button
+                id="rr1"
+                class="rr active"
+                onclick="setRR(1)"
+            >
+                RR 1:1
+            </button>
+
+
+            <button
+                id="rr2"
+                class="rr"
+                onclick="setRR(2)"
+            >
+                RR 1:2
+            </button>
+
+        </div>
+
+
+        <button
+            id="doubleRisk"
+            class="double"
+            onclick="toggleDoubleRisk()"
+        >
+            DOBLE RIESGO: OFF
+        </button>
+
+
+        <div class="buttons">
+
+            <button
+                id="buyButton"
+                class="buy"
+                onclick="executeTrade('BUY')"
+                disabled
+            >
+                COMPRA
+            </button>
+
+
+            <button
+                id="sellButton"
+                class="sell"
+                onclick="executeTrade('SELL')"
+                disabled
+            >
+                VENTA
+            </button>
+
+        </div>
+
+
+        <div class="info">
+
+            <div>
+                RR seleccionado:
+                <strong id="rrText">
+                    1:1
+                </strong>
+            </div>
+
+
+            <div>
+                Riesgo próximo trade:
+                <strong id="riskText">
+                    $100
+                </strong>
+            </div>
+
+
+            <div>
+                Cuenta:
+                <strong id="accountText">
+                    —
+                </strong>
+            </div>
+
+
+            <div>
+                Símbolo:
+                <strong id="symbolText">
+                    —
+                </strong>
+            </div>
+
+
+            <div>
+                Estado:
+                <strong id="result">
+                    Esperando conexión...
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+<script type="module">
+
+
+/*
+====================================================================
+ AYALGA QUICK TRADE
+ V0.2
+ CONEXIÓN CON cTRADER PLUGIN SDK
+====================================================================
+
+ Esta versión todavía NO lanza operaciones.
+
+ Su objetivo es comprobar que:
+
+ 1. El plugin puede conectarse con cTrader.
+ 2. cTrader autentica automáticamente el plugin.
+ 3. Podemos obtener información de la cuenta.
+ 4. Podemos obtener símbolos.
+
+ Después añadiremos:
+
+ 5. Precio Bid / Ask.
+ 6. Velas.
+ 7. Máximo absoluto.
+ 8. Mínimo absoluto.
+ 9. Cálculo de volumen.
+10. Orden MARKET.
+11. SL.
+12. TP.
+13. Doble riesgo de un solo uso.
+
+====================================================================
+*/
+
+
+/*
+====================================================================
+ IMPORTACIONES OFICIALES
+====================================================================
+*/
+
+import {
+    createClientAdapter
+}
+from "https://esm.sh/@spotware-web-team/sdk-external-api";
+
+
+import {
+    handleConfirmEvent,
+    registerEvent,
+    getAccountInformation,
+    getLightSymbolList
+}
+from "https://esm.sh/@spotware-web-team/sdk";
+
+
+import {
+    take,
+    tap,
+    catchError
+}
+from "https://esm.sh/rxjs";
+
+
+import {
+    createLogger
+}
+from "https://esm.sh/@veksa/logger";
+
+
+/*
+====================================================================
+ VARIABLES
+====================================================================
+*/
+
+let adapter = null;
+
+let connectedToHost = false;
+
+let selectedRR = 1;
+
+let doubleRisk = false;
+
+
+/*
+====================================================================
+ ELEMENTOS HTML
+====================================================================
+*/
+
+const connectionStatus =
+    document.getElementById(
+        "connectionStatus"
+    );
+
+
+const buyButton =
+    document.getElementById(
+        "buyButton"
+    );
+
+
+const sellButton =
+    document.getElementById(
+        "sellButton"
+    );
+
+
+const accountText =
+    document.getElementById(
+        "accountText"
+    );
+
+
+const symbolText =
+    document.getElementById(
+        "symbolText"
+    );
+
+
+const resultText =
+    document.getElementById(
+        "result"
+    );
+
+
+/*
+====================================================================
+ FUNCIÓN DE LOG
+====================================================================
+*/
+
+function log(message) {
+
+    console.log(
+        "[AYALGA]",
+        message
+    );
+
+}
+
+
+/*
+====================================================================
+ MANEJO DE ERRORES
+====================================================================
+*/
+
+function connectionError(error) {
+
+    console.error(
+        "[AYALGA ERROR]",
+        error
+    );
+
+    connectionStatus.textContent =
+        "Error de conexión con cTrader";
+
+    connectionStatus.classList.remove(
+        "connected"
+    );
+
+    connectionStatus.classList.add(
+        "error"
+    );
+
+    resultText.textContent =
+        "Error de conexión";
+
+}
+
+
+/*
+====================================================================
+ CONEXIÓN CON cTRADER
+====================================================================
+*/
+
+function connectToCTrader() {
+
+    try {
+
+        /*
+         * Creamos el adaptador que permite
+         * comunicación entre nuestra página
+         * y cTrader.
+         */
+
+        const logger =
+            createLogger(true);
+
+
+        adapter =
+            createClientAdapter({
+                logger
+            });
+
+
+        log(
+            "Adaptador creado."
+        );
+
+
+        /*
+         * Primera confirmación.
+         */
+
+        handleConfirmEvent(
+            adapter,
+            {}
+        )
+        .pipe(
+            take(1)
+        )
+        .subscribe();
+
+
+        log(
+            "Primera confirmación enviada."
+        );
+
+
+        /*
+         * Registramos el plugin.
+         */
+
+        registerEvent(
+            adapter
+        )
+        .pipe(
+
+            take(1),
+
+            tap(() => {
+
+                /*
+                 * Segunda confirmación.
+                 */
+
+                handleConfirmEvent(
+                    adapter,
+                    {}
+                )
+                .pipe(
+                    take(1)
+                )
+                .subscribe();
+
+
+                /*
+                 * CONEXIÓN COMPLETADA
+                 */
+
+                connectedToHost = true;
+
+
+                connectionStatus.textContent =
+                    "✓ CONECTADO A cTRADER";
+
+
+                connectionStatus.classList.add(
+                    "connected"
+                );
+
+
+                buyButton.disabled =
+                    false;
+
+
+                sellButton.disabled =
+                    false;
+
+
+                resultText.textContent =
+                    "Conectado";
+
+
+                log(
+                    "Conexión con cTrader establecida."
+                );
+
+
+                /*
+                 * Ahora obtenemos la cuenta.
+                 */
+
+                loadAccountInformation();
+
+
+                /*
+                 * Y posteriormente los símbolos.
+                 */
+
+                loadSymbols();
+
+            }),
+
+            catchError(error => {
+
+                connectionError(
+                    error
+                );
+
+                return [];
+
+            })
+
+        )
+        .subscribe();
+
+    }
+
+    catch (error) {
+
+        connectionError(
+            error
+        );
+
+    }
+
+}
+
+
+/*
+====================================================================
+ INFORMACIÓN DE CUENTA
+====================================================================
+*/
+
+function loadAccountInformation() {
+
+    if (!connectedToHost) {
+
+        return;
+
+    }
+
+
+    log(
+        "Solicitando información de cuenta..."
+    );
+
+
+    getAccountInformation(
+        adapter,
+        {}
+    )
+    .pipe(
+
+        take(1),
+
+        tap(response => {
+
+            console.log(
+                "INFORMACIÓN DE CUENTA:",
+                response
+            );
+
+
+            /*
+             * Mostramos una pequeña información
+             * si está disponible.
+             */
+
+            const account =
+                response?.account;
+
+
+            if (account) {
+
+                /*
+                 * Dependiendo de la respuesta de cTrader,
+                 * pueden existir diferentes campos.
+                 */
+
+                const balance =
+                    account.balance;
+
+
+                if (
+                    balance !== undefined
+                ) {
+
+                    accountText.textContent =
+                        String(balance);
+
+                }
+                else {
+
+                    accountText.textContent =
+                        "Conectada";
+
+                }
+
+            }
+            else {
+
+                accountText.textContent =
+                    "Conectada";
+
+            }
+
+
+            resultText.textContent =
+                "Cuenta recibida";
+
+        }),
+
+        catchError(error => {
+
+            console.error(
+                "Error obteniendo cuenta:",
+                error
+            );
+
+            resultText.textContent =
+                "Conectado, pero sin datos de cuenta";
+
+            return [];
+
+        })
+
+    )
+    .subscribe();
+
+}
+
+
+/*
+====================================================================
+ LISTA DE SÍMBOLOS
+====================================================================
+*/
+
+function loadSymbols() {
+
+    if (!connectedToHost) {
+
+        return;
+
+    }
+
+
+    log(
+        "Solicitando símbolos..."
+    );
+
+
+    getLightSymbolList(
+        adapter,
+        {}
+    )
+    .pipe(
+
+        take(1),
+
+        tap(response => {
+
+            console.log(
+                "SÍMBOLOS DE cTRADER:",
+                response
+            );
+
+
+            /*
+             * De momento solamente mostramos
+             * que hemos recibido la información.
+             */
+
+            if (
+                response
+            ) {
+
+                symbolText.textContent =
+                    "Símbolos recibidos";
+
+            }
+
+            else {
+
+                symbolText.textContent =
+                    "—";
+
+            }
+
+        }),
+
+        catchError(error => {
+
+            console.error(
+                "Error obteniendo símbolos:",
+                error
+            );
+
+            symbolText.textContent =
+                "Error";
+
+            return [];
+
+        })
+
+    )
+    .subscribe();
+
+}
+
+
+/*
+====================================================================
+ RR
+====================================================================
+*/
+
+window.setRR = function(rr) {
+
+    selectedRR = rr;
+
+
+    const rr1 =
+        document.getElementById(
+            "rr1"
+        );
+
+
+    const rr2 =
+        document.getElementById(
+            "rr2"
+        );
+
+
+    rr1.classList.remove(
+        "active"
+    );
+
+
+    rr2.classList.remove(
+        "active"
+    );
+
+
+    if (rr === 1) {
+
+        rr1.classList.add(
+            "active"
+        );
+
+        document.getElementById(
+            "rrText"
+        ).textContent =
+            "1:1";
+
+    }
+
+
+    if (rr === 2) {
+
+        rr2.classList.add(
+            "active"
+        );
+
+        document.getElementById(
+            "rrText"
+        ).textContent =
+            "1:2";
+
+    }
+
+};
+
+
+/*
+====================================================================
+ DOBLE RIESGO
+====================================================================
+*/
+
+window.toggleDoubleRisk = function() {
+
+    doubleRisk =
+        !doubleRisk;
+
+
+    const button =
+        document.getElementById(
+            "doubleRisk"
+        );
+
+
+    if (doubleRisk) {
+
+        button.classList.add(
+            "active"
+        );
+
+        button.textContent =
+            "DOBLE RIESGO: ON";
+
+    }
+
+    else {
+
+        button.classList.remove(
+            "active"
+        );
+
+        button.textContent =
+            "DOBLE RIESGO: OFF";
+
+    }
+
+
+    updateRiskText();
+
+};
+
+
+/*
+====================================================================
+ RIESGO
+====================================================================
+*/
+
+function updateRiskText() {
+
+    const baseRisk =
+        Number(
+            document.getElementById(
+                "risk"
+            ).value
+        ) || 0;
+
+
+    const nextRisk =
+        doubleRisk
+            ? baseRisk * 2
+            : baseRisk;
+
+
+    document.getElementById(
+        "riskText"
+    ).textContent =
+        "$" + nextRisk;
+
+}
+
+
+document
+    .getElementById("risk")
+    .addEventListener(
+        "input",
+        updateRiskText
+    );
+
+
+/*
+====================================================================
+ COMPRA / VENTA
+====================================================================
+*/
+
+window.executeTrade = function(side) {
+
+    /*
+     * TODAVÍA NO SE ENVÍA NINGUNA ORDEN.
+     */
+
+    if (!connectedToHost) {
+
+        alert(
+            "El plugin todavía no está conectado a cTrader."
+        );
+
+        return;
+
+    }
+
+
+    const baseRisk =
+        Number(
+            document.getElementById(
+                "risk"
+            ).value
+        ) || 0;
+
+
+    const candleCount =
+        Number(
+            document.getElementById(
+                "candleCount"
+            ).value
+        ) || 1;
+
+
+    const timeframe =
+        document.getElementById(
+            "timeframe"
+        ).value;
+
+
+    const effectiveRisk =
+        doubleRisk
+            ? baseRisk * 2
+            : baseRisk;
+
+
+    console.log(
+        "OPERACIÓN:",
+        {
+            side,
+            effectiveRisk,
+            candleCount,
+            timeframe,
+            rr: selectedRR
+        }
+    );
+
+
+    resultText.textContent =
+        side +
+        " preparada";
+
+
+    /*
+     * AQUÍ irá posteriormente:
+     *
+     * 1. Obtener precio real.
+     * 2. Obtener N velas cerradas.
+     * 3. Calcular SL.
+     * 4. Calcular distancia SL.
+     * 5. Calcular volumen.
+     * 6. Enviar MARKET.
+     * 7. Obtener precio REAL de ejecución.
+     * 8. Calcular TP desde ese precio.
+     * 9. Aplicar SL/TP.
+     * 10. Apagar DOBLE RIESGO.
+     */
+
+};
+
+
+/*
+====================================================================
+ INICIO
+====================================================================
+*/
+
+connectToCTrader();
+
+</script>
+
+</body>
+</html>
