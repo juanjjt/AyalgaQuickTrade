@@ -1,72 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
-    <title>Ayalga Quick Trade</title>
+    <title>Ayalga Quick Trade v12</title>
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
 
         html,
         body {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
+            min-height: 100%;
             background: #111111;
-            color: white;
-            font-family: Arial, sans-serif;
+            color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         body {
-            padding: 20px;
+            padding: 16px;
         }
 
-        .box {
-            background: #222222;
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
         .title {
             font-size: 24px;
             font-weight: bold;
-        }
-
-        .version {
-            font-size: 12px;
-            color: #aaaaaa;
-            background: #333333;
-            padding: 6px 9px;
-            border-radius: 6px;
-        }
-
-        .status {
-            font-size: 20px;
-            font-weight: bold;
             margin-bottom: 20px;
         }
 
+        .version {
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .card {
+            background: #222222;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #999999;
+            margin-bottom: 6px;
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .waiting {
+            color: #ffb300;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
         .log {
-            background: #000000;
-            padding: 15px;
+            background: #080808;
             border-radius: 8px;
+            padding: 12px;
+            min-height: 180px;
+            max-height: 300px;
+            overflow-y: auto;
             font-family: monospace;
-            font-size: 13px;
+            font-size: 11px;
             white-space: pre-wrap;
             word-break: break-word;
         }
@@ -78,58 +100,471 @@
 
 <body>
 
-<div class="box">
+<div class="container">
 
-    <div class="header">
 
-        <div class="title">
-            AYALGA QUICK TRADE
+    <!-- ========================================================
+         TÍTULO
+         ======================================================== -->
+
+    <div class="title">
+
+        Ayalga Quick Trade
+        <span class="version">v12</span>
+
+    </div>
+
+
+    <!-- ========================================================
+         SÍMBOLO
+         ======================================================== -->
+
+    <div class="card">
+
+        <div class="label">
+            Símbolo recibido por cTrader
         </div>
 
-        <div class="version">
-            V0.10
+        <div
+            id="symbol"
+            class="value"
+        >
+            ---
         </div>
 
     </div>
 
 
-    <div id="status" class="status">
-        PRUEBA CARGANDO...
+    <!-- ========================================================
+         ESTADO
+         ======================================================== -->
+
+    <div class="card">
+
+        <div class="label">
+            Estado de conexión
+        </div>
+
+        <div
+            id="status"
+            class="value waiting"
+        >
+            Inicializando...
+        </div>
+
     </div>
 
 
-    <div id="log" class="log">
-        HTML EJECUTADO
+    <!-- ========================================================
+         REGISTRO
+         ======================================================== -->
+
+    <div class="card">
+
+        <div class="label">
+            Registro
+        </div>
+
+        <div
+            id="log"
+            class="log"
+        ></div>
+
     </div>
+
 
 </div>
 
 
-<script>
-
-    const VERSION = "V0.10";
+<script type="module">
 
 
-    document.getElementById("status").textContent =
-        "JAVASCRIPT FUNCIONANDO";
+    // ============================================================
+    // IMPORTACIONES OFICIALES CTRADER
+    // ============================================================
+
+    import {
+
+        createClientAdapter,
+
+        handleConfirmEvent,
+
+        registerEvent
+
+    } from "https://esm.sh/@spotware-web-team/sdk";
 
 
-    document.getElementById("log").textContent =
-        VERSION + "\n" +
-        "1. El HTML se ha cargado correctamente.\n" +
-        "2. JavaScript se está ejecutando.\n" +
-        "3. Hora: " +
-        new Date().toLocaleTimeString() +
-        "\n" +
-        "4. URL: " +
-        window.location.href;
+    // ============================================================
+    // RXJS
+    // ============================================================
+
+    import {
+
+        take,
+
+        tap,
+
+        catchError
+
+    } from "https://esm.sh/rxjs";
 
 
-    console.log(
-        "AYALGA " +
-        VERSION +
-        ": JAVASCRIPT FUNCIONANDO"
+    // ============================================================
+    // LOGGER
+    // ============================================================
+
+    import {
+
+        createLogger
+
+    } from "https://esm.sh/@veksa/logger";
+
+
+    // ============================================================
+    // ELEMENTOS
+    // ============================================================
+
+    const symbolElement =
+        document.getElementById("symbol");
+
+    const statusElement =
+        document.getElementById("status");
+
+    const logElement =
+        document.getElementById("log");
+
+
+    // ============================================================
+    // FUNCIÓN LOG
+    // ============================================================
+
+    function log(message) {
+
+        const time =
+            new Date().toLocaleTimeString();
+
+        logElement.textContent +=
+            "[" +
+            time +
+            "] " +
+            message +
+            "\n";
+
+        logElement.scrollTop =
+            logElement.scrollHeight;
+
+        console.log(message);
+
+    }
+
+
+    // ============================================================
+    // CAMBIAR ESTADO
+    // ============================================================
+
+    function setStatus(
+        message,
+        type
+    ) {
+
+        statusElement.textContent =
+            message;
+
+        statusElement.className =
+            "value " +
+            type;
+
+    }
+
+
+    // ============================================================
+    // LEER PARÁMETROS DE CTRADER
+    // ============================================================
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const symbol =
+        params.get("symbol");
+
+
+    if (symbol) {
+
+        symbolElement.textContent =
+            symbol.toUpperCase();
+
+        log(
+            "Símbolo recibido: " +
+            symbol.toUpperCase()
+        );
+
+    } else {
+
+        symbolElement.textContent =
+            "NO RECIBIDO";
+
+        log(
+            "No se recibió symbol en la URL."
+        );
+
+    }
+
+
+    // ============================================================
+    // LOGGER CTRADER
+    // ============================================================
+
+    const logger =
+        createLogger(
+            location.href.includes("showLogs")
+        );
+
+
+    // ============================================================
+    // ADAPTER
+    // ============================================================
+
+    let adapter = null;
+
+
+    // ============================================================
+    // INICIALIZACIÓN
+    // ============================================================
+
+    function initialize() {
+
+        try {
+
+            log(
+                "1. Creando Client Adapter..."
+            );
+
+
+            // ----------------------------------------------------
+            // CREAR ADAPTER
+            // ----------------------------------------------------
+
+            adapter =
+                createClientAdapter({
+                    logger
+                });
+
+
+            log(
+                "2. Client Adapter creado."
+            );
+
+
+            setStatus(
+                "Conectando...",
+                "waiting"
+            );
+
+
+            // ----------------------------------------------------
+            // CONFIRMACIÓN
+            // ----------------------------------------------------
+
+            log(
+                "3. Esperando confirmación de cTrader..."
+            );
+
+
+            handleConfirmEvent(
+                adapter,
+                {}
+            )
+            .pipe(
+                take(1)
+            )
+            .subscribe({
+
+                next: () => {
+
+                    log(
+                        "4. Confirmación recibida."
+                    );
+
+                },
+
+                error: error => {
+
+                    log(
+                        "ERROR en confirmación: " +
+                        safeStringify(error)
+                    );
+
+                }
+
+            });
+
+
+            // ----------------------------------------------------
+            // REGISTRO DEL PLUGIN
+            // ----------------------------------------------------
+
+            log(
+                "5. Registrando plugin..."
+            );
+
+
+            registerEvent(
+                adapter
+            )
+            .pipe(
+
+                take(1),
+
+                tap(() => {
+
+                    log(
+                        "6. REGISTER CORRECTO."
+                    );
+
+
+                    setStatus(
+                        "CONECTADO",
+                        "success"
+                    );
+
+
+                    // ------------------------------------------------
+                    // SEGUNDO HANDSHAKE
+                    // ------------------------------------------------
+
+                    handleConfirmEvent(
+                        adapter,
+                        {}
+                    )
+                    .pipe(
+                        take(1)
+                    )
+                    .subscribe({
+
+                        next: () => {
+
+                            log(
+                                "7. Handshake completado."
+                            );
+
+                        },
+
+                        error: error => {
+
+                            log(
+                                "ERROR segundo handshake: " +
+                                safeStringify(error)
+                            );
+
+                        }
+
+                    );
+
+                }),
+
+                catchError(error => {
+
+                    log(
+                        "ERROR REGISTER: " +
+                        safeStringify(error)
+                    );
+
+
+                    setStatus(
+                        "ERROR DE CONEXIÓN",
+                        "error"
+                    );
+
+
+                    return [];
+
+                })
+
+            )
+            .subscribe({
+
+                error: error => {
+
+                    log(
+                        "ERROR final: " +
+                        safeStringify(error)
+                    );
+
+
+                    setStatus(
+                        "ERROR DE CONEXIÓN",
+                        "error"
+                    );
+
+                }
+
+            });
+
+        }
+
+        catch (error) {
+
+            log(
+                "ERROR GENERAL: " +
+                safeStringify(error)
+            );
+
+
+            setStatus(
+                "ERROR DE CONEXIÓN",
+                "error"
+            );
+
+        }
+
+    }
+
+
+    // ============================================================
+    // CONVERTIR ERRORES A TEXTO
+    // ============================================================
+
+    function safeStringify(value) {
+
+        try {
+
+            if (
+                value instanceof Error
+            ) {
+
+                return value.message;
+
+            }
+
+            return JSON.stringify(
+                value
+            );
+
+        }
+
+        catch (e) {
+
+            return String(value);
+
+        }
+
+    }
+
+
+    // ============================================================
+    // ARRANCAR
+    // ============================================================
+
+    log(
+        "Ayalga Quick Trade v12 iniciando..."
     );
+
+
+    initialize();
+
 
 </script>
 
