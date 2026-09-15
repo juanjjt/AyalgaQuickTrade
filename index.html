@@ -4,297 +4,297 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Ayalga Quick Trade v25</title>
+<title>Ayalga Quick Trade v26</title>
 
 <style>
-    * {
-        box-sizing: border-box;
-    }
+* {
+    box-sizing: border-box;
+}
 
-    body {
-        margin: 0;
-        padding: 14px;
-        background: #111;
-        color: #fff;
-        font-family: Arial, Helvetica, sans-serif;
-    }
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #111;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
 
-    .container {
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-    }
+body {
+    padding: 14px;
+}
 
-    h1 {
-        margin: 0 0 4px 0;
-        text-align: center;
-        font-size: 24px;
-    }
+.container {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+}
 
-    .version {
-        text-align: center;
-        color: #888;
-        font-size: 12px;
-        margin-bottom: 14px;
-    }
+.header {
+    text-align: center;
+    margin-bottom: 14px;
+}
 
-    .section {
-        background: #181818;
-        border: 1px solid #292929;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 12px;
-    }
+.title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
 
-    .section-title {
-        font-size: 13px;
-        font-weight: bold;
-        color: #aaa;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-    }
+.version {
+    font-size: 12px;
+    opacity: .55;
+}
 
-    .status {
-        padding: 10px;
-        border-radius: 8px;
-        text-align: center;
-        background: #202020;
-        color: #aaa;
-        font-size: 13px;
-        margin-bottom: 12px;
-        border: 1px solid #303030;
-    }
+.status {
+    margin-top: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: #1b1b1b;
+    border: 1px solid #303030;
+    text-align: center;
+    font-size: 12px;
+}
 
-    .row {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
+.status.connected {
+    border-color: #245b32;
+}
 
-    .field {
-        flex: 1;
-    }
+.status.error {
+    border-color: #7a2525;
+}
 
-    label {
-        display: block;
-        font-size: 11px;
-        color: #888;
-        margin-bottom: 5px;
-    }
+.card {
+    background: #181818;
+    border: 1px solid #303030;
+    border-radius: 12px;
+    padding: 13px;
+    margin-bottom: 12px;
+}
 
-    input,
-    select {
-        width: 100%;
-        background: #101010;
-        color: #fff;
-        border: 1px solid #383838;
-        border-radius: 7px;
-        padding: 10px;
-        font-size: 15px;
-        outline: none;
-    }
+.section-title {
+    font-size: 12px;
+    font-weight: 700;
+    opacity: .65;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 10px;
+}
 
-    input:focus,
-    select:focus {
-        border-color: #777;
-    }
+.symbol {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+}
 
-    button {
-        width: 100%;
-        border: 0;
-        border-radius: 9px;
-        padding: 13px 10px;
-        font-size: 15px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.15s;
-    }
+.price {
+    text-align: center;
+    font-size: 13px;
+    opacity: .65;
+    margin-top: 4px;
+}
 
-    button:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-    }
+label {
+    display: block;
+    font-size: 12px;
+    opacity: .7;
+    margin-bottom: 5px;
+}
 
-    .buy {
-        background: #087f23;
-        color: #fff;
-    }
+input,
+select {
+    width: 100%;
+    height: 43px;
+    border-radius: 8px;
+    border: 1px solid #3a3a3a;
+    background: #101010;
+    color: #fff;
+    padding: 0 11px;
+    font-size: 15px;
+    outline: none;
+}
 
-    .sell {
-        background: #a31313;
-        color: #fff;
-    }
+input:focus,
+select:focus {
+    border-color: #777;
+}
 
-    .close {
-        background: #c46a00;
-        color: #fff;
-    }
+.grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
-    .double-risk {
-        background: #292929;
-        color: #aaa;
-        border: 1px solid #444;
-    }
+button {
+    width: 100%;
+    min-height: 52px;
+    border: 0;
+    border-radius: 9px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .08s ease, opacity .15s ease;
+}
 
-    .double-risk.active {
-        background: #7a4d00;
-        color: #fff;
-        border-color: #d58a00;
-    }
+button:active {
+    transform: scale(.98);
+}
 
-    .rr-row {
-        display: flex;
-        gap: 8px;
-    }
+button:disabled {
+    opacity: .38;
+    cursor: default;
+}
 
-    .rr-button {
-        flex: 1;
-        background: #252525;
-        color: #aaa;
-        border: 1px solid #3a3a3a;
-    }
+.buy {
+    background: #16843a;
+}
 
-    .rr-button.active {
-        background: #444;
-        color: #fff;
-        border-color: #888;
-    }
+.buy.confirm {
+    background: #0fba4d;
+}
 
-    .trade-row {
-        display: flex;
-        gap: 10px;
-    }
+.sell {
+    background: #b32121;
+}
 
-    .trade-row button {
-        flex: 1;
-        min-height: 58px;
-        font-size: 17px;
-    }
+.sell.confirm {
+    background: #e03b3b;
+}
 
-    .lights {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 8px;
-        align-items: center;
-    }
+.close {
+    background: #555;
+}
 
-    .light-box {
-        background: #141414;
-        border: 1px solid #2d2d2d;
-        border-radius: 9px;
-        padding: 10px 5px;
-        text-align: center;
-    }
+.close.confirm {
+    background: #d28b00;
+}
 
-    .lamp {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: #333;
-        margin: 0 auto 6px auto;
-        box-shadow: inset 0 0 5px #000;
-        transition: 0.2s;
-    }
+.rr-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
-    .lamp.on {
-        box-shadow:
-            0 0 6px currentColor,
-            0 0 14px currentColor;
-    }
+.rr {
+    background: #252525;
+    border: 1px solid #444;
+    min-height: 45px;
+}
 
-    .lamp.operation {
-        color: #ffd000;
-    }
+.rr.active {
+    background: #17639b;
+    border-color: #3f9fe2;
+}
 
-    .lamp.sl {
-        color: #00d66b;
-    }
+.double-risk {
+    background: #252525;
+    border: 1px solid #444;
+    min-height: 45px;
+}
 
-    .lamp.tp {
-        color: #00aaff;
-    }
+.double-risk.active {
+    background: #8c5b00;
+    border-color: #d69a25;
+}
 
-    .lamp.on.operation {
-        background: #ffd000;
-    }
+.execute-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
-    .lamp.on.sl {
-        background: #00d66b;
-    }
+.lights {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
 
-    .lamp.on.tp {
-        background: #00aaff;
-    }
+.light-box {
+    background: #111;
+    border: 1px solid #303030;
+    border-radius: 8px;
+    padding: 9px 5px;
+    text-align: center;
+}
 
-    .light-label {
-        font-size: 10px;
-        color: #999;
-    }
+.light {
+    width: 15px;
+    height: 15px;
+    margin: 0 auto 6px auto;
+    border-radius: 50%;
+    background: #252525;
+    border: 1px solid #444;
+    box-shadow: 0 0 0 transparent;
+}
 
-    .info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 7px;
-    }
+.light.on {
+    background: #18d85c;
+    border-color: #7cff9e;
+    box-shadow: 0 0 10px rgba(24,216,92,.7);
+}
 
-    .info {
-        background: #111;
-        border: 1px solid #292929;
-        border-radius: 7px;
-        padding: 8px;
-        min-height: 48px;
-    }
+.light-text {
+    font-size: 10px;
+    opacity: .7;
+}
 
-    .info-name {
-        font-size: 10px;
-        color: #777;
-        margin-bottom: 3px;
-    }
+.trade-info {
+    font-size: 12px;
+    line-height: 1.65;
+}
 
-    .info-value {
-        font-size: 13px;
-        color: #fff;
-        word-break: break-word;
-    }
+.trade-info strong {
+    color: #fff;
+}
 
-    .log {
-        background: #0b0b0b;
-        border: 1px solid #292929;
-        border-radius: 8px;
-        padding: 9px;
-        height: 180px;
-        overflow-y: auto;
-        font-family: monospace;
-        font-size: 10px;
-        line-height: 1.45;
-        white-space: pre-wrap;
-    }
+.log {
+    max-height: 190px;
+    overflow-y: auto;
+    background: #0b0b0b;
+    border-radius: 8px;
+    border: 1px solid #272727;
+    padding: 9px;
+    font-family: monospace;
+    font-size: 10px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
 
-    .log-line {
-        margin-bottom: 3px;
-    }
+.log-line {
+    margin-bottom: 4px;
+}
 
-    .ok {
-        color: #5be37b;
-    }
+.log-ok {
+    color: #61d889;
+}
 
-    .warning {
-        color: #ffcc55;
-    }
+.log-error {
+    color: #ff6e6e;
+}
 
-    .error {
-        color: #ff6868;
-    }
+.log-warn {
+    color: #e7bd58;
+}
 
-    .normal {
-        color: #bbb;
-    }
+.log-info {
+    color: #8db9e8;
+}
 
-    .small-note {
-        color: #777;
-        font-size: 10px;
-        margin-top: 5px;
-    }
+.small {
+    font-size: 10px;
+    opacity: .5;
+    line-height: 1.4;
+}
+
+.separator {
+    height: 1px;
+    background: #292929;
+    margin: 12px 0;
+}
 </style>
 </head>
 
@@ -302,296 +302,206 @@
 
 <div class="container">
 
-    <h1>Ayalga Quick Trade</h1>
-    <div class="version">v25</div>
+    <div class="header">
+        <div class="title">Ayalga Quick Trade</div>
+        <div class="version">V26</div>
 
-    <div id="status" class="status">
-        Conectando con cTrader...
+        <div id="connectionStatus" class="status">
+            Conectando con cTrader...
+        </div>
     </div>
 
-    <!-- CONFIGURACIÓN -->
-    <div class="section">
+    <div class="card">
 
-        <div class="section-title">
-            Configuración de operación
+        <div class="section-title">Mercado</div>
+
+        <div id="symbolName" class="symbol">
+            ---
         </div>
 
-        <div class="row">
-
-            <div class="field">
-                <label for="candleCount">
-                    VELAS PARA SL
-                </label>
-
-                <input
-                    id="candleCount"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value="10"
-                    inputmode="numeric"
-                >
-            </div>
-
-            <div class="field">
-                <label for="timeframe">
-                    TIMEFRAME SL
-                </label>
-
-                <select id="timeframe">
-                    <option value="1">M1</option>
-                    <option value="2">M2</option>
-                    <option value="3">M3</option>
-                    <option value="4">M4</option>
-                    <option value="5">M5</option>
-                    <option value="6">M10</option>
-                    <option value="7">M15</option>
-                    <option value="8">M30</option>
-                    <option value="9">H1</option>
-                    <option value="10">H4</option>
-                    <option value="11">H12</option>
-                    <option value="12">D1</option>
-                    <option value="13">W1</option>
-                    <option value="14">MN1</option>
-                </select>
-            </div>
-
+        <div id="marketPrice" class="price">
+            Esperando cotización de cTrader...
         </div>
 
-        <div class="row">
+    </div>
 
-            <div class="field">
-                <label for="riskInput">
-                    RIESGO POR OPERACIÓN
-                </label>
+    <div class="card">
 
-                <input
-                    id="riskInput"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value="100"
-                    inputmode="decimal"
-                    autocomplete="off"
-                >
+        <div class="section-title">Gestión de riesgo</div>
 
-                <div id="riskCurrencyNote" class="small-note">
-                    En la divisa de depósito de la cuenta
-                </div>
-            </div>
+        <label for="riskMoney">
+            Riesgo monetario
+        </label>
 
-            <div class="field">
-                <label>
-                    RIESGO EFECTIVO
-                </label>
+        <input
+            id="riskMoney"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.01"
+            placeholder="Introduce el riesgo"
+        >
 
-                <input
-                    id="effectiveRiskDisplay"
-                    type="text"
-                    value="100"
-                    readonly
-                >
-            </div>
+        <div style="height:10px;"></div>
 
-        </div>
+        <label for="candleCount">
+            Número de velas cerradas para SL
+        </label>
 
-        <button id="doubleRiskButton" class="double-risk">
-            DOBLE RIESGO: OFF
-        </button>
+        <input
+            id="candleCount"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            step="1"
+            value="10"
+        >
 
-        <div style="height:10px"></div>
+        <div style="height:10px;"></div>
 
-        <div class="section-title">
-            Ratio Riesgo / Beneficio
-        </div>
+        <label for="slTimeframe">
+            Timeframe para calcular SL
+        </label>
+
+        <select id="slTimeframe">
+            <option value="1">M1</option>
+            <option value="2">M2</option>
+            <option value="3">M3</option>
+            <option value="4">M4</option>
+            <option value="5">M5</option>
+            <option value="6">M10</option>
+            <option value="7">M15</option>
+            <option value="8">M30</option>
+            <option value="9">H1</option>
+            <option value="10">H4</option>
+            <option value="11">H12</option>
+            <option value="12">D1</option>
+            <option value="13">W1</option>
+            <option value="14">MN1</option>
+        </select>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">Ratio riesgo / beneficio</div>
 
         <div class="rr-row">
 
-            <button id="rr1" class="rr-button active">
+            <button
+                id="rr1"
+                class="rr active"
+                type="button">
                 RR 1:1
             </button>
 
-            <button id="rr2" class="rr-button">
+            <button
+                id="rr2"
+                class="rr"
+                type="button">
                 RR 1:2
             </button>
 
         </div>
 
-    </div>
+        <div style="height:10px;"></div>
 
-    <!-- LUCES -->
-    <div class="section">
+        <button
+            id="doubleRisk"
+            class="double-risk"
+            type="button">
+            DOBLE RIESGO: OFF
+        </button>
 
-        <div class="section-title">
-            Estado de operación
-        </div>
+        <div style="height:7px;"></div>
 
-        <div class="lights">
-
-            <div class="light-box">
-
-                <div
-                    id="slLight"
-                    class="lamp sl"
-                ></div>
-
-                <div class="light-label">
-                    SL CONFIRMADO
-                </div>
-
-            </div>
-
-            <div class="light-box">
-
-                <div
-                    id="operationLight"
-                    class="lamp operation"
-                ></div>
-
-                <div class="light-label">
-                    OPERACIÓN
-                </div>
-
-            </div>
-
-            <div class="light-box">
-
-                <div
-                    id="tpLight"
-                    class="lamp tp"
-                ></div>
-
-                <div class="light-label">
-                    TP CONFIRMADO
-                </div>
-
-            </div>
-
+        <div class="small">
+            DOBLE RIESGO se aplica únicamente a la próxima operación ejecutada.
+            Si no se ejecuta, permanece disponible. Al cerrar/reabrir el plugin
+            vuelve automáticamente a OFF.
         </div>
 
     </div>
 
-    <!-- COMPRA / VENTA -->
-    <div class="section">
+    <div class="card">
 
-        <div class="section-title">
-            Ejecución a mercado
-        </div>
+        <div class="section-title">Entrada a mercado</div>
 
-        <div class="trade-row">
+        <div class="execute-row">
 
             <button
                 id="buyButton"
                 class="buy"
-                disabled
-            >
+                type="button">
                 COMPRA
             </button>
 
             <button
                 id="sellButton"
                 class="sell"
-                disabled
-            >
+                type="button">
                 VENTA
             </button>
 
         </div>
 
-    </div>
-
-    <!-- CERRAR -->
-    <div class="section">
+        <div style="height:10px;"></div>
 
         <button
-            id="closePositionButton"
+            id="closeButton"
             class="close"
-            disabled
-        >
+            type="button"
+            disabled>
             CERRAR POSICIÓN
         </button>
 
-    </div>
+        <div style="height:8px;"></div>
 
-    <!-- INFORMACIÓN -->
-    <div class="section">
-
-        <div class="section-title">
-            Información
+        <div class="small">
+            COMPRA, VENTA y CERRAR POSICIÓN requieren dos pulsaciones
+            consecutivas para confirmar.
         </div>
 
-        <div class="info-grid">
+    </div>
 
-            <div class="info">
-                <div class="info-name">SÍMBOLO</div>
-                <div id="symbolDisplay" class="info-value">---</div>
+    <div class="card">
+
+        <div class="section-title">Estado de protección</div>
+
+        <div class="lights">
+
+            <div class="light-box">
+                <div id="operationLight" class="light"></div>
+                <div class="light-text">OPERACIÓN</div>
             </div>
 
-            <div class="info">
-                <div class="info-name">RR</div>
-                <div id="rrDisplay" class="info-value">1:1</div>
+            <div class="light-box">
+                <div id="slLight" class="light"></div>
+                <div class="light-text">SL CONFIRMADO</div>
             </div>
 
-            <div class="info">
-                <div class="info-name">BID cTrader</div>
-                <div id="bidDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">ASK cTrader</div>
-                <div id="askDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">MIN VOLUMEN</div>
-                <div id="minVolumeDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">VOLUMEN ORDEN</div>
-                <div id="orderVolumeDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">RIESGO OBJETIVO</div>
-                <div id="targetRiskDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">RIESGO CALCULADO</div>
-                <div id="actualRiskDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">SL</div>
-                <div id="slDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">TP</div>
-                <div id="tpDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">POSICIÓN</div>
-                <div id="positionDisplay" class="info-value">---</div>
-            </div>
-
-            <div class="info">
-                <div class="info-name">ENTRADA REAL</div>
-                <div id="entryDisplay" class="info-value">---</div>
+            <div class="light-box">
+                <div id="tpLight" class="light"></div>
+                <div class="light-text">TP CONFIRMADO</div>
             </div>
 
         </div>
 
     </div>
 
-    <!-- LOG -->
-    <div class="section">
+    <div class="card">
 
-        <div class="section-title">
-            Registro
+        <div class="section-title">Operación actual</div>
+
+        <div id="tradeInfo" class="trade-info">
+            Sin operación conocida.
         </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">Registro</div>
 
         <div id="log" class="log"></div>
 
@@ -602,9 +512,9 @@
 
 <script type="module">
 
-import {
-    createClientAdapter
-} from "https://esm.sh/@spotware-web-team/sdk-external-api";
+/* ============================================================
+   AYALGA QUICK TRADE V26
+   ============================================================ */
 
 import {
     handleConfirmEvent,
@@ -616,53 +526,75 @@ import {
     executionEvent,
     createNewOrder,
     modifyOrderProtection,
-    closePosition,
     getTrendbarList,
+    closePosition,
     getAccountInformation,
     getAccountGroupInformation,
     ServerInterfaces
-} from "https://esm.sh/@spotware-web-team/sdk";
+}
+from "https://esm.sh/@spotware-web-team/sdk";
+
+import {
+    createClientAdapter
+}
+from "https://esm.sh/@spotware-web-team/sdk-external-api";
 
 import {
     take,
     tap,
     catchError
-} from "https://esm.sh/rxjs";
+}
+from "https://esm.sh/rxjs";
 
 import {
     createLogger
-} from "https://esm.sh/@veksa/logger";
+}
+from "https://esm.sh/@veksa/logger";
 
 
-/* =========================================================
-   ELEMENTOS
-========================================================= */
+/* ============================================================
+   LOGGER / ADAPTER
+   ============================================================ */
 
-const status = document.getElementById("status");
+const logger = createLogger(
+    location.href.includes("showLogs")
+);
 
-const candleCountInput =
+const adapter = createClientAdapter({
+    logger
+});
+
+
+/* ============================================================
+   DOM
+   ============================================================ */
+
+const connectionStatus =
+    document.getElementById("connectionStatus");
+
+const symbolNameElement =
+    document.getElementById("symbolName");
+
+const marketPriceElement =
+    document.getElementById("marketPrice");
+
+const riskMoneyElement =
+    document.getElementById("riskMoney");
+
+const candleCountElement =
     document.getElementById("candleCount");
 
-const timeframeInput =
-    document.getElementById("timeframe");
+const slTimeframeElement =
+    document.getElementById("slTimeframe");
 
-const riskInput =
-    document.getElementById("riskInput");
-
-const effectiveRiskDisplay =
-    document.getElementById("effectiveRiskDisplay");
-
-const riskCurrencyNote =
-    document.getElementById("riskCurrencyNote");
-
-const doubleRiskButton =
-    document.getElementById("doubleRiskButton");
-
-const rr1 =
+const rr1Button =
     document.getElementById("rr1");
 
-const rr2 =
+const rr2Button =
     document.getElementById("rr2");
+
+const doubleRiskButton =
+    document.getElementById("doubleRisk");
 
 const buyButton =
     document.getElementById("buyButton");
@@ -670,47 +602,8 @@ const buyButton =
 const sellButton =
     document.getElementById("sellButton");
 
-const closePositionButton =
-    document.getElementById("closePositionButton");
-
-const symbolDisplay =
-    document.getElementById("symbolDisplay");
-
-const rrDisplay =
-    document.getElementById("rrDisplay");
-
-const bidDisplay =
-    document.getElementById("bidDisplay");
-
-const askDisplay =
-    document.getElementById("askDisplay");
-
-const minVolumeDisplay =
-    document.getElementById("minVolumeDisplay");
-
-const orderVolumeDisplay =
-    document.getElementById("orderVolumeDisplay");
-
-const targetRiskDisplay =
-    document.getElementById("targetRiskDisplay");
-
-const actualRiskDisplay =
-    document.getElementById("actualRiskDisplay");
-
-const slDisplay =
-    document.getElementById("slDisplay");
-
-const tpDisplay =
-    document.getElementById("tpDisplay");
-
-const positionDisplay =
-    document.getElementById("positionDisplay");
-
-const entryDisplay =
-    document.getElementById("entryDisplay");
-
-const logElement =
-    document.getElementById("log");
+const closeButton =
+    document.getElementById("closeButton");
 
 const operationLight =
     document.getElementById("operationLight");
@@ -721,180 +614,121 @@ const slLight =
 const tpLight =
     document.getElementById("tpLight");
 
+const tradeInfo =
+    document.getElementById("tradeInfo");
 
-/* =========================================================
-   ESTADO PRINCIPAL
-========================================================= */
+const logElement =
+    document.getElementById("log");
 
-let adapter = null;
+
+/* ============================================================
+   ESTADO GENERAL
+   ============================================================ */
 
 let connected = false;
 
-let symbolId = null;
-
-let symbolName = "";
-
+let currentSymbolName = "";
+let currentSymbolId = null;
 let symbolInfo = null;
 
-let allSymbols = [];
+let lastBid = null;
+let lastAsk = null;
+
+let accountInfo = null;
+let accountGroupInfo = null;
+
+let depositCurrency = null;
+
+
+/* ============================================================
+   RR
+   ============================================================ */
 
 let selectedRR = 1;
 
 
-/* =========================================================
-   QUOTES
-========================================================= */
-
-let lastValidBid = null;
-
-let lastValidAsk = null;
-
-const quoteCache = new Map();
-
-const quoteWaiters = new Map();
-
-const subscribedQuoteSymbols = new Set();
-
-
-/* =========================================================
-   CUENTA
-========================================================= */
-
-let accountInfo = null;
-
-let accountGroupInfo = null;
-
-let depositCurrency = "";
-
-let depositAssetId = null;
-
-
-/* =========================================================
-   OPERACIÓN
-========================================================= */
-
-let pendingTrade = null;
-
-let activeTrade = null;
-
-let protectionSent = false;
-
-let protectionRequestActive = false;
-
-let protectionRetryCount = 0;
-
-const protectionRetryDelays = [
-    300,
-    500,
-    700,
-    1000,
-    1500
-];
-
-let lastPositionId = null;
-
-let lastPositionVolume = null;
-
-let closePositionRequest = false;
-
-let closeReason = "";
-
-let closeRetryCount = 0;
-
-const closeRetryDelays = [
-    300,
-    700,
-    1200
-];
-
-
-/* =========================================================
-   CONFIRMACIONES DOBLE TOQUE
-========================================================= */
-
-let tradeConfirmSide = null;
-
-let tradeConfirmTimer = null;
-
-const TRADE_CONFIRM_TIMEOUT = 1500;
-
-let closeConfirmTimer = null;
-
-const CLOSE_CONFIRM_TIMEOUT = 1500;
-
-
-/* =========================================================
+/* ============================================================
    DOBLE RIESGO
+   ============================================================ */
+
+/*
    IMPORTANTE:
-   NO SE GUARDA EN localStorage.
-   AL CERRAR/RECARGAR EL PLUGIN DESAPARECE.
-========================================================= */
+
+   Esta variable NO se guarda en localStorage.
+
+   Por tanto:
+
+   - si el usuario activa DOBLE RIESGO -> queda armado
+   - si una operación se rechaza -> NO se consume
+   - si una operación se ejecuta -> se consume
+   - si el plugin se cierra -> desaparece
+   - si el plugin se vuelve a abrir -> OFF
+*/
 
 let doubleRiskArmed = false;
 
 
-/* =========================================================
-   FASES
-========================================================= */
+/* ============================================================
+   DOBLE CLICK / CONFIRMACIONES
+   ============================================================ */
 
-const PHASE = {
-    IDLE: "IDLE",
-    CONFIRM_BUY: "CONFIRM_BUY",
-    CONFIRM_SELL: "CONFIRM_SELL",
-    ENTRY_PENDING: "ENTRY_PENDING",
-    PROTECTION_PENDING: "PROTECTION_PENDING",
-    OPEN: "OPEN",
-    CLOSING: "CLOSING"
-};
+const CONFIRM_TIMEOUT = 2500;
 
-let tradePhase = PHASE.IDLE;
+let buyConfirmTimer = null;
+let sellConfirmTimer = null;
+let closeConfirmTimer = null;
+
+let buyConfirmPending = false;
+let sellConfirmPending = false;
+let closeConfirmPending = false;
 
 
-/* =========================================================
-   UTILIDADES
-========================================================= */
+/* ============================================================
+   OPERACIONES
+   ============================================================ */
 
-function getField(obj, ...names) {
+/*
+   No utilizamos un único bloqueo global.
 
-    if (!obj) {
-        return undefined;
-    }
+   Esto permite:
 
-    for (const name of names) {
+   - otra COMPRA
+   - otra VENTA
+   - operar aunque exista una posición
+   - mantener una posición mientras se prepara otra
+*/
 
-        if (
-            Object.prototype.hasOwnProperty.call(
-                obj,
-                name
-            )
-        ) {
-            return obj[name];
-        }
-    }
+const pendingTrades = new Map();
 
-    return undefined;
-}
+/*
+   positionId -> información de operación
+*/
+const activeTrades = new Map();
 
 
-function getPayload(response) {
-
-    if (!response) {
-        return null;
-    }
-
-    return response.payload ??
-           response.Payload ??
-           response;
-}
+/*
+   orderId -> información temporal
+*/
+const orderToTrade = new Map();
 
 
-function log(message, type = "normal") {
+/*
+   positionId -> orderId
+*/
+const positionToOrder = new Map();
+
+
+/* ============================================================
+   FUNCIONES DE LOG
+   ============================================================ */
+
+function log(message, type = "info") {
 
     const line =
         document.createElement("div");
 
     line.className =
-        "log-line " + type;
+        "log-line log-" + type;
 
     const time =
         new Date().toLocaleTimeString();
@@ -904,7 +738,7 @@ function log(message, type = "normal") {
 
     logElement.appendChild(line);
 
-    while (logElement.children.length > 250) {
+    while (logElement.children.length > 120) {
         logElement.removeChild(
             logElement.firstChild
         );
@@ -913,194 +747,1517 @@ function log(message, type = "normal") {
     logElement.scrollTop =
         logElement.scrollHeight;
 
-    console.log(message);
+    console.log(
+        `[Ayalga V26] ${message}`
+    );
 }
 
 
-function setStatus(message, type = "normal") {
+/* ============================================================
+   CONEXIÓN
+   ============================================================ */
 
-    status.textContent = message;
+function setConnected(value) {
 
-    status.className =
-        "status " + type;
+    connected = value;
+
+    if (value) {
+
+        connectionStatus.textContent =
+            "CONECTADO A CTRAder";
+
+        connectionStatus.className =
+            "status connected";
+
+    } else {
+
+        connectionStatus.textContent =
+            "DESCONECTADO";
+
+        connectionStatus.className =
+            "status error";
+    }
 }
 
 
-function formatPrice(value) {
+/* ============================================================
+   HELPERS PROTO
+   ============================================================ */
 
-    if (
-        value === null ||
-        value === undefined ||
-        !Number.isFinite(Number(value))
-    ) {
-        return "---";
+function getField(object, ...names) {
+
+    if (!object)
+        return undefined;
+
+    for (const name of names) {
+
+        if (
+            object[name] !== undefined &&
+            object[name] !== null
+        ) {
+            return object[name];
+        }
     }
 
-    const digits =
-        Number(
-            getField(
-                symbolInfo,
-                "digits",
-                "Digits"
-            )
-        ) || 5;
-
-    return Number(value).toFixed(digits);
+    return undefined;
 }
 
 
-function formatMoney(value) {
+function numberField(object, ...names) {
 
-    if (
-        value === null ||
-        value === undefined ||
-        !Number.isFinite(Number(value))
-    ) {
-        return "---";
-    }
+    const value =
+        getField(object, ...names);
 
-    const currency =
-        depositCurrency || "";
+    const number =
+        Number(value);
 
-    return Number(value).toFixed(2) +
-        (currency ? ` ${currency}` : "");
-}
-
-
-function parseNumber(value) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-        return null;
-    }
-
-    const text =
-        String(value)
-            .trim()
-            .replace(",", ".");
-
-    const n =
-        Number(text);
-
-    return Number.isFinite(n)
-        ? n
+    return Number.isFinite(number)
+        ? number
         : null;
 }
 
 
-function clearTimer(timer) {
+function extractPayload(response) {
 
-    if (timer !== null) {
-        clearTimeout(timer);
+    if (!response)
+        return null;
+
+    return response.payload ||
+           response.Payload ||
+           response;
+}
+
+
+/* ============================================================
+   HANDSHAKE
+   ============================================================ */
+
+handleConfirmEvent(
+    adapter,
+    {}
+)
+.pipe(
+    take(1)
+)
+.subscribe({
+
+    next: () => {
+
+        log(
+            "Handshake confirmado.",
+            "ok"
+        );
+
+    },
+
+    error: error => {
+
+        log(
+            "Error en handshake: " +
+            JSON.stringify(error),
+            "error"
+        );
+
+    }
+
+});
+
+
+registerEvent(adapter)
+.pipe(
+    take(1),
+
+    tap(() => {
+
+        handleConfirmEvent(
+            adapter,
+            {}
+        )
+        .pipe(take(1))
+        .subscribe();
+
+        setConnected(true);
+
+        log(
+            "Eventos registrados correctamente.",
+            "ok"
+        );
+
+        initialize();
+
+    }),
+
+    catchError(error => {
+
+        setConnected(false);
+
+        log(
+            "Error registrando eventos: " +
+            JSON.stringify(error),
+            "error"
+        );
+
+        return [];
+
+    })
+)
+.subscribe();
+
+
+/* ============================================================
+   INICIALIZACIÓN
+   ============================================================ */
+
+async function initialize() {
+
+    try {
+
+        await loadAccountInformation();
+
+        await loadSymbol();
+
+        subscribeToSymbolQuotes();
+
+        subscribeToExecutionEvents();
+
+        log(
+            "Ayalga Quick Trade V26 iniciado.",
+            "ok"
+        );
+
+    } catch (error) {
+
+        log(
+            "Error inicializando: " +
+            JSON.stringify(error),
+            "error"
+        );
+    }
+}
+
+
+/* ============================================================
+   CUENTA
+   ============================================================ */
+
+function loadAccountInformation() {
+
+    return new Promise(resolve => {
+
+        getAccountInformation(adapter, {})
+        .pipe(take(1))
+        .subscribe({
+
+            next: response => {
+
+                accountInfo =
+                    extractPayload(response);
+
+                const depositAssetId =
+                    numberField(
+                        accountInfo,
+                        "depositAssetId",
+                        "DepositAssetId"
+                    );
+
+                log(
+                    "Cuenta recibida. DepositAssetId=" +
+                    depositAssetId,
+                    "ok"
+                );
+
+                loadAccountGroupInformation(
+                    resolve
+                );
+            },
+
+            error: error => {
+
+                log(
+                    "No se pudo obtener información de cuenta: " +
+                    JSON.stringify(error),
+                    "error"
+                );
+
+                resolve();
+            }
+
+        });
+
+    });
+}
+
+
+function loadAccountGroupInformation(
+    finalResolve
+) {
+
+    getAccountGroupInformation(adapter, {})
+    .pipe(take(1))
+    .subscribe({
+
+        next: response => {
+
+            accountGroupInfo =
+                extractPayload(response);
+
+            depositCurrency =
+                findDepositCurrency(
+                    accountGroupInfo
+                );
+
+            log(
+                "Moneda de depósito: " +
+                (depositCurrency || "NO DETERMINADA"),
+                depositCurrency
+                    ? "ok"
+                    : "warn"
+            );
+
+            finalResolve();
+
+        },
+
+        error: error => {
+
+            log(
+                "No se pudo obtener moneda de depósito: " +
+                JSON.stringify(error),
+                "warn"
+            );
+
+            finalResolve();
+        }
+
+    });
+}
+
+
+function findDepositCurrency(data) {
+
+    if (!data)
+        return null;
+
+    const direct =
+        getField(
+            data,
+            "depositCurrency",
+            "DepositCurrency"
+        );
+
+    if (typeof direct === "string" &&
+        direct.trim() !== "") {
+
+        return direct
+            .trim()
+            .toUpperCase();
+    }
+
+    const nested =
+        data.accountGroup ||
+        data.AccountGroup;
+
+    if (nested) {
+
+        const value =
+            getField(
+                nested,
+                "depositCurrency",
+                "DepositCurrency"
+            );
+
+        if (
+            typeof value === "string" &&
+            value.trim() !== ""
+        ) {
+
+            return value
+                .trim()
+                .toUpperCase();
+        }
     }
 
     return null;
 }
 
 
-/* =========================================================
-   LUCES
-========================================================= */
+/* ============================================================
+   SÍMBOLO
+   ============================================================ */
 
-function setLight(element, enabled) {
+function getSymbolFromUrl() {
 
-    if (enabled) {
-        element.classList.add("on");
-    } else {
-        element.classList.remove("on");
-    }
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const symbol =
+        params.get("symbol");
+
+    if (symbol)
+        return symbol.toUpperCase();
+
+    return "EURUSD";
 }
 
 
-function resetLights() {
+function loadSymbol() {
 
-    setLight(operationLight, false);
-    setLight(slLight, false);
-    setLight(tpLight, false);
+    return new Promise((resolve, reject) => {
+
+        getLightSymbolList(
+            adapter,
+            {}
+        )
+        .pipe(take(1))
+        .subscribe({
+
+            next: response => {
+
+                try {
+
+                    const payload =
+                        extractPayload(response);
+
+                    const symbols =
+                        getField(
+                            payload,
+                            "Symbol",
+                            "symbol"
+                        ) || [];
+
+                    const wanted =
+                        getSymbolFromUrl();
+
+                    const found =
+                        symbols.find(
+                            item =>
+                                String(
+                                    getField(
+                                        item,
+                                        "Name",
+                                        "name"
+                                    )
+                                ).toUpperCase()
+                                === wanted
+                        );
+
+                    if (!found) {
+
+                        throw new Error(
+                            "No se encontró el símbolo " +
+                            wanted
+                        );
+                    }
+
+                    currentSymbolId =
+                        numberField(
+                            found,
+                            "Id",
+                            "id"
+                        );
+
+                    currentSymbolName =
+                        getField(
+                            found,
+                            "Name",
+                            "name"
+                        );
+
+                    symbolNameElement.textContent =
+                        currentSymbolName;
+
+                    log(
+                        "Símbolo encontrado: " +
+                        currentSymbolName +
+                        " | ID=" +
+                        currentSymbolId,
+                        "ok"
+                    );
+
+                    loadFullSymbol(
+                        resolve,
+                        reject
+                    );
+
+                } catch (error) {
+
+                    reject(error);
+                }
+
+            },
+
+            error: reject
+
+        });
+
+    });
 }
 
 
-/* =========================================================
-   RIESGO
-========================================================= */
+function loadFullSymbol(
+    resolve,
+    reject
+) {
 
-function getBaseRisk() {
+    getSymbol(
+        adapter,
+        {
+            symbolId: [
+                currentSymbolId
+            ]
+        }
+    )
+    .pipe(take(1))
+    .subscribe({
 
-    const risk =
-        parseNumber(
-            riskInput.value
+        next: response => {
+
+            symbolInfo =
+                extractPayload(response);
+
+            if (
+                symbolInfo &&
+                (
+                    symbolInfo.Symbol ||
+                    symbolInfo.symbol
+                )
+            ) {
+
+                symbolInfo =
+                    symbolInfo.Symbol ||
+                    symbolInfo.symbol;
+            }
+
+            log(
+                "Información completa del símbolo recibida.",
+                "ok"
+            );
+
+            resolve();
+
+        },
+
+        error: reject
+
+    });
+}
+
+
+/* ============================================================
+   COTIZACIONES
+   ============================================================ */
+
+function subscribeToSymbolQuotes() {
+
+    subscribeQuotes(
+        adapter,
+        {
+            symbolId: [
+                currentSymbolId
+            ]
+        }
+    )
+    .pipe(take(1))
+    .subscribe({
+
+        next: () => {
+
+            log(
+                "Suscripción a cotizaciones activada.",
+                "ok"
+            );
+
+        },
+
+        error: error => {
+
+            log(
+                "Error suscribiendo cotizaciones: " +
+                JSON.stringify(error),
+                "error"
+            );
+        }
+
+    });
+
+    quoteEvent(adapter)
+    .subscribe({
+
+        next: event => {
+
+            processQuoteEvent(event);
+
+        },
+
+        error: error => {
+
+            log(
+                "Error en quoteEvent: " +
+                JSON.stringify(error),
+                "error"
+            );
+        }
+
+    });
+}
+
+
+function processQuoteEvent(event) {
+
+    const payload =
+        extractPayload(event);
+
+    if (!payload)
+        return;
+
+    const eventSymbolId =
+        numberField(
+            payload,
+            "SymbolId",
+            "symbolId"
         );
 
     if (
-        risk === null ||
-        risk <= 0
+        eventSymbolId !== null &&
+        eventSymbolId !== currentSymbolId
     ) {
-        return null;
+        return;
     }
 
-    return risk;
+    const bid =
+        numberField(
+            payload,
+            "Bid",
+            "bid"
+        );
+
+    const ask =
+        numberField(
+            payload,
+            "Ask",
+            "ask"
+        );
+
+    if (
+        bid !== null &&
+        bid > 0
+    ) {
+        lastBid = bid;
+    }
+
+    if (
+        ask !== null &&
+        ask > 0
+    ) {
+        lastAsk = ask;
+    }
+
+    if (
+        lastBid !== null &&
+        lastAsk !== null
+    ) {
+
+        marketPriceElement.textContent =
+            "Bid " +
+            formatPrice(lastBid) +
+            " | Ask " +
+            formatPrice(lastAsk);
+    }
 }
 
 
-function getEffectiveRisk() {
+/* ============================================================
+   EJECUTION EVENTS
+   ============================================================ */
 
-    const baseRisk =
-        getBaseRisk();
+function subscribeToExecutionEvents() {
 
-    if (baseRisk === null) {
-        return null;
-    }
+    executionEvent(adapter)
+    .subscribe({
 
-    return doubleRiskArmed
-        ? baseRisk * 2
-        : baseRisk;
+        next: event => {
+
+            processExecutionEvent(event);
+
+        },
+
+        error: error => {
+
+            log(
+                "Error en executionEvent: " +
+                JSON.stringify(error),
+                "error"
+            );
+        }
+
+    });
+
+    log(
+        "executionEvent suscrito.",
+        "ok"
+    );
 }
 
 
-function updateRiskDisplay() {
+/* ============================================================
+   NORMALIZACIÓN EVENTOS
+   ============================================================ */
 
-    const baseRisk =
-        getBaseRisk();
+function getEventType(event) {
 
-    const effectiveRisk =
-        getEffectiveRisk();
+    const payload =
+        extractPayload(event);
 
-    if (baseRisk === null) {
+    return String(
+        getField(
+            payload,
+            "PayloadType",
+            "payloadType",
+            "EventType",
+            "eventType"
+        ) || ""
+    ).toUpperCase();
+}
 
-        effectiveRiskDisplay.value =
-            "---";
 
-        targetRiskDisplay.textContent =
-            "---";
+function getEventPositionId(event) {
+
+    const payload =
+        extractPayload(event);
+
+    const position =
+        getField(
+            payload,
+            "Position",
+            "position"
+        );
+
+    return numberField(
+        position,
+        "PositionId",
+        "positionId"
+    );
+}
+
+
+function getEventOrderId(event) {
+
+    const payload =
+        extractPayload(event);
+
+    const order =
+        getField(
+            payload,
+            "Order",
+            "order"
+        );
+
+    return numberField(
+        order,
+        "OrderId",
+        "orderId"
+    );
+}
+
+
+/* ============================================================
+   EVENTO DE EJECUCIÓN
+   ============================================================ */
+
+function processExecutionEvent(event) {
+
+    const payload =
+        extractPayload(event);
+
+    if (!payload)
+        return;
+
+    const eventType =
+        getEventType(event);
+
+    const position =
+        getField(
+            payload,
+            "Position",
+            "position"
+        );
+
+    const order =
+        getField(
+            payload,
+            "Order",
+            "order"
+        );
+
+    const positionId =
+        numberField(
+            position,
+            "PositionId",
+            "positionId"
+        );
+
+    const orderId =
+        numberField(
+            order,
+            "OrderId",
+            "orderId"
+        );
+
+    log(
+        "EVENTO " +
+        eventType +
+        " | PositionId=" +
+        positionId +
+        " | OrderId=" +
+        orderId,
+        "info"
+    );
+
+
+    /* ========================================================
+       ORDEN ACEPTADA
+       ======================================================== */
+
+    if (
+        eventType.includes(
+            "ORDER_ACCEPTED"
+        )
+    ) {
+
+        processOrderAccepted(
+            event,
+            positionId,
+            orderId
+        );
 
         return;
     }
 
-    effectiveRiskDisplay.value =
-        Number(effectiveRisk).toFixed(2) +
-        (
-            depositCurrency
-                ? ` ${depositCurrency}`
-                : ""
+
+    /* ========================================================
+       ORDEN RELLENADA
+       ======================================================== */
+
+    if (
+        eventType.includes(
+            "ORDER_FILLED"
+        )
+    ) {
+
+        processOrderFilled(
+            event,
+            positionId,
+            orderId
         );
 
-    targetRiskDisplay.textContent =
-        Number(effectiveRisk).toFixed(2) +
-        (
-            depositCurrency
-                ? ` ${depositCurrency}`
-                : ""
+        return;
+    }
+
+
+    /* ========================================================
+       RECHAZADA
+       ======================================================== */
+
+    if (
+        eventType.includes(
+            "ORDER_REJECTED"
+        )
+    ) {
+
+        processOrderRejected(
+            event,
+            positionId,
+            orderId
         );
+
+        return;
+    }
+
+
+    /* ========================================================
+       CANCELADA
+       ======================================================== */
+
+    if (
+        eventType.includes(
+            "ORDER_CANCELLED"
+        )
+    ) {
+
+        processOrderCancelled(
+            event,
+            positionId,
+            orderId
+        );
+
+        return;
+    }
+
+
+    /* ========================================================
+       REEMPLAZADA
+       ======================================================== */
+
+    if (
+        eventType.includes(
+            "ORDER_REPLACED"
+        )
+    ) {
+
+        processOrderReplaced(
+            event,
+            positionId,
+            orderId
+        );
+
+        return;
+    }
 }
 
 
-riskInput.addEventListener(
-    "input",
-    updateRiskDisplay
+/* ============================================================
+   ORDER ACCEPTED
+   ============================================================ */
+
+function processOrderAccepted(
+    event,
+    positionId,
+    orderId
+) {
+
+    /*
+       Buscamos primero por orderId.
+    */
+
+    let trade =
+        orderToTrade.get(orderId);
+
+
+    /*
+       Si no existe, buscamos por positionId.
+    */
+
+    if (
+        !trade &&
+        positionId !== null
+    ) {
+
+        trade =
+            activeTrades.get(
+                positionId
+            );
+    }
+
+
+    /*
+       Si sigue sin existir, puede tratarse
+       de una orden de cierre.
+    */
+
+    if (!trade) {
+
+        log(
+            "ORDER_ACCEPTED sin operación interna asociada.",
+            "warn"
+        );
+
+        return;
+    }
+
+    trade.orderAccepted = true;
+
+    if (positionId !== null) {
+
+        trade.positionId =
+            positionId;
+
+        activeTrades.set(
+            positionId,
+            trade
+        );
+    }
+
+    if (orderId !== null) {
+
+        trade.orderId =
+            orderId;
+
+        orderToTrade.set(
+            orderId,
+            trade
+        );
+    }
+
+    log(
+        "Orden aceptada por cTrader.",
+        "ok"
+    );
+}
+
+
+/* ============================================================
+   ORDER FILLED
+   ============================================================ */
+
+function processOrderFilled(
+    event,
+    positionId,
+    orderId
+) {
+
+    const payload =
+        extractPayload(event);
+
+    const position =
+        getField(
+            payload,
+            "Position",
+            "position"
+        );
+
+    const order =
+        getField(
+            payload,
+            "Order",
+            "order"
+        );
+
+    const deal =
+        getField(
+            payload,
+            "Deal",
+            "deal"
+        );
+
+
+    /*
+       IMPORTANTE:
+
+       Un ORDER_FILLED puede ser:
+
+       1. apertura
+       2. cierre
+
+       No asumimos que todo ORDER_FILLED
+       es una nueva entrada.
+    */
+
+    let trade =
+        orderToTrade.get(orderId);
+
+    if (
+        !trade &&
+        positionId !== null
+    ) {
+
+        trade =
+            activeTrades.get(
+                positionId
+            );
+    }
+
+
+    /* ========================================================
+       PRECIO REAL DE EJECUCIÓN
+       ======================================================== */
+
+    const executionPrice =
+        numberField(
+            order,
+            "ExecutionPrice",
+            "executionPrice"
+        ) ??
+        numberField(
+            deal,
+            "ExecutionPrice",
+            "executionPrice"
+        ) ??
+        numberField(
+            position,
+            "Price",
+            "price"
+        );
+
+
+    /* ========================================================
+       ¿ES CIERRE?
+       ======================================================== */
+
+    const closingOrder =
+        getField(
+            payload,
+            "ClosingOrder",
+            "closingOrder"
+        );
+
+    const closeDetail =
+        getField(
+            payload,
+            "ClosePositionDetail",
+            "closePositionDetail"
+        );
+
+    const positionStatus =
+        numberField(
+            position,
+            "PositionStatus",
+            "positionStatus"
+        );
+
+
+    const isClosing =
+        !!closingOrder ||
+        !!closeDetail ||
+        positionStatus === 2 ||
+        (
+            trade &&
+            trade.closeRequested === true
+        );
+
+
+    if (isClosing) {
+
+        handleClosingFilled(
+            positionId,
+            trade,
+            executionPrice
+        );
+
+        return;
+    }
+
+
+    /* ========================================================
+       APERTURA
+       ======================================================== */
+
+    if (!trade) {
+
+        log(
+            "ORDER_FILLED de apertura sin trade pendiente. " +
+            "No se modifica el estado.",
+            "warn"
+        );
+
+        return;
+    }
+
+    trade.filled = true;
+
+    trade.positionId =
+        positionId ??
+        trade.positionId;
+
+    trade.executionPrice =
+        executionPrice;
+
+    if (
+        trade.positionId !== null &&
+        trade.positionId !== undefined
+    ) {
+
+        activeTrades.set(
+            trade.positionId,
+            trade
+        );
+
+        positionToOrder.set(
+            trade.positionId,
+            trade.orderId
+        );
+    }
+
+    /*
+       EL DOBLE RIESGO SE CONSUME AQUÍ.
+
+       No en el primer toque.
+       No en ORDER_ACCEPTED.
+       Solo cuando la entrada está FILLED.
+    */
+
+    if (trade.doubleRiskUsed) {
+
+        doubleRiskArmed = false;
+
+        updateDoubleRiskButton();
+
+        log(
+            "DOBLE RIESGO consumido: la operación fue ejecutada.",
+            "ok"
+        );
+    }
+
+
+    /*
+       RR 1:2 también es de una sola operación.
+
+       Lo consumimos al ejecutarse.
+    */
+
+    if (trade.rr === 2) {
+
+        selectedRR = 1;
+
+        updateRRButtons();
+
+        log(
+            "RR 1:2 consumido. RR vuelve a 1:1.",
+            "ok"
+        );
+    }
+
+
+    setOperationLight(
+        true
+    );
+
+    updateCloseButton();
+
+    log(
+        "OPERACIÓN EJECUTADA | " +
+        (
+            trade.side === "BUY"
+                ? "COMPRA"
+                : "VENTA"
+        ) +
+        " | PositionId=" +
+        trade.positionId +
+        " | Precio real=" +
+        formatPrice(
+            trade.executionPrice
+        ),
+        "ok"
+    );
+
+    updateTradeInfo(
+        trade
+    );
+
+
+    /*
+       Ahora calculamos TP usando
+       EL PRECIO REAL DEL FILL.
+    */
+
+    calculateAndApplyProtection(
+        trade
+    );
+}
+
+
+/* ============================================================
+   CIERRE EJECUTADO
+   ============================================================ */
+
+function handleClosingFilled(
+    positionId,
+    trade,
+    executionPrice
+) {
+
+    log(
+        "CIERRE EJECUTADO por cTrader" +
+        (
+            executionPrice !== null
+                ? " | Precio=" +
+                  formatPrice(executionPrice)
+                : ""
+        ),
+        "ok"
+    );
+
+
+    if (
+        positionId !== null &&
+        positionId !== undefined
+    ) {
+
+        activeTrades.delete(
+            positionId
+        );
+
+        positionToOrder.delete(
+            positionId
+        );
+    }
+
+
+    if (trade) {
+
+        trade.closed = true;
+
+        if (trade.orderId !== null) {
+
+            orderToTrade.delete(
+                trade.orderId
+            );
+        }
+    }
+
+
+    /*
+       Apagamos las tres luces
+       porque ya no existe la operación.
+    */
+
+    resetLights();
+
+    updateCloseButton();
+
+    updateTradeInfo(null);
+
+    closeConfirmPending = false;
+
+    clearTimeout(
+        closeConfirmTimer
+    );
+
+    closeButton.textContent =
+        "CERRAR POSICIÓN";
+
+    closeButton.classList.remove(
+        "confirm"
+    );
+}
+
+
+/* ============================================================
+   ORDER REJECTED
+   ============================================================ */
+
+function processOrderRejected(
+    event,
+    positionId,
+    orderId
+) {
+
+    const trade =
+        orderToTrade.get(orderId) ||
+        (
+            positionId !== null
+                ? activeTrades.get(positionId)
+                : null
+        );
+
+    log(
+        "ORDEN RECHAZADA por cTrader.",
+        "error"
+    );
+
+    /*
+       MUY IMPORTANTE:
+
+       Si era DOBLE RIESGO,
+       NO se consume.
+
+       Si era RR1:2,
+       tampoco se consume.
+    */
+
+    if (trade) {
+
+        if (
+            trade.positionId !== null &&
+            trade.positionId !== undefined
+        ) {
+
+            activeTrades.delete(
+                trade.positionId
+            );
+        }
+
+        if (trade.orderId !== null) {
+
+            orderToTrade.delete(
+                trade.orderId
+            );
+        }
+    }
+
+    updateCloseButton();
+}
+
+
+/* ============================================================
+   ORDER CANCELLED
+   ============================================================ */
+
+function processOrderCancelled(
+    event,
+    positionId,
+    orderId
+) {
+
+    /*
+       Un protection order CANCELLED
+       puede aparecer cuando la posición
+       acaba de cerrarse.
+
+       NO borramos automáticamente la posición.
+
+       Esperamos al ORDER_FILLED del cierre.
+    */
+
+    const trade =
+        orderToTrade.get(orderId) ||
+        (
+            positionId !== null
+                ? activeTrades.get(positionId)
+                : null
+        );
+
+    if (
+        trade &&
+        trade.closeRequested
+    ) {
+
+        log(
+            "Protección cancelada durante el cierre. " +
+            "Esperando confirmación del cierre.",
+            "warn"
+        );
+
+        return;
+    }
+
+    log(
+        "ORDER_CANCELLED recibido.",
+        "warn"
+    );
+}
+
+
+/* ============================================================
+   ORDER REPLACED
+   ============================================================ */
+
+function processOrderReplaced(
+    event,
+    positionId,
+    orderId
+) {
+
+    const trade =
+        (
+            positionId !== null
+                ? activeTrades.get(positionId)
+                : null
+        ) ||
+        orderToTrade.get(orderId);
+
+    if (!trade) {
+
+        log(
+            "ORDER_REPLACED sin operación asociada.",
+            "warn"
+        );
+
+        return;
+    }
+
+
+    /*
+       cTrader confirma la protección.
+
+       Si hemos solicitado SL/TP,
+       marcamos las luces correspondientes.
+    */
+
+    if (
+        trade.protectionPending ||
+        trade.protectionRequested
+    ) {
+
+        if (trade.sl !== null) {
+
+            setSlLight(
+                true
+            );
+        }
+
+        if (trade.tp !== null) {
+
+            setTpLight(
+                true
+            );
+        }
+
+        trade.protectionConfirmed =
+            true;
+
+        trade.protectionPending =
+            false;
+
+        trade.protectionRequested =
+            false;
+
+        log(
+            "SL/TP CONFIRMADOS por cTrader.",
+            "ok"
+        );
+
+        updateTradeInfo(
+            trade
+        );
+    }
+}
+
+
+/* ============================================================
+   CONFIGURACIÓN RR
+   ============================================================ */
+
+rr1Button.addEventListener(
+    "click",
+    () => {
+
+        selectedRR = 1;
+
+        updateRRButtons();
+
+        log(
+            "RR seleccionado: 1:1",
+            "info"
+        );
+    }
 );
 
+
+rr2Button.addEventListener(
+    "click",
+    () => {
+
+        selectedRR = 2;
+
+        updateRRButtons();
+
+        log(
+            "RR 1:2 armado para la próxima operación.",
+            "info"
+        );
+    }
+);
+
+
+function updateRRButtons() {
+
+    rr1Button.classList.toggle(
+        "active",
+        selectedRR === 1
+    );
+
+    rr2Button.classList.toggle(
+        "active",
+        selectedRR === 2
+    );
+}
+
+
+/* ============================================================
+   DOBLE RIESGO
+   ============================================================ */
 
 doubleRiskButton.addEventListener(
     "click",
@@ -1109,2171 +2266,1322 @@ doubleRiskButton.addEventListener(
         doubleRiskArmed =
             !doubleRiskArmed;
 
+        updateDoubleRiskButton();
+
         if (doubleRiskArmed) {
 
-            doubleRiskButton.textContent =
-                "DOBLE RIESGO: ON";
-
-            doubleRiskButton.classList.add(
-                "active"
-            );
-
             log(
-                "DOBLE RIESGO armado para la próxima operación.",
-                "warning"
+                "DOBLE RIESGO ACTIVADO para la próxima operación ejecutada.",
+                "warn"
             );
 
         } else {
 
-            doubleRiskButton.textContent =
-                "DOBLE RIESGO: OFF";
-
-            doubleRiskButton.classList.remove(
-                "active"
-            );
-
             log(
                 "DOBLE RIESGO desactivado.",
-                "normal"
+                "info"
             );
         }
-
-        updateRiskDisplay();
     }
 );
 
 
-/* =========================================================
-   RR
-========================================================= */
+function updateDoubleRiskButton() {
 
-function updateRRButtons() {
+    if (doubleRiskArmed) {
 
-    rr1.classList.toggle(
-        "active",
-        selectedRR === 1
-    );
+        doubleRiskButton.textContent =
+            "DOBLE RIESGO: ON";
 
-    rr2.classList.toggle(
-        "active",
-        selectedRR === 2
-    );
-
-    rrDisplay.textContent =
-        `1:${selectedRR}`;
-}
-
-
-rr1.addEventListener(
-    "click",
-    () => {
-
-        if (
-            tradePhase !== PHASE.IDLE
-        ) {
-            return;
-        }
-
-        selectedRR = 1;
-
-        updateRRButtons();
-
-        log(
-            "RR seleccionado: 1:1",
-            "normal"
-        );
-    }
-);
-
-
-rr2.addEventListener(
-    "click",
-    () => {
-
-        if (
-            tradePhase !== PHASE.IDLE
-        ) {
-            return;
-        }
-
-        selectedRR = 2;
-
-        updateRRButtons();
-
-        log(
-            "RR seleccionado: 1:2",
-            "normal"
-        );
-    }
-);
-
-
-/* =========================================================
-   BOTONES
-========================================================= */
-
-function updateButtons() {
-
-    const ready =
-        connected &&
-        symbolId !== null &&
-        symbolInfo !== null;
-
-    if (
-        tradePhase === PHASE.IDLE
-    ) {
-
-        buyButton.disabled =
-            !ready;
-
-        sellButton.disabled =
-            !ready;
-
-        buyButton.textContent =
-            "COMPRA";
-
-        sellButton.textContent =
-            "VENTA";
-
-    } else if (
-        tradePhase === PHASE.CONFIRM_BUY
-    ) {
-
-        buyButton.disabled =
-            !ready;
-
-        sellButton.disabled =
-            true;
-
-        buyButton.textContent =
-            "CONFIRMAR COMPRA";
-
-        sellButton.textContent =
-            "VENTA";
-
-    } else if (
-        tradePhase === PHASE.CONFIRM_SELL
-    ) {
-
-        buyButton.disabled =
-            true;
-
-        sellButton.disabled =
-            !ready;
-
-        buyButton.textContent =
-            "COMPRA";
-
-        sellButton.textContent =
-            "CONFIRMAR VENTA";
-
-    } else {
-
-        buyButton.disabled = true;
-        sellButton.disabled = true;
-
-        buyButton.textContent = "COMPRA";
-        sellButton.textContent = "VENTA";
-    }
-
-
-    const canClose =
-        connected &&
-        activeTrade !== null &&
-        !closePositionRequest &&
-        (
-            tradePhase === PHASE.OPEN ||
-            tradePhase === PHASE.PROTECTION_PENDING
-        );
-
-
-    closePositionButton.disabled =
-        !canClose;
-
-    if (
-        !closePositionRequest
-    ) {
-
-        closePositionButton.textContent =
-            "CERRAR POSICIÓN";
-    }
-}
-
-
-function resetTradeConfirmation() {
-
-    tradeConfirmTimer =
-        clearTimer(
-            tradeConfirmTimer
-        );
-
-    tradeConfirmSide = null;
-
-    if (
-        tradePhase === PHASE.CONFIRM_BUY ||
-        tradePhase === PHASE.CONFIRM_SELL
-    ) {
-
-        tradePhase =
-            PHASE.IDLE;
-
-        setStatus(
-            "Listo",
-            "normal"
-        );
-
-        updateButtons();
-    }
-}
-
-
-function armTradeConfirmation(side) {
-
-    if (
-        tradePhase !== PHASE.IDLE
-    ) {
-        return;
-    }
-
-    tradeConfirmSide =
-        side;
-
-    if (side === "BUY") {
-
-        tradePhase =
-            PHASE.CONFIRM_BUY;
-
-        setStatus(
-            "Pulsa COMPRA otra vez para confirmar.",
-            "warning"
+        doubleRiskButton.classList.add(
+            "active"
         );
 
     } else {
 
-        tradePhase =
-            PHASE.CONFIRM_SELL;
+        doubleRiskButton.textContent =
+            "DOBLE RIESGO: OFF";
 
-        setStatus(
-            "Pulsa VENTA otra vez para confirmar.",
-            "warning"
+        doubleRiskButton.classList.remove(
+            "active"
         );
     }
-
-    updateButtons();
-
-    tradeConfirmTimer =
-        setTimeout(
-            () => {
-
-                log(
-                    "Confirmación de entrada caducada.",
-                    "normal"
-                );
-
-                resetTradeConfirmation();
-
-            },
-            TRADE_CONFIRM_TIMEOUT
-        );
 }
 
+
+/* ============================================================
+   COMPRA
+   ============================================================ */
 
 buyButton.addEventListener(
     "click",
     () => {
 
-        if (
-            tradePhase === PHASE.IDLE
-        ) {
+        if (!buyConfirmPending) {
 
-            armTradeConfirmation(
-                "BUY"
+            buyConfirmPending = true;
+
+            buyButton.textContent =
+                "CONFIRMAR COMPRA";
+
+            buyButton.classList.add(
+                "confirm"
             );
+
+            clearTimeout(
+                buyConfirmTimer
+            );
+
+            buyConfirmTimer =
+                setTimeout(
+                    resetBuyConfirmation,
+                    CONFIRM_TIMEOUT
+                );
 
             return;
         }
 
-        if (
-            tradePhase === PHASE.CONFIRM_BUY &&
-            tradeConfirmSide === "BUY"
-        ) {
+        resetBuyConfirmation();
 
-            tradeConfirmTimer =
-                clearTimer(
-                    tradeConfirmTimer
-                );
-
-            tradeConfirmSide = null;
-
-            executeTrade("BUY");
-        }
+        executeTrade(
+            "BUY"
+        );
     }
 );
 
+
+function resetBuyConfirmation() {
+
+    buyConfirmPending = false;
+
+    clearTimeout(
+        buyConfirmTimer
+    );
+
+    buyButton.textContent =
+        "COMPRA";
+
+    buyButton.classList.remove(
+        "confirm"
+    );
+}
+
+
+/* ============================================================
+   VENTA
+   ============================================================ */
 
 sellButton.addEventListener(
     "click",
     () => {
 
-        if (
-            tradePhase === PHASE.IDLE
-        ) {
+        if (!sellConfirmPending) {
 
-            armTradeConfirmation(
-                "SELL"
+            sellConfirmPending = true;
+
+            sellButton.textContent =
+                "CONFIRMAR VENTA";
+
+            sellButton.classList.add(
+                "confirm"
             );
+
+            clearTimeout(
+                sellConfirmTimer
+            );
+
+            sellConfirmTimer =
+                setTimeout(
+                    resetSellConfirmation,
+                    CONFIRM_TIMEOUT
+                );
 
             return;
         }
 
-        if (
-            tradePhase === PHASE.CONFIRM_SELL &&
-            tradeConfirmSide === "SELL"
-        ) {
+        resetSellConfirmation();
 
-            tradeConfirmTimer =
-                clearTimer(
-                    tradeConfirmTimer
-                );
-
-            tradeConfirmSide = null;
-
-            executeTrade("SELL");
-        }
+        executeTrade(
+            "SELL"
+        );
     }
 );
 
 
-/* =========================================================
-   CIERRE DOBLE TOQUE
-========================================================= */
+function resetSellConfirmation() {
 
-function resetCloseConfirmation() {
+    sellConfirmPending = false;
 
-    closeConfirmTimer =
-        clearTimer(
-            closeConfirmTimer
-        );
+    clearTimeout(
+        sellConfirmTimer
+    );
 
-    if (
-        closePositionRequest
-    ) {
-        return;
-    }
+    sellButton.textContent =
+        "VENTA";
 
-    closePositionButton.textContent =
-        "CERRAR POSICIÓN";
-
-    updateButtons();
+    sellButton.classList.remove(
+        "confirm"
+    );
 }
 
 
-closePositionButton.addEventListener(
+/* ============================================================
+   CERRAR POSICIÓN
+   ============================================================ */
+
+closeButton.addEventListener(
     "click",
     () => {
 
-        if (
-            !activeTrade ||
-            closePositionRequest
-        ) {
-            return;
-        }
+        /*
+           PRIMER TOQUE
+        */
 
-        if (
-            closeConfirmTimer !== null
-        ) {
+        if (!closeConfirmPending) {
+
+            closeConfirmPending = true;
+
+            closeButton.textContent =
+                "¿CONFIRMAR CIERRE?";
+
+            closeButton.classList.add(
+                "confirm"
+            );
+
+            clearTimeout(
+                closeConfirmTimer
+            );
 
             closeConfirmTimer =
-                clearTimer(
-                    closeConfirmTimer
+                setTimeout(
+                    resetCloseConfirmation,
+                    CONFIRM_TIMEOUT
                 );
-
-            closePositionRequest =
-                true;
-
-            tradePhase =
-                PHASE.CLOSING;
-
-            closeReason =
-                "MANUAL";
-
-            closeRetryCount = 0;
-
-            closePositionButton.disabled =
-                true;
-
-            closePositionButton.textContent =
-                "CERRANDO...";
-
-            setStatus(
-                "Enviando cierre a mercado...",
-                "warning"
-            );
-
-            log(
-                `Cierre confirmado. PositionId=${activeTrade.positionId}`,
-                "warning"
-            );
-
-            sendClosePosition();
 
             return;
         }
 
 
-        closePositionButton.textContent =
-            "¿CONFIRMAR CIERRE?";
+        /*
+           SEGUNDO TOQUE
+        */
 
-        setStatus(
-            "Pulsa CERRAR POSICIÓN otra vez para confirmar.",
-            "warning"
-        );
+        resetCloseConfirmation();
 
-        closeConfirmTimer =
-            setTimeout(
-                () => {
-
-                    resetCloseConfirmation();
-
-                },
-                CLOSE_CONFIRM_TIMEOUT
-            );
+        executeClose();
     }
 );
 
 
-/* =========================================================
-   LISTA DE SÍMBOLOS
-========================================================= */
+function resetCloseConfirmation() {
 
-async function loadSymbols() {
+    closeConfirmPending = false;
 
-    try {
-
-        log(
-            "Solicitando lista de símbolos...",
-            "normal"
-        );
-
-        const response =
-            await new Promise(
-                (resolve, reject) => {
-
-                    getLightSymbolList(
-                        adapter,
-                        {}
-                    )
-                    .pipe(
-                        take(1)
-                    )
-                    .subscribe({
-                        next: resolve,
-                        error: reject
-                    });
-                }
-            );
-
-
-        const payload =
-            getPayload(response);
-
-
-        const symbols =
-            getField(
-                payload,
-                "Symbol",
-                "symbol"
-            ) || [];
-
-
-        allSymbols =
-            Array.isArray(symbols)
-                ? symbols
-                : [];
-
-
-        log(
-            `${allSymbols.length} símbolos recibidos.`,
-            "ok"
-        );
-
-
-        let requestedSymbol =
-            new URLSearchParams(
-                window.location.search
-            ).get("symbol");
-
-
-        if (
-            requestedSymbol
-        ) {
-
-            requestedSymbol =
-                requestedSymbol
-                    .trim()
-                    .toUpperCase();
-        }
-
-
-        let selected =
-            allSymbols.find(
-                s =>
-                    String(
-                        getField(
-                            s,
-                            "Name",
-                            "name"
-                        ) || ""
-                    ).toUpperCase() ===
-                    requestedSymbol
-            );
-
-
-        if (!selected) {
-
-            selected =
-                allSymbols.find(
-                    s =>
-                        String(
-                            getField(
-                                s,
-                                "Name",
-                                "name"
-                            ) || ""
-                        ).toUpperCase() ===
-                        "EURUSD"
-                );
-        }
-
-
-        if (!selected) {
-
-            throw new Error(
-                "No se encontró el símbolo solicitado ni EURUSD."
-            );
-        }
-
-
-        symbolId =
-            Number(
-                getField(
-                    selected,
-                    "Id",
-                    "id"
-                )
-            );
-
-
-        symbolName =
-            String(
-                getField(
-                    selected,
-                    "Name",
-                    "name"
-                )
-            );
-
-
-        symbolDisplay.textContent =
-            symbolName;
-
-
-        log(
-            `Símbolo seleccionado: ${symbolName} (ID ${symbolId})`,
-            "ok"
-        );
-
-
-        await getDetailedSymbol();
-
-
-        await subscribeSymbolQuotes(
-            symbolId
-        );
-
-
-        updateButtons();
-
-    } catch (error) {
-
-        log(
-            `Error cargando símbolos: ${error.message || error}`,
-            "error"
-        );
-
-        setStatus(
-            "Error cargando símbolo",
-            "error"
-        );
-    }
-}
-
-
-/* =========================================================
-   DETALLE DEL SÍMBOLO
-========================================================= */
-
-async function getDetailedSymbol() {
-
-    const response =
-        await new Promise(
-            (resolve, reject) => {
-
-                getSymbol(
-                    adapter,
-                    {
-                        symbolId: [
-                            Number(symbolId)
-                        ]
-                    }
-                )
-                .pipe(
-                    take(1)
-                )
-                .subscribe({
-                    next: resolve,
-                    error: reject
-                });
-            }
-        );
-
-
-    const payload =
-        getPayload(response);
-
-
-    let detailed =
-        getField(
-            payload,
-            "Symbol",
-            "symbol"
-        );
-
-
-    if (
-        Array.isArray(detailed)
-    ) {
-        detailed = detailed[0];
-    }
-
-
-    if (!detailed) {
-
-        if (
-            Array.isArray(payload)
-        ) {
-            detailed = payload[0];
-        } else {
-            detailed = payload;
-        }
-    }
-
-
-    symbolInfo =
-        detailed;
-
-
-    const minVolume =
-        Number(
-            getField(
-                symbolInfo,
-                "minVolume",
-                "MinVolume"
-            )
-        );
-
-
-    const stepVolume =
-        Number(
-            getField(
-                symbolInfo,
-                "stepVolume",
-                "StepVolume"
-            )
-        );
-
-
-    const maxVolume =
-        Number(
-            getField(
-                symbolInfo,
-                "maxVolume",
-                "MaxVolume"
-            )
-        );
-
-
-    minVolumeDisplay.textContent =
-        `${minVolume} (${minVolume / 100} u)`;
-
-
-    log(
-        `minVolume=${minVolume} | stepVolume=${stepVolume} | maxVolume=${maxVolume}`,
-        "ok"
+    clearTimeout(
+        closeConfirmTimer
     );
 
+    closeButton.textContent =
+        "CERRAR POSICIÓN";
 
-    const digits =
-        Number(
-            getField(
-                symbolInfo,
-                "digits",
-                "Digits"
-            )
-        );
-
-
-    const pipPosition =
-        Number(
-            getField(
-                symbolInfo,
-                "pipPosition",
-                "PipPosition"
-            )
-        );
-
-
-    log(
-        `digits=${digits} | pipPosition=${pipPosition}`,
-        "normal"
+    closeButton.classList.remove(
+        "confirm"
     );
 }
 
 
-/* =========================================================
-   QUOTES
-========================================================= */
+/* ============================================================
+   EJECUTAR ENTRADA
+   ============================================================ */
 
-function subscribeSymbolQuotes(id) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            subscribeQuotes(
-                adapter,
-                {
-                    symbolId: [
-                        Number(id)
-                    ]
-                }
-            )
-            .pipe(
-                take(1)
-            )
-            .subscribe({
-                next: resolve,
-                error: reject
-            });
-        }
-    );
-}
-
-
-function extractQuoteObjects(payload) {
-
-    if (!payload) {
-        return [];
-    }
-
-
-    if (
-        Array.isArray(payload)
-    ) {
-        return payload;
-    }
-
-
-    const nested =
-        getField(
-            payload,
-            "Quote",
-            "quote",
-            "Quotes",
-            "quotes"
-        );
-
-
-    if (
-        Array.isArray(nested)
-    ) {
-        return nested;
-    }
-
-
-    return [payload];
-}
-
-
-function processQuote(response) {
-
-    const payload =
-        getPayload(response);
-
-
-    const quotes =
-        extractQuoteObjects(
-            payload
-        );
-
-
-    for (
-        const quote of quotes
-    ) {
-
-        const id =
-            Number(
-                getField(
-                    quote,
-                    "SymbolId",
-                    "symbolId"
-                )
-            );
-
-
-        const bidRaw =
-            getField(
-                quote,
-                "Bid",
-                "bid"
-            );
-
-
-        const askRaw =
-            getField(
-                quote,
-                "Ask",
-                "ask"
-            );
-
-
-        const bid =
-            Number(bidRaw);
-
-
-        const ask =
-            Number(askRaw);
-
-
-        if (
-            Number.isFinite(bid) &&
-            bid > 0
-        ) {
-
-            quoteCache.set(
-                id,
-                {
-                    ...(quoteCache.get(id) || {}),
-                    bid
-                }
-            );
-        }
-
-
-        if (
-            Number.isFinite(ask) &&
-            ask > 0
-        ) {
-
-            quoteCache.set(
-                id,
-                {
-                    ...(quoteCache.get(id) || {}),
-                    ask
-                }
-            );
-        }
-
-
-        if (
-            id === Number(symbolId)
-        ) {
-
-            if (
-                Number.isFinite(bid) &&
-                bid > 0
-            ) {
-
-                lastValidBid =
-                    bid;
-
-                bidDisplay.textContent =
-                    formatPrice(
-                        bid
-                    );
-            }
-
-
-            if (
-                Number.isFinite(ask) &&
-                ask > 0
-            ) {
-
-                lastValidAsk =
-                    ask;
-
-                askDisplay.textContent =
-                    formatPrice(
-                        ask
-                    );
-            }
-        }
-
-
-        const waiters =
-            quoteWaiters.get(id);
-
-
-        if (
-            waiters &&
-            waiters.length
-        ) {
-
-            const cached =
-                quoteCache.get(id);
-
-
-            if (
-                cached &&
-                (
-                    Number.isFinite(
-                        cached.bid
-                    ) ||
-                    Number.isFinite(
-                        cached.ask
-                    )
-                )
-            ) {
-
-                quoteWaiters.delete(id);
-
-                for (
-                    const resolve of waiters
-                ) {
-                    resolve(cached);
-                }
-            }
-        }
-    }
-}
-
-
-function waitForQuote(
-    id,
-    timeout = 1500
+async function executeTrade(
+    side
 ) {
 
-    const cached =
-        quoteCache.get(
-            Number(id)
+    if (!connected) {
+
+        log(
+            "No se puede operar: cTrader no está conectado.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        !currentSymbolId ||
+        !symbolInfo
+    ) {
+
+        log(
+            "Símbolo todavía no disponible.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       Riesgo obligatorio.
+
+       No hay valor por defecto.
+    */
+
+    const baseRisk =
+        Number(
+            riskMoneyElement.value
+        );
+
+    if (
+        !Number.isFinite(baseRisk) ||
+        baseRisk <= 0
+    ) {
+
+        log(
+            "Introduce un riesgo monetario válido.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const candleCount =
+        Number(
+            candleCountElement.value
+        );
+
+    if (
+        !Number.isInteger(candleCount) ||
+        candleCount < 1
+    ) {
+
+        log(
+            "Número de velas inválido.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       RR se copia a esta operación.
+
+       Esto permite que el usuario cambie
+       inmediatamente la interfaz después
+       de lanzar la operación sin alterar
+       su TP.
+    */
+
+    const tradeRR =
+        selectedRR;
+
+
+    /*
+       Doble riesgo también se copia
+       a esta operación.
+
+       NO se consume todavía.
+    */
+
+    const useDoubleRisk =
+        doubleRiskArmed;
+
+
+    const requestedRisk =
+        baseRisk *
+        (
+            useDoubleRisk
+                ? 2
+                : 1
+        );
+
+
+    log(
+        "Preparando " +
+        side +
+        " | Riesgo base=" +
+        baseRisk +
+        " | Riesgo aplicado=" +
+        requestedRisk +
+        " | RR=1:" +
+        tradeRR +
+        (
+            useDoubleRisk
+                ? " | DOBLE RIESGO"
+                : ""
+        ),
+        "info"
+    );
+
+
+    /*
+       SL = extremo absoluto de N velas
+       CERRADAS.
+    */
+
+    const sl =
+        await calculateStopLoss(
+            side,
+            candleCount
         );
 
 
     if (
-        cached &&
-        (
-            Number.isFinite(cached.bid) ||
-            Number.isFinite(cached.ask)
-        )
+        sl === null ||
+        !Number.isFinite(sl)
     ) {
 
-        return Promise.resolve(
-            cached
+        log(
+            "No se pudo calcular el SL.",
+            "error"
         );
+
+        return;
     }
 
 
-    return new Promise(
-        resolve => {
+    /*
+       Para calcular el volumen necesitamos
+       una referencia de precio de cTrader.
 
-            const numericId =
-                Number(id);
+       Esta cotización NO se usa para ejecutar.
+       La orden sigue siendo MARKET.
+    */
+
+    const sizingPrice =
+        side === "BUY"
+            ? lastAsk
+            : lastBid;
 
 
-            if (
-                !quoteWaiters.has(
-                    numericId
-                )
-            ) {
+    if (
+        sizingPrice === null ||
+        !Number.isFinite(sizingPrice)
+    ) {
 
-                quoteWaiters.set(
-                    numericId,
-                    []
+        log(
+            "No hay cotización válida de cTrader para calcular volumen.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       Comprobación lógica del SL.
+    */
+
+    if (
+        side === "BUY" &&
+        sl >= sizingPrice
+    ) {
+
+        log(
+            "COMPRA rechazada: el SL está por encima o igual al precio.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        side === "SELL" &&
+        sl <= sizingPrice
+    ) {
+
+        log(
+            "VENTA rechazada: el SL está por debajo o igual al precio.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       Volumen monetario.
+    */
+
+    const volumeResult =
+        await calculateRiskVolume(
+            side,
+            sizingPrice,
+            sl,
+            requestedRisk
+        );
+
+
+    if (!volumeResult) {
+
+        log(
+            "No se pudo calcular un volumen fiable para el riesgo indicado.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const trade = {
+
+        side,
+
+        rr: tradeRR,
+
+        doubleRiskUsed:
+            useDoubleRisk,
+
+        requestedRisk,
+
+        sl,
+
+        tp: null,
+
+        sizingPrice,
+
+        volume:
+            volumeResult.volume,
+
+        volumeUnits:
+            volumeResult.units,
+
+        orderId: null,
+
+        positionId: null,
+
+        executionPrice: null,
+
+        orderAccepted: false,
+
+        filled: false,
+
+        protectionRequested: false,
+
+        protectionPending: false,
+
+        protectionConfirmed: false,
+
+        closeRequested: false,
+
+        closed: false
+
+    };
+
+
+    /*
+       MARKET.
+
+       No usamos sizingPrice como precio
+       de ejecución.
+    */
+
+    const orderType =
+        ServerInterfaces
+            .ProtoOrderType
+            .MARKET;
+
+    const tradeSide =
+        side === "BUY"
+            ? ServerInterfaces
+                .ProtoTradeSide
+                .BUY
+            : ServerInterfaces
+                .ProtoTradeSide
+                .SELL;
+
+
+    log(
+        "ENVIANDO MARKET " +
+        side +
+        " | volume=" +
+        trade.volume,
+        "info"
+    );
+
+
+    createNewOrder(
+        adapter,
+        {
+            symbolId: [
+                currentSymbolId
+            ],
+
+            orderType,
+
+            tradeSide,
+
+            volume:
+                trade.volume
+        }
+    )
+    .pipe(take(1))
+    .subscribe({
+
+        next: response => {
+
+            const payload =
+                extractPayload(response);
+
+            const position =
+                getField(
+                    payload,
+                    "Position",
+                    "position"
+                );
+
+            const order =
+                getField(
+                    payload,
+                    "Order",
+                    "order"
+                );
+
+            const positionId =
+                numberField(
+                    position,
+                    "PositionId",
+                    "positionId"
+                );
+
+            const orderId =
+                numberField(
+                    order,
+                    "OrderId",
+                    "orderId"
+                );
+
+
+            trade.positionId =
+                positionId;
+
+            trade.orderId =
+                orderId;
+
+
+            if (orderId !== null) {
+
+                orderToTrade.set(
+                    orderId,
+                    trade
                 );
             }
 
 
-            quoteWaiters
-                .get(numericId)
-                .push(resolve);
+            if (
+                positionId !== null
+            ) {
+
+                activeTrades.set(
+                    positionId,
+                    trade
+                );
+
+                positionToOrder.set(
+                    positionId,
+                    orderId
+                );
+            }
 
 
-            setTimeout(
-                () => {
+            /*
+               Guardamos la operación pendiente
+               aunque cTrader todavía no la haya
+               rellenado.
+            */
 
-                    const waiters =
-                        quoteWaiters.get(
-                            numericId
+            if (
+                orderId !== null
+            ) {
+
+                pendingTrades.set(
+                    orderId,
+                    trade
+                );
+            }
+
+
+            /*
+               El DOBLE RIESGO todavía NO se consume.
+            */
+
+            log(
+                "MARKET aceptada por cTrader." +
+                (
+                    positionId !== null
+                        ? " PositionId=" +
+                          positionId
+                        : ""
+                ) +
+                (
+                    orderId !== null
+                        ? " OrderId=" +
+                          orderId
+                        : ""
+                ),
+                "ok"
+            );
+
+        },
+
+        error: error => {
+
+            log(
+                "Error enviando MARKET: " +
+                JSON.stringify(error),
+                "error"
+            );
+
+        }
+
+    });
+}
+
+
+/* ============================================================
+   CALCULAR SL
+   ============================================================ */
+
+function calculateStopLoss(
+    side,
+    count
+) {
+
+    return new Promise(resolve => {
+
+        const period =
+            Number(
+                slTimeframeElement.value
+            );
+
+
+        /*
+           Timestamp actual.
+
+           getTrendbarList devolverá las barras
+           disponibles y después eliminamos
+           cualquier barra que corresponda a
+           la vela actualmente formándose.
+        */
+
+        const now =
+            Date.now();
+
+
+        /*
+           Damos margen suficiente para conseguir
+           las N barras cerradas.
+        */
+
+        const fromTimestamp =
+            now -
+            (
+                Math.max(
+                    count * timeframeMilliseconds(period) * 4,
+                    7 * 24 * 60 * 60 * 1000
+                )
+            );
+
+
+        const toTimestamp =
+            now;
+
+
+        getTrendbarList(
+            adapter,
+            {
+                symbolId:
+                    currentSymbolId,
+
+                period,
+
+                fromTimestamp,
+
+                toTimestamp,
+
+                count:
+                    Math.max(
+                        count + 5,
+                        50
+                    ),
+
+                type:
+                    0
+            }
+        )
+        .pipe(take(1))
+        .subscribe({
+
+            next: response => {
+
+                try {
+
+                    const payload =
+                        extractPayload(response);
+
+                    let bars =
+                        getField(
+                            payload,
+                            "Trendbar",
+                            "trendbar"
+                        ) || [];
+
+
+                    if (!Array.isArray(bars)) {
+
+                        bars = [
+                            bars
+                        ];
+                    }
+
+
+                    /*
+                       Orden cronológico.
+                    */
+
+                    bars.sort(
+                        (a, b) =>
+                            Number(
+                                getField(
+                                    a,
+                                    "utcTimestampInMinutes",
+                                    "UtcTimestampInMinutes"
+                                ) || 0
+                            )
+                            -
+                            Number(
+                                getField(
+                                    b,
+                                    "utcTimestampInMinutes",
+                                    "UtcTimestampInMinutes"
+                                ) || 0
+                            )
+                    );
+
+
+                    /*
+                       Barra actual.
+
+                       Eliminamos cualquier barra
+                       cuyo timestamp sea >= inicio
+                       de la vela actual.
+                    */
+
+                    const currentBarStart =
+                        Math.floor(
+                            now /
+                            (
+                                timeframeMilliseconds(
+                                    period
+                                )
+                            )
+                        ) *
+                        timeframeMilliseconds(
+                            period
                         );
 
 
-                    if (!waiters) {
+                    const closedBars =
+                        bars.filter(
+                            bar => {
+
+                                const minutes =
+                                    Number(
+                                        getField(
+                                            bar,
+                                            "utcTimestampInMinutes",
+                                            "UtcTimestampInMinutes"
+                                        )
+                                    );
+
+                                if (
+                                    !Number.isFinite(
+                                        minutes
+                                    )
+                                ) {
+                                    return false;
+                                }
+
+                                const timestamp =
+                                    minutes *
+                                    60 *
+                                    1000;
+
+                                return timestamp <
+                                    currentBarStart;
+                            }
+                        );
+
+
+                    if (
+                        closedBars.length <
+                        count
+                    ) {
+
+                        log(
+                            "No hay suficientes velas cerradas para calcular SL. " +
+                            "Disponibles=" +
+                            closedBars.length +
+                            " necesarias=" +
+                            count,
+                            "error"
+                        );
+
+                        resolve(null);
+
                         return;
                     }
 
 
-                    const index =
-                        waiters.indexOf(
-                            resolve
+                    const selectedBars =
+                        closedBars.slice(
+                            -count
+                        );
+
+
+                    const lows =
+                        selectedBars.map(
+                            decodeLow
+                        );
+
+                    const highs =
+                        selectedBars.map(
+                            decodeHigh
                         );
 
 
                     if (
-                        index >= 0
+                        lows.some(
+                            value =>
+                                !Number.isFinite(
+                                    value
+                                )
+                        ) ||
+                        highs.some(
+                            value =>
+                                !Number.isFinite(
+                                    value
+                                )
+                        )
                     ) {
 
-                        waiters.splice(
-                            index,
-                            1
+                        log(
+                            "Error decodificando trendbars.",
+                            "error"
                         );
+
+                        resolve(null);
+
+                        return;
                     }
 
+
+                    let sl;
 
                     if (
-                        waiters.length === 0
+                        side === "BUY"
                     ) {
 
-                        quoteWaiters.delete(
-                            numericId
-                        );
+                        sl =
+                            Math.min(
+                                ...lows
+                            );
+
+                    } else {
+
+                        sl =
+                            Math.max(
+                                ...highs
+                            );
                     }
 
 
-                    resolve(
-                        quoteCache.get(
-                            numericId
-                        ) || null
+                    log(
+                        "SL calculado = " +
+                        formatPrice(sl) +
+                        " | " +
+                        count +
+                        " velas cerradas | TF=" +
+                        timeframeText(period),
+                        "ok"
                     );
 
-                },
-                timeout
-            );
-        }
+
+                    resolve(sl);
+
+                } catch (error) {
+
+                    log(
+                        "Error calculando SL: " +
+                        error.message,
+                        "error"
+                    );
+
+                    resolve(null);
+                }
+
+            },
+
+            error: error => {
+
+                log(
+                    "Error obteniendo trendbars: " +
+                    JSON.stringify(error),
+                    "error"
+                );
+
+                resolve(null);
+            }
+
+        });
+
+    });
+}
+
+
+/* ============================================================
+   DECODIFICAR TRENDBAR
+   ============================================================ */
+
+function decodeLow(bar) {
+
+    return decodePriceField(
+        bar,
+        "low",
+        "Low"
     );
 }
 
 
-/* =========================================================
-   CUENTA / DIVISA
-========================================================= */
+function decodeHigh(bar) {
 
-async function loadAccountData() {
+    const low =
+        decodePriceField(
+            bar,
+            "low",
+            "Low"
+        );
+
+    const deltaHigh =
+        decodePriceField(
+            bar,
+            "deltaHigh",
+            "DeltaHigh"
+        );
 
     if (
-        accountInfo &&
-        accountGroupInfo
+        Number.isFinite(low) &&
+        Number.isFinite(deltaHigh)
     ) {
-        return;
+
+        return low +
+            deltaHigh;
     }
 
-
-    const accountPromise =
-        new Promise(
-            (resolve, reject) => {
-
-                getAccountInformation(
-                    adapter,
-                    {}
-                )
-                .pipe(
-                    take(1)
-                )
-                .subscribe({
-                    next: resolve,
-                    error: reject
-                });
-            }
-        );
-
-
-    const groupPromise =
-        new Promise(
-            (resolve, reject) => {
-
-                getAccountGroupInformation(
-                    adapter,
-                    {}
-                )
-                .pipe(
-                    take(1)
-                )
-                .subscribe({
-                    next: resolve,
-                    error: reject
-                });
-            }
-        );
-
-
-    const [
-        accountResponse,
-        groupResponse
-    ] =
-        await Promise.all([
-            accountPromise,
-            groupPromise
-        ]);
-
-
-    accountInfo =
-        getPayload(
-            accountResponse
-        );
-
-
-    accountGroupInfo =
-        getPayload(
-            groupResponse
-        );
-
-
-    const trader =
+    const directHigh =
         getField(
-            accountInfo,
-            "Trader",
-            "trader"
-        ) || accountInfo;
+            bar,
+            "high",
+            "High"
+        );
+
+    const numberHigh =
+        Number(
+            directHigh
+        );
+
+    if (
+        Number.isFinite(
+            numberHigh
+        )
+    ) {
+
+        return numberHigh;
+    }
+
+    return NaN;
+}
 
 
-    depositAssetId =
+function decodePriceField(
+    bar,
+    normalName,
+    capitalName
+) {
+
+    const direct =
         Number(
             getField(
-                trader,
-                "depositAssetId",
-                "DepositAssetId"
+                bar,
+                normalName,
+                capitalName
             )
         );
 
-
-    let group =
-        getField(
-            accountGroupInfo,
-            "AccountGroup",
-            "accountGroup",
-            "Group",
-            "group"
-        );
-
-
-    if (!group) {
-        group = accountGroupInfo;
-    }
-
-
-    depositCurrency =
-        String(
-            getField(
-                group,
-                "depositCurrency",
-                "DepositCurrency"
-            ) || ""
-        ).toUpperCase();
-
-
     if (
-        !depositCurrency
+        Number.isFinite(
+            direct
+        )
     ) {
 
-        log(
-            "No se pudo determinar la divisa de depósito.",
-            "warning"
-        );
+        /*
+           ProtoTrendbar usa precios
+           absolutos en 1/100000.
+        */
 
-    } else {
-
-        riskCurrencyNote.textContent =
-            `Riesgo expresado en ${depositCurrency}`;
-
-        log(
-            `Divisa de depósito: ${depositCurrency}`,
-            "ok"
-        );
+        return direct / 100000;
     }
 
 
-    log(
-        `DepositAssetId: ${depositAssetId}`,
-        "normal"
-    );
+    const deltaName =
+        normalName === "low"
+            ? null
+            : "delta" +
+              normalName.charAt(0)
+                  .toUpperCase() +
+              normalName.slice(1);
 
+    if (deltaName) {
 
-    updateRiskDisplay();
+        const delta =
+            Number(
+                getField(
+                    bar,
+                    deltaName,
+                    deltaName.charAt(0)
+                        .toUpperCase() +
+                    deltaName.slice(1)
+                )
+            );
+
+        if (
+            Number.isFinite(
+                delta
+            )
+        ) {
+
+            const low =
+                decodeLow(
+                    bar
+                );
+
+            return low +
+                delta;
+        }
+    }
+
+    return NaN;
 }
 
 
-/* =========================================================
-   CONVERSIÓN DE PRECIOS DE QUOTES
-========================================================= */
+/* ============================================================
+   TIMEFRAME
+   ============================================================ */
 
-function normalizeRiskQuotePrice(
-    value
+function timeframeMilliseconds(
+    period
 ) {
 
-    const n =
-        Number(value);
+    switch (Number(period)) {
+
+        case 1:
+            return 60 * 1000;
+
+        case 2:
+            return 2 * 60 * 1000;
+
+        case 3:
+            return 3 * 60 * 1000;
+
+        case 4:
+            return 4 * 60 * 1000;
+
+        case 5:
+            return 5 * 60 * 1000;
+
+        case 6:
+            return 10 * 60 * 1000;
+
+        case 7:
+            return 15 * 60 * 1000;
+
+        case 8:
+            return 30 * 60 * 1000;
+
+        case 9:
+            return 60 * 60 * 1000;
+
+        case 10:
+            return 4 * 60 * 60 * 1000;
+
+        case 11:
+            return 12 * 60 * 60 * 1000;
+
+        case 12:
+            return 24 * 60 * 60 * 1000;
+
+        case 13:
+            return 7 * 24 * 60 * 60 * 1000;
+
+        case 14:
+            return 30 * 24 * 60 * 60 * 1000;
+
+        default:
+            return 60 * 1000;
+    }
+}
+
+
+function timeframeText(period) {
+
+    const names = {
+
+        1: "M1",
+        2: "M2",
+        3: "M3",
+        4: "M4",
+        5: "M5",
+        6: "M10",
+        7: "M15",
+        8: "M30",
+        9: "H1",
+        10: "H4",
+        11: "H12",
+        12: "D1",
+        13: "W1",
+        14: "MN1"
+
+    };
+
+    return names[
+        Number(period)
+    ] || "M1";
+}
+
+
+/* ============================================================
+   VOLUMEN POR RIESGO
+   ============================================================ */
+
+async function calculateRiskVolume(
+    side,
+    entryReference,
+    sl,
+    riskMoney
+) {
+
+    const distance =
+        Math.abs(
+            entryReference - sl
+        );
 
 
     if (
-        !Number.isFinite(n) ||
-        n <= 0
+        !Number.isFinite(distance) ||
+        distance <= 0
     ) {
+
+        log(
+            "Distancia SL inválida.",
+            "error"
+        );
+
         return null;
     }
 
 
-    /*
-       Los precios de FX de algunos eventos
-       pueden venir en formato interno.
-
-       Solamente normalizamos valores claramente
-       grandes para no tocar precios normales.
-    */
-
-    if (
-        n > 10000
-    ) {
-
-        return n / 100000;
-    }
-
-
-    return n;
-}
-
-
-/* =========================================================
-   BÚSQUEDA DE PAR DE CONVERSIÓN
-========================================================= */
-
-function findConversionSymbol(
-    fromCurrency,
-    toCurrency
-) {
-
-    const direct =
-        (
-            String(fromCurrency) +
-            String(toCurrency)
-        ).toUpperCase();
-
-
-    const inverse =
-        (
-            String(toCurrency) +
-            String(fromCurrency)
-        ).toUpperCase();
-
-
-    let directSymbol =
-        allSymbols.find(
-            s => {
-
-                const name =
-                    String(
-                        getField(
-                            s,
-                            "Name",
-                            "name"
-                        ) || ""
-                    ).toUpperCase();
-
-                return (
-                    name === direct ||
-                    name.startsWith(
-                        direct
-                    )
-                );
-            }
-        );
-
-
-    if (directSymbol) {
-
-        return {
-            symbol: directSymbol,
-            inverse: false
-        };
-    }
-
-
-    let inverseSymbol =
-        allSymbols.find(
-            s => {
-
-                const name =
-                    String(
-                        getField(
-                            s,
-                            "Name",
-                            "name"
-                        ) || ""
-                    ).toUpperCase();
-
-                return (
-                    name === inverse ||
-                    name.startsWith(
-                        inverse
-                    )
-                );
-            }
-        );
-
-
-    if (inverseSymbol) {
-
-        return {
-            symbol: inverseSymbol,
-            inverse: true
-        };
-    }
-
-
-    return null;
-}
-
-
-/* =========================================================
-   CONVERSIÓN QUOTE -> DEPÓSITO
-========================================================= */
-
-async function getQuoteToDepositConversion(
-    entryEstimate
-) {
-
-    const quoteAssetId =
-        Number(
-            getField(
-                symbolInfo,
-                "quoteAssetId",
-                "QuoteAssetId"
-            )
-        );
-
-
-    const baseAssetId =
-        Number(
-            getField(
-                symbolInfo,
-                "baseAssetId",
-                "BaseAssetId"
-            )
-        );
-
-
-    /*
-       Caso ideal:
-       quote currency == deposit currency.
-    */
-
-    if (
-        depositAssetId &&
-        quoteAssetId &&
-        depositAssetId === quoteAssetId
-    ) {
-
-        return {
-            rate: 1,
-            source: "quote=deposit"
-        };
-    }
-
-
-    /*
-       Necesitamos las divisas del símbolo.
-       Para FX usamos el nombre BASEQUOTE.
-    */
-
-    const cleanName =
-        String(symbolName)
-            .toUpperCase()
-            .replace(/[^A-Z]/g, "");
-
-
-    if (
-        cleanName.length !== 6
-    ) {
-
-        /*
-           Para símbolos que no son FX,
-           si el quoteAssetId coincide ya
-           habremos salido arriba.
-
-           No inventamos conversiones.
-        */
-
-        throw new Error(
-            "No hay una conversión segura disponible para este símbolo."
-        );
-    }
-
-
-    const baseCurrency =
-        cleanName.slice(0, 3);
-
     const quoteCurrency =
-        cleanName.slice(3, 6);
-
-
-    /*
-       Si tenemos divisa de depósito,
-       podemos usarla.
-    */
-
-    if (
-        !depositCurrency ||
-        depositCurrency.length !== 3
-    ) {
-
-        throw new Error(
-            "No se pudo determinar la divisa de depósito."
+        getQuoteCurrency(
+            currentSymbolName
         );
+
+
+    if (!quoteCurrency) {
+
+        log(
+            "No se pudo determinar la moneda cotizada de " +
+            currentSymbolName,
+            "error"
+        );
+
+        return null;
     }
 
-
-    /*
-       BASE = DEPOSITO
-
-       Ejemplo:
-       USDJPY con cuenta USD.
-
-       1 JPY = 1 / USDJPY.
-       Para ser conservadores usamos ASK.
-    */
-
-    if (
-        baseCurrency ===
-        depositCurrency
-    ) {
-
-        const ask =
-            normalizeRiskQuotePrice(
-                lastValidAsk
-            );
-
-
-        if (
-            !ask ||
-            ask <= 0
-        ) {
-
-            throw new Error(
-                "No hay ASK válido de cTrader para calcular la conversión."
-            );
-        }
-
-
-        return {
-            rate: 1 / ask,
-            source: `${symbolName} inverso`
-        };
-    }
-
-
-    /*
-       QUOTE = DEPOSITO
-    */
-
-    if (
-        quoteCurrency ===
-        depositCurrency
-    ) {
-
-        return {
-            rate: 1,
-            source: "quoteCurrency=depositCurrency"
-        };
-    }
-
-
-    /*
-       Cross currency.
-
-       Ejemplo hipotético:
-       EURGBP con cuenta USD.
-
-       Buscamos GBPUSD o USDGBP.
-    */
 
     const conversion =
-        findConversionSymbol(
+        getQuoteToDepositConversion(
             quoteCurrency,
             depositCurrency
         );
 
 
     if (
-        !conversion
-    ) {
-
-        throw new Error(
-            `No existe un par de conversión disponible ${quoteCurrency}${depositCurrency}.`
-        );
-    }
-
-
-    const conversionId =
-        Number(
-            getField(
-                conversion.symbol,
-                "Id",
-                "id"
-            )
-        );
-
-
-    if (
-        !subscribedQuoteSymbols.has(
-            conversionId
-        )
-    ) {
-
-        await subscribeSymbolQuotes(
-            conversionId
-        );
-
-        subscribedQuoteSymbols.add(
-            conversionId
-        );
-    }
-
-
-    const quote =
-        await waitForQuote(
-            conversionId,
-            1500
-        );
-
-
-    if (!quote) {
-
-        throw new Error(
-            `No se recibió cotización de ${String(
-                getField(
-                    conversion.symbol,
-                    "Name",
-                    "name"
-                )
-            )}.`
-        );
-    }
-
-
-    const bid =
-        normalizeRiskQuotePrice(
-            quote.bid
-        );
-
-
-    const ask =
-        normalizeRiskQuotePrice(
-            quote.ask
-        );
-
-
-    if (
-        conversion.inverse
-    ) {
-
-        /*
-           Tenemos DEPOSIT/QUOTE.
-
-           Para convertir quote -> deposit
-           usamos 1 / ASK.
-        */
-
-        if (
-            !ask ||
-            ask <= 0
-        ) {
-
-            throw new Error(
-                "ASK inválido para conversión."
-            );
-        }
-
-
-        return {
-            rate: 1 / ask,
-            source:
-                `${String(
-                    getField(
-                        conversion.symbol,
-                        "Name",
-                        "name"
-                    )
-                )} inverso`
-        };
-    }
-
-
-    /*
-       Tenemos QUOTE/DEPOSIT.
-
-       Para convertir quote -> deposit
-       usamos BID.
-    */
-
-    if (
-        !bid ||
-        bid <= 0
-    ) {
-
-        throw new Error(
-            "BID inválido para conversión."
-        );
-    }
-
-
-    return {
-        rate: bid,
-        source:
-            String(
-                getField(
-                    conversion.symbol,
-                    "Name",
-                    "name"
-                )
-            )
-    };
-}
-
-
-/* =========================================================
-   TIMEFRAME
-========================================================= */
-
-function getCurrentBarStartTimestamp(
-    timeframe
-) {
-
-    const tf =
-        Number(timeframe);
-
-
-    const now =
-        Date.now();
-
-
-    const minutesMap = {
-        1: 1,
-        2: 2,
-        3: 3,
-        4: 4,
-        5: 5,
-        6: 10,
-        7: 15,
-        8: 30,
-        9: 60,
-        10: 240,
-        11: 720,
-        12: 1440,
-        13: 10080,
-        14: 43200
-    };
-
-
-    const minutes =
-        minutesMap[tf];
-
-
-    if (!minutes) {
-        throw new Error(
-            "Timeframe no válido."
-        );
-    }
-
-
-    const ms =
-        minutes *
-        60 *
-        1000;
-
-
-    return Math.floor(
-        now / ms
-    ) * ms;
-}
-
-
-/* =========================================================
-   TRENDBARS CERRADAS
-========================================================= */
-
-async function getClosedTrendbars(
-    count,
-    timeframe
-) {
-
-    const currentBarStart =
-        getCurrentBarStartTimestamp(
-            timeframe
-        );
-
-
-    const period =
-        Number(timeframe);
-
-
-    /*
-       Pedimos suficientes barras para garantizar
-       que podamos eliminar la actual.
-    */
-
-    const requestedCount =
-        Math.max(
-            Number(count) + 10,
-            50
-        );
-
-
-    const fromTimestamp =
-        Math.floor(
-            (
-                currentBarStart -
-                (
-                    requestedCount *
-                    60 *
-                    1000 *
-                    2
-                )
-            ) / 1000
-        );
-
-
-    const toTimestamp =
-        Math.floor(
-            Date.now() / 1000
-        );
-
-
-    const response =
-        await new Promise(
-            (resolve, reject) => {
-
-                getTrendbarList(
-                    adapter,
-                    {
-                        symbolId:
-                            Number(symbolId),
-
-                        period,
-
-                        fromTimestamp,
-
-                        toTimestamp,
-
-                        count:
-                            requestedCount,
-
-                        type:
-                            ServerInterfaces
-                                .ProtoTrendbarType
-                                .REGULAR_OHLC
-                    }
-                )
-                .pipe(
-                    take(1)
-                )
-                .subscribe({
-                    next: resolve,
-                    error: reject
-                });
-            }
-        );
-
-
-    const payload =
-        getPayload(response);
-
-
-    let bars =
-        getField(
-            payload,
-            "Trendbar",
-            "trendbar",
-            "Trendbars",
-            "trendbars"
-        );
-
-
-    if (
-        !Array.isArray(bars)
-    ) {
-
-        if (
-            Array.isArray(payload)
-        ) {
-            bars = payload;
-        } else {
-            bars = [];
-        }
-    }
-
-
-    const result = [];
-
-
-    for (
-        const bar of bars
-    ) {
-
-        const utcMinutes =
-            Number(
-                getField(
-                    bar,
-                    "utcTimestampInMinutes",
-                    "UtcTimestampInMinutes"
-                )
-            );
-
-
-        if (
-            !Number.isFinite(
-                utcMinutes
-            )
-        ) {
-            continue;
-        }
-
-
-        const barStart =
-            utcMinutes *
-            60 *
-            1000;
-
-
-        /*
-           MUY IMPORTANTE:
-           excluimos la vela actual.
-        */
-
-        if (
-            barStart >=
-            currentBarStart
-        ) {
-            continue;
-        }
-
-
-        const low =
-            Number(
-                getField(
-                    bar,
-                    "low",
-                    "Low"
-                )
-            );
-
-
-        const deltaOpen =
-            Number(
-                getField(
-                    bar,
-                    "deltaOpen",
-                    "DeltaOpen"
-                )
-            );
-
-
-        const deltaClose =
-            Number(
-                getField(
-                    bar,
-                    "deltaClose",
-                    "DeltaClose"
-                )
-            );
-
-
-        const deltaHigh =
-            Number(
-                getField(
-                    bar,
-                    "deltaHigh",
-                    "DeltaHigh"
-                )
-            );
-
-
-        if (
-            !Number.isFinite(low) ||
-            !Number.isFinite(deltaOpen) ||
-            !Number.isFinite(deltaClose) ||
-            !Number.isFinite(deltaHigh)
-        ) {
-            continue;
-        }
-
-
-        result.push({
-            timestamp: barStart,
-
-            open:
-                (
-                    low +
-                    deltaOpen
-                ) / 100000,
-
-            close:
-                (
-                    low +
-                    deltaClose
-                ) / 100000,
-
-            high:
-                (
-                    low +
-                    deltaHigh
-                ) / 100000,
-
-            low:
-                low / 100000
-        });
-    }
-
-
-    result.sort(
-        (a, b) =>
-            a.timestamp -
-            b.timestamp
-    );
-
-
-    return result.slice(
-        -Number(count)
-    );
-}
-
-
-/* =========================================================
-   SL ABSOLUTO
-========================================================= */
-
-async function calculateSL(
-    side,
-    count,
-    timeframe
-) {
-
-    const bars =
-        await getClosedTrendbars(
-            count,
-            timeframe
-        );
-
-
-    if (
-        bars.length <
-        Number(count)
-    ) {
-
-        throw new Error(
-            `No hay suficientes velas cerradas. Disponibles: ${bars.length}, necesarias: ${count}.`
-        );
-    }
-
-
-    if (
-        side === "BUY"
-    ) {
-
-        let absoluteLow =
-            Infinity;
-
-
-        for (
-            const bar of bars
-        ) {
-
-            if (
-                bar.low <
-                absoluteLow
-            ) {
-
-                absoluteLow =
-                    bar.low;
-            }
-        }
-
-
-        if (
-            !Number.isFinite(
-                absoluteLow
-            )
-        ) {
-
-            throw new Error(
-                "No se pudo calcular el mínimo absoluto."
-            );
-        }
-
-
-        return absoluteLow;
-    }
-
-
-    let absoluteHigh =
-        -Infinity;
-
-
-    for (
-        const bar of bars
-    ) {
-
-        if (
-            bar.high >
-            absoluteHigh
-        ) {
-
-            absoluteHigh =
-                bar.high;
-        }
-    }
-
-
-    if (
+        !conversion ||
         !Number.isFinite(
-            absoluteHigh
-        )
-    ) {
-
-        throw new Error(
-            "No se pudo calcular el máximo absoluto."
-        );
-    }
-
-
-    return absoluteHigh;
-}
-
-
-/* =========================================================
-   VOLUMEN SEGÚN RIESGO
-========================================================= */
-
-function floorToStep(
-    value,
-    step
-) {
-
-    if (
-        !Number.isFinite(value) ||
-        !Number.isFinite(step) ||
-        step <= 0
-    ) {
-        return value;
-    }
-
-
-    return Math.floor(
-        value / step
-    ) * step;
-}
-
-
-async function calculateRiskVolume(
-    side,
-    sl,
-    targetRisk
-) {
-
-    const entryEstimateRaw =
-        side === "BUY"
-            ? lastValidAsk
-            : lastValidBid;
-
-
-    const entryEstimate =
-        normalizeRiskQuotePrice(
-            entryEstimateRaw
-        );
-
-
-    if (
-        !entryEstimate ||
-        entryEstimate <= 0
-    ) {
-
-        throw new Error(
-            "No existe un precio válido de cTrader para calcular el volumen."
-        );
-    }
-
-
-    const distance =
-        Math.abs(
-            entryEstimate -
-            sl
-        );
-
-
-    if (
-        distance <= 0
-    ) {
-
-        throw new Error(
-            "La distancia entre entrada y SL es cero."
-        );
-    }
-
-
-    /*
-       Nunca se usa el precio del indicador.
-       Este precio viene exclusivamente de cTrader
-       y SOLO se utiliza para dimensionar el volumen.
-    */
-
-    const conversion =
-        await getQuoteToDepositConversion(
-            entryEstimate
-        );
-
-
-    const conversionRate =
-        Number(
             conversion.rate
-        );
-
-
-    if (
-        !Number.isFinite(
-            conversionRate
         ) ||
-        conversionRate <= 0
+        conversion.rate <= 0
     ) {
 
-        throw new Error(
-            "Conversión de divisa inválida."
+        log(
+            "No hay conversión fiable " +
+            quoteCurrency +
+            " -> " +
+            (
+                depositCurrency ||
+                "moneda de depósito"
+            ) +
+            ". Se cancela la operación para no falsear el riesgo.",
+            "error"
         );
+
+        return null;
     }
 
 
     /*
-       Volumen protocolario:
-       100000 = 1000 unidades.
-       Por tanto:
-       unidades = volumen / 100.
+       Pérdida por unidad en moneda cotizada:
+
+       distancia de precio × unidades
+
+       Convertimos después a moneda de depósito.
     */
 
-    const rawUnits =
-        targetRisk /
-        (
-            distance *
-            conversionRate
-        );
+    const riskInQuote =
+        riskMoney /
+        conversion.rate;
 
+
+    let units =
+        riskInQuote /
+        distance;
+
+
+    if (
+        !Number.isFinite(units) ||
+        units <= 0
+    ) {
+
+        return null;
+    }
+
+
+    /*
+       Proto volume:
+
+       100 = 1 unidad.
+
+       Ejemplo:
+       100000 = 1000 unidades.
+    */
 
     const rawProtocolVolume =
-        rawUnits * 100;
+        units * 100;
 
 
     const minVolume =
@@ -3286,22 +3594,22 @@ async function calculateRiskVolume(
         );
 
 
-    const stepVolume =
-        Number(
-            getField(
-                symbolInfo,
-                "stepVolume",
-                "StepVolume"
-            )
-        );
-
-
     const maxVolume =
         Number(
             getField(
                 symbolInfo,
                 "maxVolume",
                 "MaxVolume"
+            )
+        );
+
+
+    const stepVolume =
+        Number(
+            getField(
+                symbolInfo,
+                "stepVolume",
+                "StepVolume"
             )
         );
 
@@ -3310,36 +3618,41 @@ async function calculateRiskVolume(
         !Number.isFinite(
             minVolume
         ) ||
-        minVolume <= 0
+        !Number.isFinite(
+            stepVolume
+        )
     ) {
 
-        throw new Error(
-            "No se pudo obtener minVolume de cTrader."
+        log(
+            "El símbolo no proporciona minVolume/stepVolume válidos.",
+            "error"
         );
+
+        return null;
     }
 
 
-    const safeStep =
-        (
-            Number.isFinite(
-                stepVolume
-            ) &&
-            stepVolume > 0
-        )
-            ? stepVolume
-            : minVolume;
+    /*
+       Redondeamos HACIA ABAJO.
 
+       Así evitamos superar el riesgo
+       solicitado por el escalón de volumen.
+    */
 
     let volume =
-        floorToStep(
-            rawProtocolVolume,
-            safeStep
-        );
+        Math.floor(
+            rawProtocolVolume /
+            stepVolume
+        ) *
+        stepVolume;
 
 
     /*
-       Si el cálculo da menos del mínimo,
-       cTrader obliga al mínimo.
+       Si queda por debajo del mínimo,
+       utilizamos el mínimo del broker.
+
+       En ese caso el riesgo real puede
+       ser superior al solicitado.
     */
 
     if (
@@ -3351,785 +3664,455 @@ async function calculateRiskVolume(
             minVolume;
 
         log(
-            "El volumen calculado es inferior al mínimo de cTrader. Se utilizará minVolume.",
-            "warning"
+            "El volumen calculado estaba por debajo del mínimo del broker. " +
+            "Se utiliza minVolume=" +
+            volume,
+            "warn"
         );
     }
 
-
-    /*
-       Nunca superar maxVolume.
-    */
 
     if (
         Number.isFinite(
             maxVolume
         ) &&
         maxVolume > 0 &&
-        volume > maxVolume
+        volume >
+        maxVolume
     ) {
 
         volume =
-            floorToStep(
-                maxVolume,
-                safeStep
-            );
+            maxVolume;
 
         log(
-            "El volumen calculado supera maxVolume. Se ha limitado al máximo de cTrader.",
-            "warning"
+            "El volumen calculado supera maxVolume. " +
+            "Se utiliza maxVolume=" +
+            volume,
+            "warn"
         );
     }
 
 
-    const units =
+    const finalUnits =
         volume / 100;
 
 
     const estimatedRisk =
-        units *
+        finalUnits *
         distance *
-        conversionRate;
+        conversion.rate;
 
 
     log(
-        `Riesgo objetivo=${targetRisk.toFixed(2)} ${depositCurrency || ""}`,
-        "normal"
-    );
-
-
-    log(
-        `Entrada cTrader para cálculo=${entryEstimate}`,
-        "normal"
-    );
-
-
-    log(
-        `Distancia SL=${distance}`,
-        "normal"
-    );
-
-
-    log(
-        `Conversión quote→deposit=${conversionRate} (${conversion.source})`,
-        "normal"
-    );
-
-
-    log(
-        `Volumen calculado=${volume} (${units} unidades)`,
-        "ok"
-    );
-
-
-    log(
-        `Riesgo estimado con volumen=${estimatedRisk.toFixed(2)} ${depositCurrency || ""}`,
+        "Riesgo=" +
+        riskMoney.toFixed(2) +
+        " | Distancia SL=" +
+        distance +
+        " | Unidades=" +
+        finalUnits +
+        " | Volume=" +
+        volume +
+        " | Riesgo estimado=" +
+        estimatedRisk.toFixed(2) +
+        " " +
+        (
+            depositCurrency ||
+            ""
+        ),
         "ok"
     );
 
 
     return {
+
         volume,
-        units,
+
+        units:
+            finalUnits,
+
         estimatedRisk,
-        conversionRate,
-        entryEstimate,
-        distance
+
+        conversionRate:
+            conversion.rate
+
     };
 }
 
 
-/* =========================================================
-   EXTRACCIÓN POSITION ID
-========================================================= */
+/* ============================================================
+   MONEDAS
+   ============================================================ */
 
-function extractPositionId(
-    payload
+function getQuoteCurrency(
+    symbol
 ) {
 
-    const position =
-        getField(
-            payload,
-            "Position",
-            "position"
-        );
+    if (
+        !symbol ||
+        symbol.length < 6
+    ) {
 
+        return null;
+    }
 
-    const order =
-        getField(
-            payload,
-            "Order",
-            "order"
-        );
-
-
-    const deal =
-        getField(
-            payload,
-            "Deal",
-            "deal"
-        );
-
-
-    const candidates = [
-
-        getField(
-            position,
-            "PositionId",
-            "positionId"
-        ),
-
-        getField(
-            order,
-            "PositionId",
-            "positionId"
-        ),
-
-        getField(
-            deal,
-            "PositionId",
-            "positionId"
-        ),
-
-        getField(
-            payload,
-            "PositionId",
-            "positionId"
+    return symbol
+        .substring(
+            symbol.length - 3
         )
-
-    ];
-
-
-    for (
-        const value of candidates
-    ) {
-
-        const n =
-            Number(value);
-
-
-        if (
-            Number.isFinite(n) &&
-            n > 0
-        ) {
-
-            return n;
-        }
-    }
-
-
-    return null;
+        .toUpperCase();
 }
 
 
-/* =========================================================
-   EXTRACCIÓN PRECIO EJECUCIÓN
-========================================================= */
-
-function extractExecutionPrice(
-    payload
+function getBaseCurrency(
+    symbol
 ) {
 
-    const position =
-        getField(
-            payload,
-            "Position",
-            "position"
-        );
+    if (
+        !symbol ||
+        symbol.length < 6
+    ) {
 
+        return null;
+    }
 
-    const order =
-        getField(
-            payload,
-            "Order",
-            "order"
-        );
-
-
-    const deal =
-        getField(
-            payload,
-            "Deal",
-            "deal"
-        );
-
-
-    const candidates = [
-
-        getField(
-            position,
-            "Price",
-            "price"
-        ),
-
-        getField(
-            deal,
-            "ExecutionPrice",
-            "executionPrice"
-        ),
-
-        getField(
-            order,
-            "ExecutionPrice",
-            "executionPrice"
+    return symbol
+        .substring(
+            0,
+            3
         )
-
-    ];
-
-
-    for (
-        const value of candidates
-    ) {
-
-        const n =
-            Number(value);
-
-
-        if (
-            Number.isFinite(n) &&
-            n > 0
-        ) {
-
-            return n;
-        }
-    }
-
-
-    return null;
+        .toUpperCase();
 }
 
 
-/* =========================================================
-   EXTRACCIÓN VOLUMEN
-========================================================= */
-
-function extractVolume(
-    payload,
-    fallback
-) {
-
-    const position =
-        getField(
-            payload,
-            "Position",
-            "position"
-        );
-
-
-    const order =
-        getField(
-            payload,
-            "Order",
-            "order"
-        );
-
-
-    const deal =
-        getField(
-            payload,
-            "Deal",
-            "deal"
-        );
-
-
-    const tradeData =
-        getField(
-            position,
-            "TradeData",
-            "tradeData"
-        );
-
-
-    const candidates = [
-
-        getField(
-            tradeData,
-            "Volume",
-            "volume"
-        ),
-
-        getField(
-            position,
-            "Volume",
-            "volume"
-        ),
-
-        getField(
-            deal,
-            "Volume",
-            "volume"
-        ),
-
-        getField(
-            deal,
-            "FilledVolume",
-            "filledVolume"
-        ),
-
-        getField(
-            order,
-            "Volume",
-            "volume"
-        )
-
-    ];
-
-
-    for (
-        const value of candidates
-    ) {
-
-        const n =
-            Number(value);
-
-
-        if (
-            Number.isFinite(n) &&
-            n > 0
-        ) {
-
-            return n;
-        }
-    }
-
-
-    return fallback;
-}
-
-
-/* =========================================================
-   ESTADO POSITION
-========================================================= */
-
-function getPositionStatus(
-    payload
-) {
-
-    const position =
-        getField(
-            payload,
-            "Position",
-            "position"
-        );
-
-
-    return String(
-        getField(
-            position,
-            "PositionStatus",
-            "positionStatus"
-        ) || ""
-    ).toUpperCase();
-}
-
-
-/* =========================================================
-   DETECTAR CIERRE
-========================================================= */
-
-function isClosingFill(
-    payload
-) {
-
-    const positionStatus =
-        getPositionStatus(
-            payload
-        );
-
-
-    const position =
-        getField(
-            payload,
-            "Position",
-            "position"
-        );
-
-
-    const order =
-        getField(
-            payload,
-            "Order",
-            "order"
-        );
-
-
-    const deal =
-        getField(
-            payload,
-            "Deal",
-            "deal"
-        );
-
-
-    const closingOrder =
-        getField(
-            order,
-            "ClosingOrder",
-            "closingOrder"
-        );
-
-
-    const closeDetail =
-        getField(
-            deal,
-            "ClosePositionDetail",
-            "closePositionDetail"
-        );
-
-
-    return (
-        positionStatus === "CLOSED" ||
-        Boolean(closingOrder) ||
-        Boolean(closeDetail) ||
-        closePositionRequest
-    );
-}
-
-
-/* =========================================================
-   RESPUESTA CREATE ORDER
-========================================================= */
-
-function processOrderResponse(
-    response
-) {
-
-    const payload =
-        getPayload(response);
-
-
-    if (
-        !pendingTrade
-    ) {
-        return;
-    }
-
-
-    const positionId =
-        extractPositionId(
-            payload
-        );
-
-
-    const order =
-        getField(
-            payload,
-            "Order",
-            "order"
-        );
-
-
-    const orderId =
-        Number(
-            getField(
-                order,
-                "OrderId",
-                "orderId"
-            )
-        );
-
-
-    if (
-        Number.isFinite(
-            positionId
-        )
-    ) {
-
-        pendingTrade.positionId =
-            positionId;
-
-        lastPositionId =
-            positionId;
-    }
-
-
-    if (
-        Number.isFinite(
-            orderId
-        )
-    ) {
-
-        pendingTrade.orderId =
-            orderId;
-    }
-
-
-    log(
-        `ORDER_ACCEPTED. PositionId=${positionId || "---"} OrderId=${orderId || "---"}`,
-        "ok"
-    );
-}
-
-
-/* =========================================================
-   FILLED DE APERTURA
-========================================================= */
-
-async function handleOpeningFilled(
-    payload
+/* ============================================================
+   CONVERSIÓN QUOTE -> DEPOSIT
+   ============================================================ */
+
+function getQuoteToDepositConversion(
+    quote,
+    deposit
 ) {
 
     if (
-        !pendingTrade
+        !quote ||
+        !deposit
     ) {
 
-        log(
-            "ORDER_FILLED sin operación pendiente de apertura. Se ignora.",
-            "normal"
-        );
-
-        return;
+        return null;
     }
 
 
-    const eventPositionId =
-        extractPositionId(
-            payload
-        );
+    quote =
+        quote.toUpperCase();
 
-
-    const realEntry =
-        extractExecutionPrice(
-            payload
-        );
+    deposit =
+        deposit.toUpperCase();
 
 
     if (
-        !eventPositionId
+        quote === deposit
     ) {
 
-        log(
-            "ORDER_FILLED sin PositionId válido.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (
-        !realEntry
-    ) {
-
-        log(
-            "ORDER_FILLED sin precio real de ejecución.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    const filledVolume =
-        extractVolume(
-            payload,
-            pendingTrade.volume
-        );
-
-
-    /*
-       Primera ejecución.
-    */
-
-    if (
-        !activeTrade
-    ) {
-
-        activeTrade = {
-
-            side:
-                pendingTrade.side,
-
-            positionId:
-                eventPositionId,
-
-            volume:
-                filledVolume,
-
-            sl:
-                pendingTrade.sl,
-
-            tp:
-                null,
-
-            rr:
-                pendingTrade.rr,
-
-            targetRisk:
-                pendingTrade.targetRisk,
-
-            conversionRate:
-                pendingTrade.conversionRate,
-
-            clientOrderId:
-                pendingTrade.clientOrderId,
-
-            entry:
-                realEntry
+        return {
+            rate: 1
         };
+    }
 
 
-        lastPositionId =
-            eventPositionId;
+    /*
+       Buscamos pares disponibles
+       en la lista de símbolos del broker.
 
-        lastPositionVolume =
-            filledVolume;
+       Para convertir:
+
+       QUOTE -> DEPOSIT
+
+       necesitamos:
+
+       QUOTEDEPOSIT
+       o
+       DEPOSITQUOTE
+    */
 
 
-        operationLight.classList.add(
-            "on"
+    const direct =
+        findMarketRate(
+            quote + deposit
         );
 
+    if (direct !== null) {
 
-        positionDisplay.textContent =
-            String(
-                eventPositionId
+        return {
+            rate: direct
+        };
+    }
+
+
+    const inverse =
+        findMarketRate(
+            deposit + quote
+        );
+
+    if (
+        inverse !== null &&
+        inverse > 0
+    ) {
+
+        return {
+            rate:
+                1 / inverse
+        };
+    }
+
+
+    /*
+       Intentamos una conversión triangular
+       pasando por USD.
+
+       Esto cubre bastantes casos
+       habituales.
+    */
+
+    if (
+        quote !== "USD" &&
+        deposit !== "USD"
+    ) {
+
+        const quoteUsd =
+            findMarketRate(
+                quote + "USD"
             );
 
-
-        entryDisplay.textContent =
-            formatPrice(
-                realEntry
+        const usdQuote =
+            findMarketRate(
+                "USD" + quote
             );
 
-
-        orderVolumeDisplay.textContent =
-            `${filledVolume} (${filledVolume / 100} u)`;
-
-
-        log(
-            `ORDER_FILLED confirmado. Posición abierta ${eventPositionId}.`,
-            "ok"
-        );
-
-
-        log(
-            `Entrada REAL cTrader=${realEntry}`,
-            "ok"
-        );
-
-
-        log(
-            `Volumen ejecutado=${filledVolume}`,
-            "ok"
-        );
-
-
-        /*
-           El DOBLE RIESGO se consume SOLO cuando
-           la operación realmente se ha ejecutado.
-        */
+        let quoteToUsd =
+            quoteUsd;
 
         if (
-            pendingTrade.doubleRiskApplied
+            quoteToUsd === null &&
+            usdQuote !== null &&
+            usdQuote > 0
         ) {
 
-            doubleRiskArmed =
-                false;
-
-            doubleRiskButton.textContent =
-                "DOBLE RIESGO: OFF";
-
-            doubleRiskButton.classList.remove(
-                "active"
-            );
-
-            log(
-                "DOBLE RIESGO consumido: la operación fue ejecutada.",
-                "warning"
-            );
+            quoteToUsd =
+                1 / usdQuote;
         }
 
-    } else {
 
-        /*
-           Si existiera un fill adicional,
-           actualizamos volumen y precio real.
-        */
+        const usdDeposit =
+            findMarketRate(
+                "USD" + deposit
+            );
+
+        const depositUsd =
+            findMarketRate(
+                deposit + "USD"
+            );
+
+        let usdToDeposit =
+            usdDeposit;
 
         if (
-            activeTrade.positionId ===
-            eventPositionId
+            usdToDeposit === null &&
+            depositUsd !== null &&
+            depositUsd > 0
         ) {
 
-            activeTrade.volume =
-                filledVolume;
+            usdToDeposit =
+                1 / depositUsd;
+        }
 
-            activeTrade.entry =
-                realEntry;
 
-            lastPositionVolume =
-                filledVolume;
+        if (
+            quoteToUsd !== null &&
+            usdToDeposit !== null
+        ) {
 
-            entryDisplay.textContent =
-                formatPrice(
-                    realEntry
-                );
-
-            orderVolumeDisplay.textContent =
-                `${filledVolume} (${filledVolume / 100} u)`;
-
-            log(
-                `Fill adicional detectado. Volumen actualizado=${filledVolume}`,
-                "warning"
-            );
+            return {
+                rate:
+                    quoteToUsd *
+                    usdToDeposit
+            };
         }
     }
 
 
     /*
-       Validación del lado del SL.
+       Casos USD.
     */
+
+    if (quote === "USD") {
+
+        const usdDeposit =
+            findMarketRate(
+                "USD" + deposit
+            );
+
+        if (
+            usdDeposit !== null
+        ) {
+
+            return {
+                rate:
+                    usdDeposit
+            };
+        }
+
+
+        const depositUsd =
+            findMarketRate(
+                deposit + "USD"
+            );
+
+        if (
+            depositUsd !== null &&
+            depositUsd > 0
+        ) {
+
+            return {
+                rate:
+                    1 / depositUsd
+            };
+        }
+    }
+
+
+    if (deposit === "USD") {
+
+        const quoteUsd =
+            findMarketRate(
+                quote + "USD"
+            );
+
+        if (
+            quoteUsd !== null
+        ) {
+
+            return {
+                rate:
+                    quoteUsd
+            };
+        }
+
+
+        const usdQuote =
+            findMarketRate(
+                "USD" + quote
+            );
+
+        if (
+            usdQuote !== null &&
+            usdQuote > 0
+        ) {
+
+            return {
+                rate:
+                    1 / usdQuote
+            };
+        }
+    }
+
+
+    return null;
+}
+
+
+/* ============================================================
+   BUSCAR RATE
+   ============================================================ */
+
+function findMarketRate(
+    symbol
+) {
+
+    symbol =
+        symbol.toUpperCase();
+
+
+    /*
+       El símbolo principal puede coincidir
+       con el par que buscamos.
+    */
+
+    if (
+        currentSymbolName &&
+        currentSymbolName.toUpperCase()
+        === symbol
+    ) {
+
+        const bid =
+            lastBid;
+
+        const ask =
+            lastAsk;
+
+        if (
+            Number.isFinite(bid) &&
+            bid > 0 &&
+            Number.isFinite(ask) &&
+            ask > 0
+        ) {
+
+            return (
+                bid + ask
+            ) / 2;
+        }
+    }
+
+
+    /*
+       El SDK de este plugin no necesita
+       ejecutar ninguna operación para hacer
+       la conversión.
+
+       Si el símbolo de conversión no está
+       disponible en esta instancia, no
+       inventamos el tipo de cambio.
+    */
+
+    return null;
+}
+
+
+/* ============================================================
+   PROTECCIÓN SL / TP
+   ============================================================ */
+
+function calculateAndApplyProtection(
+    trade
+) {
+
+    const entry =
+        Number(
+            trade.executionPrice
+        );
 
     const sl =
-        activeTrade.sl;
+        Number(
+            trade.sl
+        );
 
 
     if (
-        activeTrade.side === "BUY" &&
-        sl >= realEntry
+        !Number.isFinite(entry) ||
+        !Number.isFinite(sl)
     ) {
 
         log(
-            `SL inválido para BUY: SL=${sl} >= entrada=${realEntry}.`,
+            "No se puede calcular TP: entrada/SL inválidos.",
             "error"
-        );
-
-        await emergencyClose(
-            "SL inválido tras ejecución"
         );
 
         return;
     }
 
 
-    if (
-        activeTrade.side === "SELL" &&
-        sl <= realEntry
-    ) {
-
-        log(
-            `SL inválido para SELL: SL=${sl} <= entrada=${realEntry}.`,
-            "error"
-        );
-
-        await emergencyClose(
-            "SL inválido tras ejecución"
-        );
-
-        return;
-    }
-
-
-    /*
-       TP basado SIEMPRE en:
-       precio real de entrada -> SL real -> RR.
-    */
-
-    const slDistance =
+    const distance =
         Math.abs(
-            realEntry -
-            sl
+            entry - sl
         );
 
 
@@ -4137,416 +4120,270 @@ async function handleOpeningFilled(
 
 
     if (
-        activeTrade.side === "BUY"
+        trade.side === "BUY"
     ) {
 
-        tp =
-            realEntry +
-            (
-                slDistance *
-                activeTrade.rr
+        if (
+            sl >= entry
+        ) {
+
+            log(
+                "SL inválido para COMPRA.",
+                "error"
             );
+
+            return;
+        }
+
+        tp =
+            entry +
+            distance *
+            trade.rr;
 
     } else {
 
-        tp =
-            realEntry -
-            (
-                slDistance *
-                activeTrade.rr
+        if (
+            sl <= entry
+        ) {
+
+            log(
+                "SL inválido para VENTA.",
+                "error"
             );
+
+            return;
+        }
+
+        tp =
+            entry -
+            distance *
+            trade.rr;
     }
 
 
-    const digits =
-        Number(
-            getField(
-                symbolInfo,
-                "digits",
-                "Digits"
-            )
-        ) || 5;
-
-
-    const normalizedSL =
-        Number(
-            sl.toFixed(
-                digits
-            )
+    tp =
+        normalizePrice(
+            tp
         );
 
 
-    const normalizedTP =
-        Number(
-            tp.toFixed(
-                digits
-            )
-        );
+    trade.tp =
+        tp;
 
+    trade.protectionRequested =
+        true;
 
-    activeTrade.sl =
-        normalizedSL;
-
-    activeTrade.tp =
-        normalizedTP;
-
-
-    pendingTrade.sl =
-        normalizedSL;
-
-
-    pendingTrade.tp =
-        normalizedTP;
-
-
-    pendingTrade.realEntry =
-        realEntry;
-
-
-    pendingTrade.actualRisk =
-        (
-            filledVolume / 100
-        ) *
-        slDistance *
-        pendingTrade.conversionRate;
-
-
-    slDisplay.textContent =
-        formatPrice(
-            normalizedSL
-        );
-
-
-    tpDisplay.textContent =
-        formatPrice(
-            normalizedTP
-        );
-
-
-    actualRiskDisplay.textContent =
-        formatMoney(
-            pendingTrade.actualRisk
-        );
-
-
-    log(
-        `SL final=${normalizedSL}`,
-        "ok"
-    );
-
-
-    log(
-        `TP final=${normalizedTP}`,
-        "ok"
-    );
-
-
-    log(
-        `Riesgo real estimado con entrada=${pendingTrade.actualRisk.toFixed(2)} ${depositCurrency || ""}`,
-        "ok"
-    );
-
-
-    tradePhase =
-        PHASE.PROTECTION_PENDING;
-
-
-    updateButtons();
-
-
-    sendProtection();
-}
-
-
-/* =========================================================
-   PROTECCIÓN
-========================================================= */
-
-function sendProtection() {
-
-    if (
-        !activeTrade ||
-        !pendingTrade ||
-        closePositionRequest
-    ) {
-        return;
-    }
-
-
-    const positionId =
-        Number(
-            activeTrade.positionId
-        );
-
-
-    const stopLoss =
-        Number(
-            activeTrade.sl
-        );
-
-
-    const takeProfit =
-        Number(
-            activeTrade.tp
-        );
-
-
-    if (
-        !Number.isFinite(
-            positionId
-        ) ||
-        !Number.isFinite(
-            stopLoss
-        ) ||
-        !Number.isFinite(
-            takeProfit
-        )
-    ) {
-
-        log(
-            "Datos inválidos para enviar SL/TP.",
-            "error"
-        );
-
-        handleProtectionFailure();
-
-        return;
-    }
-
-
-    protectionRequestActive =
+    trade.protectionPending =
         true;
 
 
+    /*
+       Guardamos la protección antes
+       de enviarla.
+    */
+
+    activeTrades.set(
+        trade.positionId,
+        trade
+    );
+
+
     log(
-        `Enviando protección. PositionId=${positionId} SL=${stopLoss} TP=${takeProfit}`,
-        "normal"
+        "Solicitando protección | " +
+        "Entrada=" +
+        formatPrice(entry) +
+        " | SL=" +
+        formatPrice(sl) +
+        " | TP=" +
+        formatPrice(tp) +
+        " | RR=1:" +
+        trade.rr,
+        "info"
     );
 
 
     modifyOrderProtection(
         adapter,
         {
-            positionId,
+            positionId:
+                trade.positionId,
 
-            stopLoss,
+            stopLoss:
+                sl,
 
-            takeProfit
+            takeProfit:
+                tp
         }
     )
-    .pipe(
-        take(1)
-    )
+    .pipe(take(1))
     .subscribe({
 
         next: response => {
 
             const payload =
-                getPayload(
-                    response
+                extractPayload(response);
+
+            const payloadType =
+                String(
+                    getField(
+                        payload,
+                        "PayloadType",
+                        "payloadType"
+                    ) || ""
+                ).toUpperCase();
+
+
+            /*
+               Algunas instalaciones pueden devolver
+               inicialmente ORDER_ACCEPTED y después
+               ORDER_REPLACED.
+
+               Por eso no marcamos todavía como
+               confirmado únicamente por ACCEPTED.
+            */
+
+            if (
+                payloadType.includes(
+                    "ORDER_ACCEPTED"
+                )
+            ) {
+
+                log(
+                    "Solicitud SL/TP aceptada. Esperando confirmación final.",
+                    "info"
                 );
+
+                return;
+            }
+
+
+            if (
+                payloadType.includes(
+                    "ORDER_REPLACED"
+                )
+            ) {
+
+                trade.protectionPending =
+                    false;
+
+                trade.protectionRequested =
+                    false;
+
+                trade.protectionConfirmed =
+                    true;
+
+                setSlLight(
+                    true
+                );
+
+                setTpLight(
+                    true
+                );
+
+                log(
+                    "SL y TP confirmados por cTrader.",
+                    "ok"
+                );
+
+                return;
+            }
 
 
             log(
-                `Respuesta modifyOrderProtection: ${String(
-                    getField(
-                        payload,
-                        "executionType",
-                        "ExecutionType"
-                    ) || "recibida"
-                )}`,
-                "normal"
+                "Respuesta protección: " +
+                payloadType,
+                "info"
             );
 
         },
 
-
         error: error => {
 
-            protectionRequestActive =
+            trade.protectionPending =
                 false;
 
-
-            const message =
-                String(
-                    error?.message ||
-                    error
-                );
-
+            trade.protectionRequested =
+                false;
 
             log(
-                `Error modifyOrderProtection: ${message}`,
-                "warning"
+                "Error colocando SL/TP: " +
+                JSON.stringify(error),
+                "error"
             );
 
+            /*
+               La posición sigue existiendo.
+               No la cerramos automáticamente.
+            */
 
-            if (
-                protectionRetryCount <
-                protectionRetryDelays.length
-            ) {
-
-                const delay =
-                    protectionRetryDelays[
-                        protectionRetryCount
-                    ];
-
-
-                protectionRetryCount++;
-
-
-                log(
-                    `Reintentando protección en ${delay} ms (${protectionRetryCount}/${protectionRetryDelays.length})`,
-                    "warning"
-                );
-
-
-                setTimeout(
-                    () => {
-
-                        if (
-                            activeTrade &&
-                            !closePositionRequest
-                        ) {
-
-                            sendProtection();
-                        }
-
-                    },
-                    delay
-                );
-
-            } else {
-
-                handleProtectionFailure();
-            }
+            updateTradeInfo(
+                trade
+            );
         }
+
     });
 }
 
 
-/* =========================================================
-   FALLO DE PROTECCIÓN
-========================================================= */
+/* ============================================================
+   CERRAR
+   ============================================================ */
 
-function handleProtectionFailure() {
+function executeClose() {
 
-    protectionRequestActive =
-        false;
+    /*
+       Seleccionamos una posición conocida.
 
+       Si existen varias, usamos la última
+       operación conocida.
+    */
 
-    if (
-        !activeTrade
-    ) {
-
-        return;
-    }
-
-
-    if (
-        closePositionRequest
-    ) {
-
-        return;
-    }
-
-
-    log(
-        "NO SE PUDO CONFIRMAR SL/TP. Se cerrará automáticamente la posición para no dejarla desnuda.",
-        "error"
-    );
-
-
-    setStatus(
-        "Protección fallida — cerrando posición",
-        "error"
-    );
-
-
-    emergencyClose(
-        "Fallo de protección"
-    );
-}
-
-
-/* =========================================================
-   CIERRE AUTOMÁTICO
-========================================================= */
-
-async function emergencyClose(
-    reason
-) {
-
-    if (
-        !activeTrade ||
-        closePositionRequest
-    ) {
-        return;
-    }
-
-
-    closePositionRequest =
-        true;
-
-    closeReason =
-        reason;
-
-    tradePhase =
-        PHASE.CLOSING;
-
-    closeRetryCount =
-        0;
-
-
-    closePositionButton.disabled =
-        true;
-
-    closePositionButton.textContent =
-        "CERRANDO...";
-
-
-    log(
-        `Cierre automático de seguridad: ${reason}`,
-        "error"
-    );
-
-
-    sendClosePosition();
-}
-
-
-/* =========================================================
-   SEND CLOSE
-========================================================= */
-
-function sendClosePosition() {
-
-    if (
-        !activeTrade
-    ) {
-        return;
-    }
-
-
-    const positionId =
-        Number(
-            activeTrade.positionId
-        );
-
-
-    const volume =
-        Number(
-            activeTrade.volume
+    const trades =
+        Array.from(
+            activeTrades.values()
+        )
+        .filter(
+            trade =>
+                trade &&
+                trade.filled &&
+                !trade.closed &&
+                trade.positionId !== null
         );
 
 
     if (
-        !Number.isFinite(positionId) ||
-        !Number.isFinite(volume) ||
-        volume <= 0
+        trades.length === 0
     ) {
 
         log(
-            "No se puede cerrar: PositionId o volumen inválido.",
+            "No hay ninguna posición conocida para cerrar.",
+            "warn"
+        );
+
+        updateCloseButton();
+
+        return;
+    }
+
+
+    const trade =
+        trades[
+            trades.length - 1
+        ];
+
+
+    /*
+       Verificamos que siga activa.
+       No utilizamos una posición ficticia.
+    */
+
+    if (
+        trade.positionId === null ||
+        trade.positionId === undefined
+    ) {
+
+        log(
+            "No existe PositionId válido.",
             "error"
         );
 
@@ -4554,1416 +4391,320 @@ function sendClosePosition() {
     }
 
 
+    trade.closeRequested =
+        true;
+
+
     log(
-        `closePosition PositionId=${positionId} Volume=${volume}`,
-        "normal"
+        "Solicitando cierre MARKET | PositionId=" +
+        trade.positionId,
+        "info"
     );
 
 
     closePosition(
         adapter,
         {
-            positionId,
-            volume
+            positionId:
+                trade.positionId,
+
+            volume:
+                trade.volume
         }
     )
-    .pipe(
-        take(1)
-    )
-    .subscribe({
-
-        next: response => {
-
-            const payload =
-                getPayload(
-                    response
-                );
-
-
-            const executionType =
-                String(
-                    getField(
-                        payload,
-                        "executionType",
-                        "ExecutionType"
-                    ) || ""
-                ).toUpperCase();
-
-
-            log(
-                `Respuesta closePosition: ${executionType || "recibida"}`,
-                "ok"
-            );
-        },
-
-
-        error: error => {
-
-            const message =
-                String(
-                    error?.message ||
-                    error
-                );
-
-
-            log(
-                `Error closePosition: ${message}`,
-                "warning"
-            );
-
-
-            retryClose();
-        }
-    });
-}
-
-
-function retryClose() {
-
-    if (
-        !activeTrade
-    ) {
-        return;
-    }
-
-
-    if (
-        closeRetryCount >=
-        closeRetryDelays.length
-    ) {
-
-        log(
-            "Se agotaron los reintentos automáticos de cierre.",
-            "error"
-        );
-
-        setStatus(
-            "ATENCIÓN: cierre no confirmado",
-            "error"
-        );
-
-        return;
-    }
-
-
-    const delay =
-        closeRetryDelays[
-            closeRetryCount
-        ];
-
-
-    closeRetryCount++;
-
-
-    log(
-        `Reintentando cierre en ${delay} ms (${closeRetryCount}/${closeRetryDelays.length})`,
-        "warning"
-    );
-
-
-    setTimeout(
-        () => {
-
-            if (
-                activeTrade &&
-                closePositionRequest
-            ) {
-
-                sendClosePosition();
-            }
-
-        },
-        delay
-    );
-}
-
-
-/* =========================================================
-   FINALIZAR OPERACIÓN
-========================================================= */
-
-function finishTrade(
-    payload
-) {
-
-    const closedPositionId =
-        activeTrade
-            ? activeTrade.positionId
-            : lastPositionId;
-
-
-    const deal =
-        getField(
-            payload,
-            "Deal",
-            "deal"
-        );
-
-
-    const closeDetail =
-        getField(
-            deal,
-            "ClosePositionDetail",
-            "closePositionDetail"
-        );
-
-
-    if (
-        closeDetail
-    ) {
-
-        const profit =
-            Number(
-                getField(
-                    closeDetail,
-                    "Profit",
-                    "profit"
-                )
-            );
-
-
-        const commission =
-            Number(
-                getField(
-                    closeDetail,
-                    "Commission",
-                    "commission"
-                )
-            );
-
-
-        const netProfit =
-            Number(
-                getField(
-                    closeDetail,
-                    "NetProfit",
-                    "netProfit"
-                )
-            );
-
-
-        if (
-            Number.isFinite(profit)
-        ) {
-
-            log(
-                `Profit cierre=${profit}`,
-                "normal"
-            );
-        }
-
-
-        if (
-            Number.isFinite(commission)
-        ) {
-
-            log(
-                `Comisión=${commission}`,
-                "normal"
-            );
-        }
-
-
-        if (
-            Number.isFinite(netProfit)
-        ) {
-
-            log(
-                `NetProfit=${netProfit}`,
-                "ok"
-            );
-        }
-    }
-
-
-    if (
-        closedPositionId
-    ) {
-
-        positionDisplay.textContent =
-            `${closedPositionId} — CERRADA`;
-    }
-
-
-    log(
-        `Posición ${closedPositionId || "---"} cerrada.`,
-        "ok"
-    );
-
-
-    activeTrade =
-        null;
-
-    pendingTrade =
-        null;
-
-    lastPositionId =
-        null;
-
-    lastPositionVolume =
-        null;
-
-    protectionSent =
-        false;
-
-    protectionRequestActive =
-        false;
-
-    protectionRetryCount =
-        0;
-
-    closePositionRequest =
-        false;
-
-    closeReason =
-        "";
-
-    closeRetryCount =
-        0;
-
-    tradePhase =
-        PHASE.IDLE;
-
-
-    closeConfirmTimer =
-        clearTimer(
-            closeConfirmTimer
-        );
-
-
-    closePositionButton.textContent =
-        "CERRAR POSICIÓN";
-
-
-    resetLights();
-
-
-    setStatus(
-        "Posición cerrada — listo para nueva operación",
-        "ok"
-    );
-
-
-    updateButtons();
-}
-
-
-/* =========================================================
-   EVENTOS DE EJECUCIÓN
-========================================================= */
-
-function processExecutionEvent(
-    response
-) {
-
-    const payload =
-        getPayload(response);
-
-
-    const executionType =
-        String(
-            getField(
-                payload,
-                "executionType",
-                "ExecutionType"
-            ) || ""
-        ).toUpperCase();
-
-
-    const eventPositionId =
-        extractPositionId(
-            payload
-        );
-
-
-    const positionStatus =
-        getPositionStatus(
-            payload
-        );
-
-
-    log(
-        `ExecutionEvent: ${executionType} | PositionId=${eventPositionId || "---"} | Status=${positionStatus || "---"}`,
-        "normal"
-    );
-
-
-    /* =====================================================
-       ORDER_ACCEPTED
-    ===================================================== */
-
-    if (
-        executionType ===
-        "ORDER_ACCEPTED"
-    ) {
-
-        /*
-           Si estamos cerrando, nunca tratar esto
-           como apertura.
-        */
-
-        if (
-            closePositionRequest &&
-            activeTrade &&
-            eventPositionId ===
-            activeTrade.positionId
-        ) {
-
-            log(
-                "ORDER_ACCEPTED de cierre recibido.",
-                "ok"
-            );
-
-            return;
-        }
-
-
-        /*
-           Si estamos enviando protección,
-           tampoco es una nueva entrada.
-        */
-
-        if (
-            protectionRequestActive &&
-            activeTrade &&
-            eventPositionId ===
-            activeTrade.positionId
-        ) {
-
-            log(
-                "ORDER_ACCEPTED correspondiente a la protección SL/TP.",
-                "normal"
-            );
-
-            return;
-        }
-
-
-        processOrderResponse(
-            response
-        );
-
-        return;
-    }
-
-
-    /* =====================================================
-       ORDER_FILLED
-    ===================================================== */
-
-    if (
-        executionType ===
-        "ORDER_FILLED"
-    ) {
-
-        /*
-           PRIMERO:
-           si existe posición activa y el fill
-           corresponde al cierre, finalizar.
-        */
-
-        if (
-            activeTrade &&
-            eventPositionId ===
-            activeTrade.positionId &&
-            isClosingFill(
-                payload
-            )
-        ) {
-
-            log(
-                `ORDER_FILLED de CIERRE confirmado. PositionId=${eventPositionId}`,
-                "ok"
-            );
-
-
-            finishTrade(
-                payload
-            );
-
-
-            return;
-        }
-
-
-        /*
-           Si hay pendingTrade y todavía no existe
-           activeTrade, es una apertura.
-        */
-
-        if (
-            pendingTrade &&
-            !activeTrade
-        ) {
-
-            handleOpeningFilled(
-                payload
-            );
-
-            return;
-        }
-
-
-        /*
-           Fill adicional de la apertura.
-        */
-
-        if (
-            pendingTrade &&
-            activeTrade &&
-            eventPositionId ===
-            activeTrade.positionId &&
-            !isClosingFill(
-                payload
-            )
-        ) {
-
-            handleOpeningFilled(
-                payload
-            );
-
-            return;
-        }
-
-
-        log(
-            "ORDER_FILLED no relacionado con la operación actual. Ignorado.",
-            "normal"
-        );
-
-        return;
-    }
-
-
-    /* =====================================================
-       ORDER_PARTIAL_FILL
-    ===================================================== */
-
-    if (
-        executionType ===
-        "ORDER_PARTIAL_FILL"
-    ) {
-
-        if (
-            pendingTrade &&
-            !activeTrade
-        ) {
-
-            log(
-                "ORDER_PARTIAL_FILL de apertura.",
-                "warning"
-            );
-
-            handleOpeningFilled(
-                payload
-            );
-
-            return;
-        }
-
-
-        if (
-            activeTrade &&
-            eventPositionId ===
-            activeTrade.positionId &&
-            !isClosingFill(
-                payload
-            )
-        ) {
-
-            log(
-                "ORDER_PARTIAL_FILL adicional.",
-                "warning"
-            );
-
-            handleOpeningFilled(
-                payload
-            );
-
-            return;
-        }
-
-
-        return;
-    }
-
-
-    /* =====================================================
-       ORDER_REPLACED
-       Confirmación de SL + TP
-    ===================================================== */
-
-    if (
-        executionType ===
-        "ORDER_REPLACED"
-    ) {
-
-        if (
-            activeTrade &&
-            pendingTrade &&
-            eventPositionId ===
-            activeTrade.positionId &&
-            !closePositionRequest
-        ) {
-
-            protectionSent =
-                true;
-
-            protectionRequestActive =
-                false;
-
-            protectionRetryCount =
-                0;
-
-
-            setLight(
-                slLight,
-                true
-            );
-
-
-            setLight(
-                tpLight,
-                true
-            );
-
-
-            log(
-                `SL CONFIRMADO por cTrader: ${activeTrade.sl}`,
-                "ok"
-            );
-
-
-            log(
-                `TP CONFIRMADO por cTrader: ${activeTrade.tp}`,
-                "ok"
-            );
-
-
-            pendingTrade =
-                null;
-
-
-            tradePhase =
-                PHASE.OPEN;
-
-
-            setStatus(
-                "Operación abierta — SL y TP confirmados",
-                "ok"
-            );
-
-
-            updateButtons();
-
-
-            return;
-        }
-
-
-        return;
-    }
-
-
-    /* =====================================================
-       ORDER_REJECTED
-    ===================================================== */
-
-    if (
-        executionType ===
-        "ORDER_REJECTED"
-    ) {
-
-        const errorCode =
-            String(
-                getField(
-                    payload,
-                    "errorCode",
-                    "ErrorCode",
-                    "errorMessage",
-                    "ErrorMessage"
-                ) || ""
-            );
-
-
-        log(
-            `ORDER_REJECTED ${errorCode}`,
-            "error"
-        );
-
-
-        /*
-           Rechazo del cierre.
-        */
-
-        if (
-            closePositionRequest &&
-            activeTrade &&
-            (
-                !eventPositionId ||
-                eventPositionId ===
-                activeTrade.positionId
-            )
-        ) {
-
-            closePositionRequest =
-                false;
-
-            tradePhase =
-                PHASE.OPEN;
-
-            closePositionButton.textContent =
-                "CERRAR POSICIÓN";
-
-
-            setStatus(
-                "Cierre rechazado — posición sigue abierta",
-                "error"
-            );
-
-
-            retryClose();
-
-            updateButtons();
-
-            return;
-        }
-
-
-        /*
-           Rechazo de apertura.
-           DOBLE RIESGO NO SE CONSUME.
-        */
-
-        if (
-            pendingTrade
-        ) {
-
-            pendingTrade =
-                null;
-
-            activeTrade =
-                null;
-
-            protectionRequestActive =
-                false;
-
-            protectionSent =
-                false;
-
-            protectionRetryCount =
-                0;
-
-            tradePhase =
-                PHASE.IDLE;
-
-
-            resetLights();
-
-
-            setStatus(
-                "Orden rechazada",
-                "error"
-            );
-
-
-            updateButtons();
-
-            return;
-        }
-
-
-        return;
-    }
-
-
-    /* =====================================================
-       ORDER_CANCELLED
-    ===================================================== */
-
-    if (
-        executionType ===
-        "ORDER_CANCELLED"
-    ) {
-
-        /*
-           Durante un cierre manual cTrader puede cancelar
-           primero la orden de protección y después mandar
-           el ORDER_FILLED del cierre.
-
-           NO desbloqueamos aquí si la posición ya figura CLOSED.
-        */
-
-        if (
-            activeTrade &&
-            eventPositionId ===
-            activeTrade.positionId &&
-            positionStatus ===
-            "CLOSED"
-        ) {
-
-            log(
-                "Orden asociada cancelada con posición ya CLOSED. Esperando confirmación final del cierre.",
-                "normal"
-            );
-
-            return;
-        }
-
-
-        if (
-            pendingTrade &&
-            !activeTrade
-        ) {
-
-            log(
-                "Orden de apertura cancelada.",
-                "warning"
-            );
-
-
-            pendingTrade =
-                null;
-
-            protectionRequestActive =
-                false;
-
-            tradePhase =
-                PHASE.IDLE;
-
-
-            resetLights();
-
-
-            setStatus(
-                "Orden cancelada",
-                "warning"
-            );
-
-
-            updateButtons();
-
-            return;
-        }
-
-
-        return;
-    }
-
-
-    /* =====================================================
-       OTROS
-    ===================================================== */
-
-    log(
-        `Evento no procesado específicamente: ${executionType}`,
-        "normal"
-    );
-}
-
-
-/* =========================================================
-   EJECUTAR OPERACIÓN
-========================================================= */
-
-async function executeTrade(
-    side
-) {
-
-    if (
-        tradePhase !==
-        PHASE.CONFIRM_BUY &&
-        tradePhase !==
-        PHASE.CONFIRM_SELL
-    ) {
-
-        if (
-            tradePhase !==
-            PHASE.IDLE
-        ) {
-            return;
-        }
-    }
-
-
-    if (
-        !connected ||
-        symbolId === null ||
-        !symbolInfo
-    ) {
-
-        log(
-            "Plugin no preparado para operar.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    const baseRisk =
-        getBaseRisk();
-
-
-    if (
-        baseRisk === null ||
-        baseRisk <= 0
-    ) {
-
-        log(
-            "Riesgo inválido.",
-            "error"
-        );
-
-        setStatus(
-            "Introduce un riesgo válido",
-            "error"
-        );
-
-        return;
-    }
-
-
-    const effectiveRisk =
-        doubleRiskArmed
-            ? baseRisk * 2
-            : baseRisk;
-
-
-    const snapshotRR =
-        selectedRR;
-
-
-    const snapshotCandleCount =
-        Math.max(
-            1,
-            Math.floor(
-                Number(
-                    candleCountInput.value
-                )
-            )
-        );
-
-
-    const snapshotTimeframe =
-        Number(
-            timeframeInput.value
-        );
-
-
-    /*
-       Bloqueamos inmediatamente para evitar
-       dos órdenes por doble toque o taps rápidos.
-    */
-
-    tradePhase =
-        PHASE.ENTRY_PENDING;
-
-
-    resetLights();
-
-    updateButtons();
-
-
-    setStatus(
-        `Preparando ${side === "BUY" ? "COMPRA" : "VENTA"}...`,
-        "warning"
-    );
-
-
-    pendingTrade = {
-
-        side,
-
-        rr:
-            snapshotRR,
-
-        candleCount:
-            snapshotCandleCount,
-
-        timeframe:
-            snapshotTimeframe,
-
-        baseRisk,
-
-        targetRisk:
-            effectiveRisk,
-
-        doubleRiskApplied:
-            doubleRiskArmed,
-
-        sl:
-            null,
-
-        tp:
-            null,
-
-        volume:
-            null,
-
-        conversionRate:
-            null,
-
-        clientOrderId:
-            "AQT_" +
-            Date.now()
-    };
-
-
-    targetRiskDisplay.textContent =
-        formatMoney(
-            effectiveRisk
-        );
-
-
-    actualRiskDisplay.textContent =
-        "---";
-
-
-    try {
-
-        await loadAccountData();
-
-
-        /*
-           SL ANTES de la entrada:
-           últimas N velas cerradas.
-           Nunca la actual.
-        */
-
-        const sl =
-            await calculateSL(
-                side,
-                snapshotCandleCount,
-                snapshotTimeframe
-            );
-
-
-        pendingTrade.sl =
-            sl;
-
-
-        slDisplay.textContent =
-            formatPrice(
-                sl
-            );
-
-
-        log(
-            `SL calculado antes de entrada=${sl}`,
-            "ok"
-        );
-
-
-        /*
-           Volumen automático según riesgo.
-        */
-
-        const sizing =
-            await calculateRiskVolume(
-                side,
-                sl,
-                effectiveRisk
-            );
-
-
-        pendingTrade.volume =
-            sizing.volume;
-
-
-        pendingTrade.conversionRate =
-            sizing.conversionRate;
-
-
-        pendingTrade.estimatedRisk =
-            sizing.estimatedRisk;
-
-
-        orderVolumeDisplay.textContent =
-            `${sizing.volume} (${sizing.units} u)`;
-
-
-        actualRiskDisplay.textContent =
-            formatMoney(
-                sizing.estimatedRisk
-            );
-
-
-        log(
-            `Enviando MARKET ${side}. Volumen=${sizing.volume}`,
-            "ok"
-        );
-
-
-        /*
-           IMPORTANTE:
-           createNewOrder utiliza MARKET.
-           El precio mostrado por el plugin NO se utiliza
-           para ejecutar la operación.
-        */
-
-        createNewOrder(
-            adapter,
-            {
-                symbolId:
-                    Number(symbolId),
-
-                orderType:
-                    ServerInterfaces
-                        .ProtoOrderType
-                        .MARKET,
-
-                tradeSide:
-                    side === "BUY"
-                        ? ServerInterfaces
-                            .ProtoTradeSide
-                            .BUY
-                        : ServerInterfaces
-                            .ProtoTradeSide
-                            .SELL,
-
-                volume:
-                    Number(
-                        sizing.volume
-                    ),
-
-                clientOrderId:
-                    pendingTrade.clientOrderId
-            }
-        )
-        .pipe(
-            take(1)
-        )
-        .subscribe({
-
-            next: response => {
-
-                processOrderResponse(
-                    response
-                );
-            },
-
-
-            error: error => {
-
-                log(
-                    `Error createNewOrder: ${error.message || error}`,
-                    "error"
-                );
-
-
-                /*
-                   DOBLE RIESGO NO se consume aquí,
-                   porque todavía no existe fill.
-                */
-
-                pendingTrade =
-                    null;
-
-                activeTrade =
-                    null;
-
-                tradePhase =
-                    PHASE.IDLE;
-
-
-                resetLights();
-
-
-                setStatus(
-                    "Error enviando orden",
-                    "error"
-                );
-
-
-                updateButtons();
-            }
-        });
-
-    } catch (error) {
-
-        log(
-            `No se pudo preparar la operación: ${error.message || error}`,
-            "error"
-        );
-
-
-        pendingTrade =
-            null;
-
-        activeTrade =
-            null;
-
-        tradePhase =
-            PHASE.IDLE;
-
-
-        resetLights();
-
-
-        setStatus(
-            "Operación no enviada",
-            "error"
-        );
-
-
-        updateButtons();
-    }
-}
-
-
-/* =========================================================
-   HANDSHAKE / INICIALIZACIÓN
-========================================================= */
-
-function initialize() {
-
-    const logger =
-        createLogger(
-            location.href.includes(
-                "showLogs"
-            )
-        );
-
-
-    adapter =
-        createClientAdapter({
-            logger
-        });
-
-
-    log(
-        "Iniciando conexión con cTrader...",
-        "normal"
-    );
-
-
-    handleConfirmEvent(
-        adapter,
-        {}
-    )
-    .pipe(
-        take(1)
-    )
-    .subscribe({
-        next: () => {
-
-            log(
-                "Handshake confirmado.",
-                "ok"
-            );
-        },
-
-        error: error => {
-
-            log(
-                `Error handshake: ${error.message || error}`,
-                "error"
-            );
-        }
-    });
-
-
-    registerEvent(
-        adapter
-    )
-    .pipe(
-
-        take(1),
-
-        tap(() => {
-
-            log(
-                "Plugin registrado correctamente.",
-                "ok"
-            );
-
-
-            handleConfirmEvent(
-                adapter,
-                {}
-            )
-            .pipe(
-                take(1)
-            )
-            .subscribe();
-
-
-            connected =
-                true;
-
-
-            setStatus(
-                "Conectado con cTrader",
-                "ok"
-            );
-
-
-            updateButtons();
-
-        }),
-
-        catchError(
-            error => {
-
-                log(
-                    `Error registerEvent: ${error.message || error}`,
-                    "error"
-                );
-
-
-                connected =
-                    false;
-
-
-                setStatus(
-                    "Error de conexión",
-                    "error"
-                );
-
-
-                updateButtons();
-
-
-                return [];
-            }
-        )
-
-    )
+    .pipe(take(1))
     .subscribe({
 
         next: () => {
 
-            loadSymbols();
+            log(
+                "Solicitud de cierre aceptada. " +
+                "Esperando ORDER_FILLED de cierre.",
+                "ok"
+            );
 
-            loadAccountData()
-                .catch(
-                    error => {
-
-                        log(
-                            `No se pudo cargar la cuenta: ${error.message || error}`,
-                            "warning"
-                        );
-                    }
-                );
         },
 
         error: error => {
 
-            connected =
+            trade.closeRequested =
                 false;
 
-
             log(
-                `Error final de registro: ${error.message || error}`,
+                "Error solicitando cierre: " +
+                JSON.stringify(error),
                 "error"
             );
 
-
-            setStatus(
-                "No conectado",
-                "error"
-            );
-
-
-            updateButtons();
         }
-    });
 
-
-    /*
-       Quotes en tiempo real.
-    */
-
-    quoteEvent(
-        adapter
-    )
-    .subscribe({
-
-        next: response => {
-
-            processQuote(
-                response
-            );
-        },
-
-        error: error => {
-
-            log(
-                `Error quoteEvent: ${error.message || error}`,
-                "error"
-            );
-        }
-    });
-
-
-    /*
-       Eventos de ejecución en tiempo real.
-    */
-
-    executionEvent(
-        adapter
-    )
-    .subscribe({
-
-        next: response => {
-
-            processExecutionEvent(
-                response
-            );
-        },
-
-        error: error => {
-
-            log(
-                `Error executionEvent: ${error.message || error}`,
-                "error"
-            );
-        }
     });
 }
 
 
-/* =========================================================
-   ARRANQUE
-========================================================= */
+/* ============================================================
+   LUCES
+   ============================================================ */
+
+function setOperationLight(
+    on
+) {
+
+    operationLight.classList.toggle(
+        "on",
+        on
+    );
+}
+
+
+function setSlLight(
+    on
+) {
+
+    slLight.classList.toggle(
+        "on",
+        on
+    );
+}
+
+
+function setTpLight(
+    on
+) {
+
+    tpLight.classList.toggle(
+        "on",
+        on
+    );
+}
+
+
+function resetLights() {
+
+    setOperationLight(false);
+
+    setSlLight(false);
+
+    setTpLight(false);
+}
+
+
+/* ============================================================
+   BOTÓN CERRAR
+   ============================================================ */
+
+function updateCloseButton() {
+
+    const hasTrade =
+        Array.from(
+            activeTrades.values()
+        )
+        .some(
+            trade =>
+                trade &&
+                trade.filled &&
+                !trade.closed &&
+                trade.positionId !== null
+        );
+
+
+    /*
+       SOLO se deshabilita si no existe
+       ninguna operación conocida.
+
+       NO se bloquea porque haya:
+       - protección pendiente
+       - otra operación
+       - una orden en proceso
+    */
+
+    closeButton.disabled =
+        !hasTrade;
+}
+
+
+/* ============================================================
+   INFORMACIÓN OPERACIÓN
+   ============================================================ */
+
+function updateTradeInfo(
+    trade
+) {
+
+    if (!trade) {
+
+        tradeInfo.innerHTML =
+            "Sin operación conocida.";
+
+        return;
+    }
+
+
+    tradeInfo.innerHTML =
+        "<strong>" +
+        (
+            trade.side === "BUY"
+                ? "COMPRA"
+                : "VENTA"
+        ) +
+        "</strong><br>" +
+
+        "PositionId: " +
+        (
+            trade.positionId ??
+            "---"
+        ) +
+        "<br>" +
+
+        "Entrada real: " +
+        (
+            trade.executionPrice !== null
+                ? formatPrice(
+                    trade.executionPrice
+                )
+                : "---"
+        ) +
+        "<br>" +
+
+        "SL: " +
+        (
+            trade.sl !== null
+                ? formatPrice(
+                    trade.sl
+                )
+                : "---"
+        ) +
+        "<br>" +
+
+        "TP: " +
+        (
+            trade.tp !== null
+                ? formatPrice(
+                    trade.tp
+                )
+                : "---"
+        ) +
+        "<br>" +
+
+        "RR: 1:" +
+        trade.rr +
+        "<br>" +
+
+        "Riesgo solicitado: " +
+        trade.requestedRisk +
+        "<br>" +
+
+        "Volumen: " +
+        trade.volume +
+        "<br>" +
+
+        "Estado: " +
+        (
+            trade.filled
+                ? "EJECUTADA"
+                : "PENDIENTE"
+        );
+}
+
+
+/* ============================================================
+   FORMATO PRECIO
+   ============================================================ */
+
+function formatPrice(
+    price
+) {
+
+    const digits =
+        numberField(
+            symbolInfo,
+            "digits",
+            "Digits"
+        );
+
+
+    if (
+        digits !== null
+    ) {
+
+        return Number(price)
+            .toFixed(
+                digits
+            );
+    }
+
+
+    return Number(price)
+        .toFixed(5);
+}
+
+
+function normalizePrice(
+    price
+) {
+
+    const digits =
+        numberField(
+            symbolInfo,
+            "digits",
+            "Digits"
+        );
+
+
+    if (
+        digits === null
+    ) {
+
+        return price;
+    }
+
+
+    return Number(
+        Number(price)
+            .toFixed(
+                digits
+            )
+    );
+}
+
+
+/* ============================================================
+   ARRANQUE VISUAL
+   ============================================================ */
 
 updateRRButtons();
 
-updateRiskDisplay();
+updateDoubleRiskButton();
 
 resetLights();
 
-updateButtons();
+updateCloseButton();
 
-initialize();
+updateTradeInfo(null);
 
 
-/* =========================================================
-   SEGURIDAD:
-   EL DOBLE RIESGO ES VOLÁTIL.
+/* ============================================================
+   LOG INICIAL
+   ============================================================ */
 
-   No se guarda en localStorage/sessionStorage.
-   Al cerrar o recargar el plugin queda OFF.
-========================================================= */
+log(
+    "Ayalga Quick Trade V26 cargado.",
+    "ok"
+);
 
-window.addEventListener(
-    "beforeunload",
-    () => {
+log(
+    "DOBLE RIESGO: OFF al iniciar.",
+    "info"
+);
 
-        doubleRiskArmed =
-            false;
+log(
+    "RR inicial: 1:1.",
+    "info"
+);
 
-        tradeConfirmTimer =
-            clearTimer(
-                tradeConfirmTimer
-            );
-
-        closeConfirmTimer =
-            clearTimer(
-                closeConfirmTimer
-            );
-    }
+log(
+    "Riesgo monetario: sin valor por defecto.",
+    "info"
 );
 
 </script>
