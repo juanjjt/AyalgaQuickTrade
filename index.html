@@ -2,118 +2,110 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
-
-    <title>Ayalga Quick Trade</title>
+    <title>Ayalga Quick Trade v14</title>
 
     <style>
         * {
             box-sizing: border-box;
         }
 
-        html,
         body {
             margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100%;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #111111;
-            color: #ffffff;
-        }
-
-        body {
-            padding: 14px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
         }
 
         .container {
-            width: 100%;
             max-width: 500px;
             margin: 0 auto;
         }
 
-        .title {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 16px;
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
         }
 
-        .card {
-            background: #1c1c1c;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid #333333;
-        }
-
-        .label {
-            font-size: 12px;
-            color: #999999;
-            margin-bottom: 4px;
-        }
-
-        .value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .symbol {
-            font-size: 26px;
-            font-weight: bold;
-        }
-
-        .prices {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .price-box {
-            flex: 1;
-            padding: 14px;
-            border-radius: 10px;
-            background: #252525;
-            text-align: center;
-        }
-
-        .bid {
-            color: #4caf50;
-        }
-
-        .ask {
-            color: #f44336;
-        }
-
-        .log {
-            background: #090909;
-            border-radius: 8px;
-            padding: 10px;
-            height: 230px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 11px;
-            white-space: pre-wrap;
-            word-break: break-word;
+        .version {
+            font-size: 15px;
+            font-weight: normal;
+            opacity: 0.7;
         }
 
         .status {
-            font-weight: bold;
+            padding: 15px;
+            border-radius: 8px;
+            background: #222;
+            margin-bottom: 15px;
         }
 
-        .ok {
-            color: #4caf50;
+        .connected {
+            color: #00c853;
         }
 
         .error {
-            color: #f44336;
+            color: #ff5252;
         }
 
-        .waiting {
-            color: #ffb300;
+        .info {
+            color: #64b5f6;
+        }
+
+        .symbol-box {
+            padding: 15px;
+            border-radius: 8px;
+            background: #222;
+            margin-bottom: 15px;
+        }
+
+        .symbol-name {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .symbol-id {
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+
+        .symbols {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #181818;
+            border-radius: 8px;
+        }
+
+        .symbol-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid #292929;
+        }
+
+        .symbol-row:last-child {
+            border-bottom: none;
+        }
+
+        .symbol-id-small {
+            opacity: 0.5;
+        }
+
+        #log {
+            margin-top: 15px;
+            padding: 12px;
+            background: #080808;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
     </style>
 </head>
@@ -122,1121 +114,558 @@
 
 <div class="container">
 
-    <div class="title">
+    <h1>
         Ayalga Quick Trade
+        <span class="version">v14</span>
+    </h1>
+
+    <div id="status" class="status">
+        Conectando...
     </div>
 
-    <div class="card">
-
-        <div class="label">
-            Símbolo recibido por cTrader
+    <div id="symbolBox" class="symbol-box">
+        <div class="symbol-name" id="symbolName">
+            Buscando símbolo...
         </div>
 
-        <div id="urlSymbol" class="symbol">
-            ---
+        <div class="symbol-id" id="symbolId">
+            ID: -
         </div>
-
     </div>
 
+    <div class="symbol-box">
+        <strong>Símbolos recibidos</strong>
 
-    <div class="card">
-
-        <div class="label">
-            Símbolo encontrado
+        <div id="symbols" class="symbols">
+            Esperando...
         </div>
-
-        <div id="foundSymbol" class="value">
-            Buscando...
-        </div>
-
-        <div style="margin-top:10px;">
-
-            <div class="label">
-                Symbol ID
-            </div>
-
-            <div id="symbolId" class="value">
-                ---
-            </div>
-
-        </div>
-
     </div>
 
-
-    <div class="card">
-
-        <div class="label">
-            Estado
-        </div>
-
-        <div id="status" class="status waiting">
-            Inicializando...
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <div class="label">
-            Cotización
-        </div>
-
-        <div class="prices">
-
-            <div class="price-box">
-                <div class="label">
-                    BID
-                </div>
-
-                <div id="bid" class="value bid">
-                    ---
-                </div>
-            </div>
-
-
-            <div class="price-box">
-                <div class="label">
-                    ASK
-                </div>
-
-                <div id="ask" class="value ask">
-                    ---
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <div class="label">
-            Registro
-        </div>
-
-        <div id="log" class="log"></div>
-
-    </div>
+    <div id="log"></div>
 
 </div>
 
 
 <script type="module">
 
-    import {
-        createClientAdapter,
-        handleConfirmEvent,
-        registerEvent,
-        getLightSymbolList,
-        getSymbol,
-        subscribeQuotes,
-        quoteEvent
-    } from "https://esm.sh/@spotware-web-team/sdk";
+import {
+    createClientAdapter
+} from "https://esm.sh/@spotware-web-team/sdk-external-api";
+
+import {
+    handleConfirmEvent,
+    registerEvent,
+    getLightSymbolList,
+    getSymbol,
+    subscribeQuotes,
+    quoteEvent
+} from "https://esm.sh/@spotware-web-team/sdk";
+
+import {
+    take,
+    tap,
+    catchError
+} from "https://esm.sh/rxjs";
+
+import {
+    createLogger
+} from "https://esm.sh/@veksa/logger";
 
 
-    import {
-        take,
-        tap,
-        catchError
-    } from "https://esm.sh/rxjs";
+// ============================================================
+// ELEMENTOS
+// ============================================================
+
+const statusElement = document.getElementById("status");
+const symbolNameElement = document.getElementById("symbolName");
+const symbolIdElement = document.getElementById("symbolId");
+const symbolsElement = document.getElementById("symbols");
+const logElement = document.getElementById("log");
 
 
-    import {
-        createLogger
-    } from "https://esm.sh/@veksa/logger";
+// ============================================================
+// LOG
+// ============================================================
 
+function log(message, type = "") {
 
-    // ============================================================
-    // ELEMENTOS UI
-    // ============================================================
+    const time = new Date().toLocaleTimeString();
 
-    const urlSymbolElement =
-        document.getElementById("urlSymbol");
+    const line = `[${time}] ${message}`;
 
-    const foundSymbolElement =
-        document.getElementById("foundSymbol");
+    console.log(line);
 
-    const symbolIdElement =
-        document.getElementById("symbolId");
+    const div = document.createElement("div");
 
-    const statusElement =
-        document.getElementById("status");
+    div.textContent = line;
 
-    const bidElement =
-        document.getElementById("bid");
-
-    const askElement =
-        document.getElementById("ask");
-
-    const logElement =
-        document.getElementById("log");
-
-
-    // ============================================================
-    // VARIABLES
-    // ============================================================
-
-    let adapter = null;
-
-    let selectedSymbolName = null;
-
-    let selectedSymbolId = null;
-
-
-    // ============================================================
-    // LOG
-    // ============================================================
-
-    function log(message) {
-
-        const time =
-            new Date().toLocaleTimeString();
-
-        logElement.textContent +=
-            `[${time}] ${message}\n`;
-
-        logElement.scrollTop =
-            logElement.scrollHeight;
-
-        console.log(message);
+    if (type === "ok") {
+        div.className = "connected";
     }
 
-
-    // ============================================================
-    // ESTADO
-    // ============================================================
-
-    function setStatus(message, type = "waiting") {
-
-        statusElement.textContent =
-            message;
-
-        statusElement.className =
-            "status " + type;
+    if (type === "error") {
+        div.className = "error";
     }
 
-
-    // ============================================================
-    // SÍMBOLO DE LA URL
-    // ============================================================
-
-    const urlParams =
-        new URLSearchParams(window.location.search);
-
-
-    const symbolFromUrl =
-        urlParams.get("symbol");
-
-
-    if (symbolFromUrl) {
-
-        selectedSymbolName =
-            String(symbolFromUrl)
-                .trim()
-                .toUpperCase();
-
-        urlSymbolElement.textContent =
-            selectedSymbolName;
-
-        log(
-            `Símbolo recibido desde URL: ${selectedSymbolName}`
-        );
-
-    } else {
-
-        urlSymbolElement.textContent =
-            "NO RECIBIDO";
-
-        log(
-            "No se recibió parámetro symbol en la URL."
-        );
+    if (type === "info") {
+        div.className = "info";
     }
 
+    logElement.appendChild(div);
 
-    // ============================================================
-    // LOGGER
-    // ============================================================
+    logElement.scrollTop = logElement.scrollHeight;
+}
 
-    const logger =
-        createLogger(
+
+// ============================================================
+// URL
+// ============================================================
+
+const params = new URLSearchParams(window.location.search);
+
+const urlSymbol = params.get("symbol");
+const platform = params.get("platform");
+const placement = params.get("placement");
+const theme = params.get("theme");
+
+log("URL: " + window.location.href);
+
+log("Símbolo recibido por URL: " + (urlSymbol || "ninguno"), "info");
+log("Plataforma: " + (platform || "desconocida"), "info");
+log("Placement: " + (placement || "desconocido"), "info");
+log("Tema: " + (theme || "desconocido"), "info");
+
+
+// ============================================================
+// ADAPTER
+// ============================================================
+
+let adapter = null;
+
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+
+function init() {
+
+    try {
+
+        log("Creando Client Adapter...");
+
+        const logger = createLogger(
             location.href.includes("showLogs")
         );
 
+        adapter = createClientAdapter({
+            logger
+        });
 
-    // ============================================================
-    // INICIALIZACIÓN
-    // ============================================================
-
-    async function initialize() {
-
-        try {
-
-            setStatus(
-                "Conectando con cTrader...",
-                "waiting"
-            );
-
-            log(
-                "Creando Client Adapter..."
-            );
+        log("Client Adapter creado correctamente.", "ok");
 
 
-            // ----------------------------------------------------
-            // ADAPTER
-            // ----------------------------------------------------
+        // ====================================================
+        // CONFIRMACIÓN
+        // ====================================================
 
-            adapter =
-                createClientAdapter({
-                    logger
-                });
+        log("Enviando confirmación...");
 
-
-            log(
-                "Client Adapter creado."
-            );
-
-
-            // ----------------------------------------------------
-            // HANDSHAKE
-            // ----------------------------------------------------
-
-            log(
-                "Esperando confirmación de cTrader..."
-            );
-
-
-            handleConfirmEvent(
-                adapter,
-                {}
-            )
-            .pipe(
-                take(1)
-            )
+        handleConfirmEvent(adapter, {})
+            .pipe(take(1))
             .subscribe({
 
                 next: () => {
-
-                    log(
-                        "Confirmación recibida."
-                    );
-
+                    log("Confirmación recibida.", "ok");
                 },
 
-                error: (error) => {
-
+                error: (err) => {
                     log(
                         "Error en confirmación: " +
-                        JSON.stringify(error)
+                        JSON.stringify(err),
+                        "error"
                     );
-
                 }
 
             });
 
 
-            // ----------------------------------------------------
-            // REGISTER
-            // ----------------------------------------------------
+        // ====================================================
+        // REGISTER
+        // ====================================================
 
-            log(
-                "Registrando plugin..."
-            );
+        log("Registrando plugin...");
 
-
-            registerEvent(
-                adapter
-            )
+        registerEvent(adapter)
             .pipe(
+
                 take(1),
 
                 tap(() => {
 
                     log(
-                        "Plugin registrado correctamente."
-                    );
-
-
-                    // Segundo confirm oficial
-                    handleConfirmEvent(
-                        adapter,
-                        {}
-                    )
-                    .pipe(
-                        take(1)
-                    )
-                    .subscribe({
-
-                        next: () => {
-
-                            log(
-                                "Handshake completado."
-                            );
-
-                        },
-
-                        error: (error) => {
-
-                            log(
-                                "Error en segundo handshake: " +
-                                JSON.stringify(error)
-                            );
-
-                        }
-
-                    });
-
-
-                    setStatus(
-                        "Conectado",
+                        "Plugin registrado correctamente.",
                         "ok"
                     );
 
+                    // Volvemos a confirmar exactamente
+                    // como en el código que funcionaba.
 
-                    // Continuamos buscando el símbolo
-                    loadSymbols();
+                    handleConfirmEvent(adapter, {})
+                        .pipe(take(1))
+                        .subscribe();
 
                 }),
 
-                catchError(error => {
+                catchError(err => {
 
                     log(
-                        "ERROR registrando plugin: " +
-                        JSON.stringify(error)
-                    );
-
-                    setStatus(
-                        "Error registrando plugin",
+                        "Error registrando plugin: " +
+                        JSON.stringify(err),
                         "error"
                     );
+
+                    statusElement.textContent =
+                        "Error registrando plugin";
+
+                    statusElement.classList.add("error");
 
                     return [];
 
                 })
 
             )
-            .subscribe();
 
-        }
+            .subscribe({
 
-        catch (error) {
+                next: () => {
 
-            console.error(error);
+                    statusElement.textContent =
+                        "CONECTADO";
 
-            log(
-                "ERROR INICIALIZANDO: " +
-                JSON.stringify(error)
-            );
+                    statusElement.classList.add(
+                        "connected"
+                    );
 
-            setStatus(
-                "Error inicializando",
-                "error"
-            );
-        }
+                    log(
+                        "Conexión establecida. Cargando símbolos...",
+                        "ok"
+                    );
+
+                    loadSymbols();
+                },
+
+                error: (err) => {
+
+                    statusElement.textContent =
+                        "Error de conexión";
+
+                    statusElement.classList.add(
+                        "error"
+                    );
+
+                    log(
+                        "Error final de registro: " +
+                        JSON.stringify(err),
+                        "error"
+                    );
+
+                }
+
+            });
+
     }
 
+    catch (err) {
 
-    // ============================================================
-    // OBTENER LISTA DE SÍMBOLOS
-    // ============================================================
+        statusElement.textContent =
+            "Error inicializando";
 
-    function loadSymbols() {
-
-        if (!adapter) {
-
-            log(
-                "ERROR: adapter no disponible."
-            );
-
-            return;
-        }
-
-
-        setStatus(
-            "Buscando símbolo...",
-            "waiting"
-        );
-
+        statusElement.classList.add("error");
 
         log(
-            "Solicitando lista de símbolos..."
+            "ERROR INICIALIZANDO: " +
+            (err?.stack || err),
+            "error"
         );
 
+    }
+}
 
-        getLightSymbolList(
-            adapter,
-            {}
-        )
-        .pipe(
-            take(1)
-        )
+
+// ============================================================
+// CARGAR LISTA DE SÍMBOLOS
+// ============================================================
+
+function loadSymbols() {
+
+    log("Solicitando lista de símbolos...");
+
+    getLightSymbolList(adapter, {})
+        .pipe(take(1))
         .subscribe({
 
-            next: response => {
+            next: (response) => {
 
                 log(
-                    "Respuesta getLightSymbolList recibida."
+                    "Respuesta getLightSymbolList recibida.",
+                    "ok"
                 );
 
 
-                // ------------------------------------------------
-                // MOSTRAR ESTRUCTURA PRINCIPAL
-                // ------------------------------------------------
+                // =================================================
+                // MOSTRAMOS LAS CLAVES DE LA RESPUESTA
+                // =================================================
 
-                try {
-
-                    log(
-                        "Keys respuesta: " +
-                        Object.keys(response || {}).join(", ")
-                    );
-
-                } catch (e) {
-
-                    log(
-                        "No se pudieron leer las keys."
-                    );
-                }
+                log(
+                    "Claves de respuesta: " +
+                    Object.keys(response || {}).join(", "),
+                    "info"
+                );
 
 
-                // ------------------------------------------------
-                // AQUÍ ESTABA EL ERROR
+                // =================================================
+                // AQUÍ ESTABA EL PROBLEMA
                 //
                 // La respuesta real es:
                 //
-                // response.payload.Symbol
-                // ------------------------------------------------
+                // response
+                //    └── payload
+                //          └── Symbol
+                //
+                // =================================================
 
                 const symbols =
-                    response?.payload?.Symbol || [];
+                    response?.payload?.Symbol ?? [];
 
 
                 log(
-                    `Cantidad de símbolos recibidos: ${symbols.length}`
-                );
-
-
-                if (!symbols.length) {
-
-                    log(
-                        "ERROR: response.payload.Symbol está vacío."
-                    );
-
-
-                    // Mostramos parte de la respuesta
-                    try {
-
-                        log(
-                            "Respuesta completa: " +
-                            JSON.stringify(
-                                response,
-                                null,
-                                2
-                            )
-                        );
-
-                    } catch (e) {}
-
-                    setStatus(
-                        "No se recibieron símbolos",
-                        "error"
-                    );
-
-                    return;
-                }
-
-
-                // ------------------------------------------------
-                // BUSCAR EL SÍMBOLO
-                // ------------------------------------------------
-
-                let targetSymbol =
-                    null;
-
-
-                if (selectedSymbolName) {
-
-                    targetSymbol =
-                        symbols.find(symbol => {
-
-                            const name =
-                                String(
-                                    symbol?.Name ?? ""
-                                )
-                                .trim()
-                                .toUpperCase();
-
-                            return (
-                                name ===
-                                selectedSymbolName
-                            );
-
-                        });
-
-                }
-
-
-                // ------------------------------------------------
-                // SI NO VIENE SYMBOL DE URL
-                // ------------------------------------------------
-
-                if (!targetSymbol) {
-
-                    log(
-                        "No se encontró el símbolo solicitado."
-                    );
-
-
-                    if (!selectedSymbolName) {
-
-                        log(
-                            "No hay symbol en la URL."
-                        );
-
-                    } else {
-
-                        log(
-                            `Buscado: ${selectedSymbolName}`
-                        );
-                    }
-
-
-                    // Mostrar primeros símbolos para diagnóstico
-
-                    try {
-
-                        const preview =
-                            symbols
-                                .slice(0, 10)
-                                .map(s =>
-                                    `${s?.Id} = ${s?.Name}`
-                                )
-                                .join(" | ");
-
-
-                        log(
-                            "Primeros símbolos: " +
-                            preview
-                        );
-
-                    } catch (e) {}
-
-
-                    setStatus(
-                        "Símbolo no encontrado",
-                        "error"
-                    );
-
-                    foundSymbolElement.textContent =
-                        "NO ENCONTRADO";
-
-                    return;
-                }
-
-
-                // ------------------------------------------------
-                // SÍMBOLO ENCONTRADO
-                // ------------------------------------------------
-
-                selectedSymbolId =
-                    targetSymbol.Id;
-
-
-                selectedSymbolName =
-                    String(
-                        targetSymbol.Name
-                    );
-
-
-                foundSymbolElement.textContent =
-                    selectedSymbolName;
-
-
-                symbolIdElement.textContent =
-                    selectedSymbolId;
-
-
-                urlSymbolElement.textContent =
-                    selectedSymbolName;
-
-
-                log(
-                    `Símbolo encontrado: ${selectedSymbolName}`
-                );
-
-
-                log(
-                    `Symbol ID: ${selectedSymbolId}`
-                );
-
-
-                log(
-                    "Información completa del símbolo:"
-                );
-
-
-                try {
-
-                    log(
-                        JSON.stringify(
-                            targetSymbol,
-                            null,
-                            2
-                        )
-                    );
-
-                } catch (e) {}
-
-
-                setStatus(
-                    "Símbolo encontrado",
+                    "Cantidad de símbolos recibidos: " +
+                    symbols.length,
                     "ok"
                 );
 
 
-                // ------------------------------------------------
-                // SIGUIENTE PASO
-                // ------------------------------------------------
+                // =================================================
+                // MOSTRAR SÍMBOLOS
+                // =================================================
 
-                loadSymbolDetails();
+                symbolsElement.innerHTML = "";
+
+
+                if (symbols.length === 0) {
+
+                    symbolsElement.textContent =
+                        "No se encontraron símbolos.";
+
+                    log(
+                        "La lista de símbolos está vacía.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                symbols.forEach(symbol => {
+
+                    const row =
+                        document.createElement("div");
+
+                    row.className = "symbol-row";
+
+
+                    const name =
+                        document.createElement("span");
+
+                    name.textContent =
+                        symbol?.Name ?? "SIN NOMBRE";
+
+
+                    const id =
+                        document.createElement("span");
+
+                    id.className =
+                        "symbol-id-small";
+
+                    id.textContent =
+                        "ID: " +
+                        (symbol?.Id ?? "-");
+
+
+                    row.appendChild(name);
+                    row.appendChild(id);
+
+                    symbolsElement.appendChild(row);
+
+                });
+
+
+                // =================================================
+                // BUSCAR EL SÍMBOLO DE LA URL
+                // =================================================
+
+                if (urlSymbol) {
+
+                    const found =
+                        symbols.find(
+                            s =>
+                                String(s?.Name)
+                                    .toUpperCase() ===
+                                String(urlSymbol)
+                                    .toUpperCase()
+                        );
+
+
+                    if (found) {
+
+                        symbolNameElement.textContent =
+                            found.Name;
+
+                        symbolIdElement.textContent =
+                            "ID: " + found.Id;
+
+
+                        log(
+                            "Símbolo encontrado: " +
+                            found.Name +
+                            " | ID: " +
+                            found.Id,
+                            "ok"
+                        );
+
+
+                        // =========================================
+                        // CARGAR INFORMACIÓN DEL SÍMBOLO
+                        // =========================================
+
+                        loadSymbol(found.Id);
+
+                    }
+
+                    else {
+
+                        symbolNameElement.textContent =
+                            "Símbolo no encontrado";
+
+                        symbolIdElement.textContent =
+                            "ID: -";
+
+
+                        log(
+                            "No se encontró " +
+                            urlSymbol +
+                            " en la lista.",
+                            "error"
+                        );
+
+                    }
+
+                }
+
+                else {
+
+                    // Si no viene símbolo en URL,
+                    // mostramos el primero.
+
+                    const first =
+                        symbols[0];
+
+                    if (first) {
+
+                        symbolNameElement.textContent =
+                            first.Name;
+
+                        symbolIdElement.textContent =
+                            "ID: " + first.Id;
+
+                    }
+
+                }
 
             },
 
-            error: error => {
+            error: (err) => {
 
                 log(
                     "ERROR getLightSymbolList: " +
-                    JSON.stringify(error)
-                );
-
-
-                setStatus(
-                    "Error obteniendo símbolos",
+                    JSON.stringify(err),
                     "error"
                 );
+
+                symbolsElement.textContent =
+                    "Error obteniendo símbolos.";
 
             }
 
         });
 
-    }
+}
 
 
-    // ============================================================
-    // OBTENER INFORMACIÓN DEL SÍMBOLO
-    // ============================================================
+// ============================================================
+// CARGAR SÍMBOLO
+// ============================================================
 
-    function loadSymbolDetails() {
+function loadSymbol(symbolId) {
 
-        if (
-            !adapter ||
-            selectedSymbolId === null
-        ) {
+    log(
+        "Solicitando información del símbolo ID " +
+        symbolId +
+        "..."
+    );
+
+
+    getSymbol(adapter, {
+        symbolId: [symbolId]
+    })
+    .pipe(take(1))
+    .subscribe({
+
+        next: (response) => {
 
             log(
-                "No se puede obtener información del símbolo."
+                "Respuesta getSymbol recibida.",
+                "ok"
             );
 
-            return;
-        }
-
-
-        log(
-            `Solicitando información del símbolo ID ${selectedSymbolId}...`
-        );
-
-
-        getSymbol(
-            adapter,
-            {
-                symbolId: [
-                    selectedSymbolId
-                ]
-            }
-        )
-        .pipe(
-            take(1)
-        )
-        .subscribe({
-
-            next: response => {
-
-                log(
-                    "Respuesta getSymbol recibida."
-                );
-
-
-                try {
-
-                    log(
-                        JSON.stringify(
-                            response,
-                            null,
-                            2
-                        )
-                    );
-
-                } catch (e) {}
-
-
-                setStatus(
-                    "Símbolo listo",
-                    "ok"
-                );
-
-
-                // Continuamos con las cotizaciones
-                startQuotes();
-
-            },
-
-            error: error => {
-
-                log(
-                    "ERROR getSymbol: " +
-                    JSON.stringify(error)
-                );
-
-
-                // Aunque falle getSymbol,
-                // intentamos cotizaciones
-                startQuotes();
-
-            }
-
-        });
-
-    }
-
-
-    // ============================================================
-    // SUSCRIPCIÓN A COTIZACIONES
-    // ============================================================
-
-    function startQuotes() {
-
-        if (
-            !adapter ||
-            selectedSymbolId === null
-        ) {
 
             log(
-                "No se puede iniciar cotizaciones."
+                "Claves getSymbol: " +
+                Object.keys(response || {}).join(", "),
+                "info"
             );
 
-            return;
-        }
 
+            // Mostramos la respuesta completa
+            // para conocer exactamente su estructura.
 
-        log(
-            `Suscribiendo cotizaciones para ID ${selectedSymbolId}...`
-        );
+            log(
+                "Respuesta getSymbol: " +
+                JSON.stringify(response)
+            );
 
+        },
 
-        subscribeQuotes(
-            adapter,
-            {
-                symbolId: [
-                    selectedSymbolId
-                ]
-            }
-        )
-        .pipe(
-            take(1)
-        )
-        .subscribe({
+        error: (err) => {
 
-            next: response => {
-
-                log(
-                    "Suscripción a cotizaciones confirmada."
-                );
-
-
-                try {
-
-                    log(
-                        JSON.stringify(
-                            response,
-                            null,
-                            2
-                        )
-                    );
-
-                } catch (e) {}
-
-
-                setStatus(
-                    "Cotizaciones activas",
-                    "ok"
-                );
-
-
-                listenQuotes();
-
-            },
-
-            error: error => {
-
-                log(
-                    "ERROR subscribeQuotes: " +
-                    JSON.stringify(error)
-                );
-
-
-                setStatus(
-                    "Error en cotizaciones",
-                    "error"
-                );
-
-            }
-
-        });
-
-    }
-
-
-    // ============================================================
-    // ESCUCHAR QUOTES
-    // ============================================================
-
-    function listenQuotes() {
-
-        log(
-            "Escuchando quoteEvent..."
-        );
-
-
-        quoteEvent(
-            adapter
-        )
-        .subscribe({
-
-            next: event => {
-
-                try {
-
-                    // Mostrar únicamente eventos
-                    // correspondientes al símbolo seleccionado
-
-                    const payload =
-                        event?.payload ||
-                        event;
-
-
-                    // ------------------------------------------------
-                    // DIAGNÓSTICO
-                    // ------------------------------------------------
-
-                    console.log(
-                        "QUOTE EVENT:",
-                        event
-                    );
-
-
-                    // ------------------------------------------------
-                    // INTENTAR OBTENER BID / ASK
-                    // ------------------------------------------------
-
-                    let bid = null;
-                    let ask = null;
-
-
-                    // Posibles estructuras
-                    // del evento SDK
-
-                    if (
-                        payload &&
-                        Array.isArray(
-                            payload.quote
-                        )
-                    ) {
-
-                        const quote =
-                            payload.quote.find(
-                                q =>
-                                    Number(q.SymbolId) ===
-                                    Number(selectedSymbolId)
-                            );
-
-
-                        if (quote) {
-
-                            bid =
-                                quote.Bid;
-
-                            ask =
-                                quote.Ask;
-                        }
-                    }
-
-
-                    // ------------------------------------------------
-                    // OTRA POSIBLE ESTRUCTURA
-                    // ------------------------------------------------
-
-                    if (
-                        bid === null &&
-                        payload?.Bid !== undefined
-                    ) {
-
-                        bid =
-                            payload.Bid;
-
-                    }
-
-
-                    if (
-                        ask === null &&
-                        payload?.Ask !== undefined
-                    ) {
-
-                        ask =
-                            payload.Ask;
-
-                    }
-
-
-                    // ------------------------------------------------
-                    // OTRA ESTRUCTURA
-                    // ------------------------------------------------
-
-                    if (
-                        bid === null &&
-                        payload?.bid !== undefined
-                    ) {
-
-                        bid =
-                            payload.bid;
-
-                    }
-
-
-                    if (
-                        ask === null &&
-                        payload?.ask !== undefined
-                    ) {
-
-                        ask =
-                            payload.ask;
-
-                    }
-
-
-                    // ------------------------------------------------
-                    // MOSTRAR BID
-                    // ------------------------------------------------
-
-                    if (bid !== null) {
-
-                        bidElement.textContent =
-                            formatPrice(bid);
-
-                    }
-
-
-                    // ------------------------------------------------
-                    // MOSTRAR ASK
-                    // ------------------------------------------------
-
-                    if (ask !== null) {
-
-                        askElement.textContent =
-                            formatPrice(ask);
-
-                    }
-
-
-                } catch (error) {
-
-                    console.error(
-                        "Error procesando quote:",
-                        error
-                    );
-
-                }
-
-            },
-
-            error: error => {
-
-                log(
-                    "ERROR quoteEvent: " +
-                    JSON.stringify(error)
-                );
-
-
-                setStatus(
-                    "Error escuchando cotizaciones",
-                    "error"
-                );
-
-            }
-
-        });
-
-    }
-
-
-    // ============================================================
-    // FORMATEAR PRECIO
-    // ============================================================
-
-    function formatPrice(value) {
-
-        if (
-            value === null ||
-            value === undefined
-        ) {
-
-            return "---";
-        }
-
-
-        const number =
-            Number(value);
-
-
-        if (
-            !Number.isFinite(number)
-        ) {
-
-            return String(value);
-        }
-
-
-        // --------------------------------------------------------
-        // cTrader puede enviar precios en formato interno
-        // 1/100000.
-        //
-        // Para valores grandes, intentamos detectar dicho formato.
-        // --------------------------------------------------------
-
-        let price =
-            number;
-
-
-        if (
-            Math.abs(number) > 1000
-        ) {
-
-            price =
-                number / 100000;
+            log(
+                "ERROR getSymbol: " +
+                JSON.stringify(err),
+                "error"
+            );
 
         }
 
+    });
 
-        return price.toFixed(5);
-
-    }
+}
 
 
-    // ============================================================
-    // INICIAR
-    // ============================================================
+// ============================================================
+// ARRANCAR
+// ============================================================
 
-    initialize();
+init();
 
 </script>
 
