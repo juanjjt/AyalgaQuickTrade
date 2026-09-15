@@ -825,6 +825,9 @@ const CLOSE_CONFIRM_TIMEOUT = 1500;
 
 /* =========================================================
    DOBLE RIESGO
+   IMPORTANTE:
+   NO SE GUARDA EN localStorage.
+   AL CERRAR/RECARGAR EL PLUGIN DESAPARECE.
 ========================================================= */
 
 let doubleRiskArmed = false;
@@ -1216,12 +1219,6 @@ function updateButtons() {
         symbolId !== null &&
         symbolInfo !== null;
 
-
-    /*
-       IDLE:
-       ambos botones disponibles.
-    */
-
     if (
         tradePhase === PHASE.IDLE
     ) {
@@ -1238,15 +1235,7 @@ function updateButtons() {
         sellButton.textContent =
             "VENTA";
 
-    }
-
-
-    /*
-       Primer toque de COMPRA:
-       solo COMPRA queda en confirmación.
-    */
-
-    else if (
+    } else if (
         tradePhase === PHASE.CONFIRM_BUY
     ) {
 
@@ -1262,15 +1251,7 @@ function updateButtons() {
         sellButton.textContent =
             "VENTA";
 
-    }
-
-
-    /*
-       Primer toque de VENTA:
-       solo VENTA queda en confirmación.
-    */
-
-    else if (
+    } else if (
         tradePhase === PHASE.CONFIRM_SELL
     ) {
 
@@ -1286,56 +1267,28 @@ function updateButtons() {
         sellButton.textContent =
             "CONFIRMAR VENTA";
 
+    } else {
+
+        buyButton.disabled = true;
+        sellButton.disabled = true;
+
+        buyButton.textContent = "COMPRA";
+        sellButton.textContent = "VENTA";
     }
 
-
-    /*
-       IMPORTANTE:
-
-       ENTRY_PENDING
-       PROTECTION_PENDING
-       OPEN
-       CLOSING
-
-       NO BLOQUEAN COMPRA NI VENTA.
-
-       Se puede iniciar una nueva operación.
-    */
-
-    else {
-
-        buyButton.disabled =
-            !ready;
-
-        sellButton.disabled =
-            !ready;
-
-        buyButton.textContent =
-            "COMPRA";
-
-        sellButton.textContent =
-            "VENTA";
-    }
-
-
-    /*
-       CERRAR POSICIÓN:
-
-       No depende de tradePhase.
-
-       Si existe activeTrade y no se está enviando
-       ya un cierre, permanece disponible.
-    */
 
     const canClose =
         connected &&
         activeTrade !== null &&
-        !closePositionRequest;
+        !closePositionRequest &&
+        (
+            tradePhase === PHASE.OPEN ||
+            tradePhase === PHASE.PROTECTION_PENDING
+        );
 
 
     closePositionButton.disabled =
         !canClose;
-
 
     if (
         !closePositionRequest
@@ -1347,10 +1300,6 @@ function updateButtons() {
 }
 
 
-/* =========================================================
-   RESET CONFIRMACIÓN ENTRADA
-========================================================= */
-
 function resetTradeConfirmation() {
 
     tradeConfirmTimer =
@@ -1358,8 +1307,7 @@ function resetTradeConfirmation() {
             tradeConfirmTimer
         );
 
-    tradeConfirmSide =
-        null;
+    tradeConfirmSide = null;
 
     if (
         tradePhase === PHASE.CONFIRM_BUY ||
@@ -1379,42 +1327,18 @@ function resetTradeConfirmation() {
 }
 
 
-/* =========================================================
-   ARMAR CONFIRMACIÓN
-========================================================= */
-
 function armTradeConfirmation(side) {
 
-    /*
-       Solo impedimos crear una segunda confirmación
-       mientras ya existe una confirmación pendiente.
-
-       Las fases ENTRY_PENDING, PROTECTION_PENDING,
-       OPEN y CLOSING NO bloquean nuevas operaciones.
-    */
-
     if (
-        tradePhase === PHASE.CONFIRM_BUY ||
-        tradePhase === PHASE.CONFIRM_SELL
+        tradePhase !== PHASE.IDLE
     ) {
-
         return;
     }
-
-
-    tradeConfirmTimer =
-        clearTimer(
-            tradeConfirmTimer
-        );
-
 
     tradeConfirmSide =
         side;
 
-
-    if (
-        side === "BUY"
-    ) {
+    if (side === "BUY") {
 
         tradePhase =
             PHASE.CONFIRM_BUY;
@@ -1435,9 +1359,7 @@ function armTradeConfirmation(side) {
         );
     }
 
-
     updateButtons();
-
 
     tradeConfirmTimer =
         setTimeout(
@@ -1456,18 +1378,20 @@ function armTradeConfirmation(side) {
 }
 
 
-/* =========================================================
-   COMPRA
-========================================================= */
-
 buyButton.addEventListener(
     "click",
     () => {
 
-        /*
-           Segundo toque:
-           ejecutar COMPRA.
-        */
+        if (
+            tradePhase === PHASE.IDLE
+        ) {
+
+            armTradeConfirmation(
+                "BUY"
+            );
+
+            return;
+        }
 
         if (
             tradePhase === PHASE.CONFIRM_BUY &&
@@ -1479,49 +1403,28 @@ buyButton.addEventListener(
                     tradeConfirmTimer
                 );
 
-            tradeConfirmSide =
-                null;
+            tradeConfirmSide = null;
 
             executeTrade("BUY");
-
-            return;
-        }
-
-
-        /*
-           Primer toque.
-
-           Permitido incluso si ya existe otra
-           operación en curso.
-
-           La única excepción es que estemos
-           confirmando una VENTA.
-        */
-
-        if (
-            tradePhase !== PHASE.CONFIRM_SELL
-        ) {
-
-            armTradeConfirmation(
-                "BUY"
-            );
         }
     }
 );
 
 
-/* =========================================================
-   VENTA
-========================================================= */
-
 sellButton.addEventListener(
     "click",
     () => {
 
-        /*
-           Segundo toque:
-           ejecutar VENTA.
-        */
+        if (
+            tradePhase === PHASE.IDLE
+        ) {
+
+            armTradeConfirmation(
+                "SELL"
+            );
+
+            return;
+        }
 
         if (
             tradePhase === PHASE.CONFIRM_SELL &&
@@ -1533,32 +1436,9 @@ sellButton.addEventListener(
                     tradeConfirmTimer
                 );
 
-            tradeConfirmSide =
-                null;
+            tradeConfirmSide = null;
 
             executeTrade("SELL");
-
-            return;
-        }
-
-
-        /*
-           Primer toque.
-
-           Permitido incluso si ya existe otra
-           operación en curso.
-
-           La única excepción es que estemos
-           confirmando una COMPRA.
-        */
-
-        if (
-            tradePhase !== PHASE.CONFIRM_BUY
-        ) {
-
-            armTradeConfirmation(
-                "SELL"
-            );
         }
     }
 );
@@ -1617,8 +1497,7 @@ closePositionButton.addEventListener(
             closeReason =
                 "MANUAL";
 
-            closeRetryCount =
-                0;
+            closeRetryCount = 0;
 
             closePositionButton.disabled =
                 true;
@@ -2432,7 +2311,7 @@ async function loadAccountData() {
 
 
 /* =========================================================
-   CONVERSIÓN DE PRECIOS
+   CONVERSIÓN DE PRECIOS DE QUOTES
 ========================================================= */
 
 function normalizeRiskQuotePrice(
@@ -2451,6 +2330,14 @@ function normalizeRiskQuotePrice(
     }
 
 
+    /*
+       Los precios de FX de algunos eventos
+       pueden venir en formato interno.
+
+       Solamente normalizamos valores claramente
+       grandes para no tocar precios normales.
+    */
+
     if (
         n > 10000
     ) {
@@ -2464,7 +2351,7 @@ function normalizeRiskQuotePrice(
 
 
 /* =========================================================
-   BÚSQUEDA PAR CONVERSIÓN
+   BÚSQUEDA DE PAR DE CONVERSIÓN
 ========================================================= */
 
 function findConversionSymbol(
@@ -2572,6 +2459,21 @@ async function getQuoteToDepositConversion(
         );
 
 
+    const baseAssetId =
+        Number(
+            getField(
+                symbolInfo,
+                "baseAssetId",
+                "BaseAssetId"
+            )
+        );
+
+
+    /*
+       Caso ideal:
+       quote currency == deposit currency.
+    */
+
     if (
         depositAssetId &&
         quoteAssetId &&
@@ -2585,6 +2487,11 @@ async function getQuoteToDepositConversion(
     }
 
 
+    /*
+       Necesitamos las divisas del símbolo.
+       Para FX usamos el nombre BASEQUOTE.
+    */
+
     const cleanName =
         String(symbolName)
             .toUpperCase()
@@ -2594,6 +2501,14 @@ async function getQuoteToDepositConversion(
     if (
         cleanName.length !== 6
     ) {
+
+        /*
+           Para símbolos que no son FX,
+           si el quoteAssetId coincide ya
+           habremos salido arriba.
+
+           No inventamos conversiones.
+        */
 
         throw new Error(
             "No hay una conversión segura disponible para este símbolo."
@@ -2608,6 +2523,11 @@ async function getQuoteToDepositConversion(
         cleanName.slice(3, 6);
 
 
+    /*
+       Si tenemos divisa de depósito,
+       podemos usarla.
+    */
+
     if (
         !depositCurrency ||
         depositCurrency.length !== 3
@@ -2618,6 +2538,16 @@ async function getQuoteToDepositConversion(
         );
     }
 
+
+    /*
+       BASE = DEPOSITO
+
+       Ejemplo:
+       USDJPY con cuenta USD.
+
+       1 JPY = 1 / USDJPY.
+       Para ser conservadores usamos ASK.
+    */
 
     if (
         baseCurrency ===
@@ -2648,6 +2578,10 @@ async function getQuoteToDepositConversion(
     }
 
 
+    /*
+       QUOTE = DEPOSITO
+    */
+
     if (
         quoteCurrency ===
         depositCurrency
@@ -2659,6 +2593,15 @@ async function getQuoteToDepositConversion(
         };
     }
 
+
+    /*
+       Cross currency.
+
+       Ejemplo hipotético:
+       EURGBP con cuenta USD.
+
+       Buscamos GBPUSD o USDGBP.
+    */
 
     const conversion =
         findConversionSymbol(
@@ -2740,6 +2683,13 @@ async function getQuoteToDepositConversion(
         conversion.inverse
     ) {
 
+        /*
+           Tenemos DEPOSIT/QUOTE.
+
+           Para convertir quote -> deposit
+           usamos 1 / ASK.
+        */
+
         if (
             !ask ||
             ask <= 0
@@ -2764,6 +2714,13 @@ async function getQuoteToDepositConversion(
         };
     }
 
+
+    /*
+       Tenemos QUOTE/DEPOSIT.
+
+       Para convertir quote -> deposit
+       usamos BID.
+    */
 
     if (
         !bid ||
@@ -2865,6 +2822,11 @@ async function getClosedTrendbars(
     const period =
         Number(timeframe);
 
+
+    /*
+       Pedimos suficientes barras para garantizar
+       que podamos eliminar la actual.
+    */
 
     const requestedCount =
         Math.max(
@@ -2988,6 +2950,11 @@ async function getClosedTrendbars(
             60 *
             1000;
 
+
+        /*
+           MUY IMPORTANTE:
+           excluimos la vela actual.
+        */
 
         if (
             barStart >=
@@ -3259,6 +3226,12 @@ async function calculateRiskVolume(
     }
 
 
+    /*
+       Nunca se usa el precio del indicador.
+       Este precio viene exclusivamente de cTrader
+       y SOLO se utiliza para dimensionar el volumen.
+    */
+
     const conversion =
         await getQuoteToDepositConversion(
             entryEstimate
@@ -3283,6 +3256,13 @@ async function calculateRiskVolume(
         );
     }
 
+
+    /*
+       Volumen protocolario:
+       100000 = 1000 unidades.
+       Por tanto:
+       unidades = volumen / 100.
+    */
 
     const rawUnits =
         targetRisk /
@@ -3357,6 +3337,11 @@ async function calculateRiskVolume(
         );
 
 
+    /*
+       Si el cálculo da menos del mínimo,
+       cTrader obliga al mínimo.
+    */
+
     if (
         volume <
         minVolume
@@ -3371,6 +3356,10 @@ async function calculateRiskVolume(
         );
     }
 
+
+    /*
+       Nunca superar maxVolume.
+    */
 
     if (
         Number.isFinite(
@@ -3938,6 +3927,10 @@ async function handleOpeningFilled(
         );
 
 
+    /*
+       Primera ejecución.
+    */
+
     if (
         !activeTrade
     ) {
@@ -4022,6 +4015,11 @@ async function handleOpeningFilled(
         );
 
 
+        /*
+           El DOBLE RIESGO se consume SOLO cuando
+           la operación realmente se ha ejecutado.
+        */
+
         if (
             pendingTrade.doubleRiskApplied
         ) {
@@ -4043,6 +4041,11 @@ async function handleOpeningFilled(
         }
 
     } else {
+
+        /*
+           Si existiera un fill adicional,
+           actualizamos volumen y precio real.
+        */
 
         if (
             activeTrade.positionId ===
@@ -4073,6 +4076,10 @@ async function handleOpeningFilled(
         }
     }
 
+
+    /*
+       Validación del lado del SL.
+    */
 
     const sl =
         activeTrade.sl;
@@ -4113,6 +4120,11 @@ async function handleOpeningFilled(
         return;
     }
 
+
+    /*
+       TP basado SIEMPRE en:
+       precio real de entrada -> SL real -> RR.
+    */
 
     const slDistance =
         Math.abs(
@@ -4413,7 +4425,7 @@ function sendProtection() {
 
 
 /* =========================================================
-   FALLO PROTECCIÓN
+   FALLO DE PROTECCIÓN
 ========================================================= */
 
 function handleProtectionFailure() {
@@ -4731,9 +4743,7 @@ function finishTrade(
 
 
         if (
-            Number.isFinite(
-                profit
-            )
+            Number.isFinite(profit)
         ) {
 
             log(
@@ -4744,9 +4754,7 @@ function finishTrade(
 
 
         if (
-            Number.isFinite(
-                commission
-            )
+            Number.isFinite(commission)
         ) {
 
             log(
@@ -4757,9 +4765,7 @@ function finishTrade(
 
 
         if (
-            Number.isFinite(
-                netProfit
-            )
+            Number.isFinite(netProfit)
         ) {
 
             log(
@@ -4891,6 +4897,11 @@ function processExecutionEvent(
         "ORDER_ACCEPTED"
     ) {
 
+        /*
+           Si estamos cerrando, nunca tratar esto
+           como apertura.
+        */
+
         if (
             closePositionRequest &&
             activeTrade &&
@@ -4906,6 +4917,11 @@ function processExecutionEvent(
             return;
         }
 
+
+        /*
+           Si estamos enviando protección,
+           tampoco es una nueva entrada.
+        */
 
         if (
             protectionRequestActive &&
@@ -4940,6 +4956,12 @@ function processExecutionEvent(
         "ORDER_FILLED"
     ) {
 
+        /*
+           PRIMERO:
+           si existe posición activa y el fill
+           corresponde al cierre, finalizar.
+        */
+
         if (
             activeTrade &&
             eventPositionId ===
@@ -4964,6 +4986,11 @@ function processExecutionEvent(
         }
 
 
+        /*
+           Si hay pendingTrade y todavía no existe
+           activeTrade, es una apertura.
+        */
+
         if (
             pendingTrade &&
             !activeTrade
@@ -4976,6 +5003,10 @@ function processExecutionEvent(
             return;
         }
 
+
+        /*
+           Fill adicional de la apertura.
+        */
 
         if (
             pendingTrade &&
@@ -5059,7 +5090,7 @@ function processExecutionEvent(
 
     /* =====================================================
        ORDER_REPLACED
-       Confirmación SL + TP
+       Confirmación de SL + TP
     ===================================================== */
 
     if (
@@ -5161,6 +5192,10 @@ function processExecutionEvent(
         );
 
 
+        /*
+           Rechazo del cierre.
+        */
+
         if (
             closePositionRequest &&
             activeTrade &&
@@ -5194,6 +5229,11 @@ function processExecutionEvent(
             return;
         }
 
+
+        /*
+           Rechazo de apertura.
+           DOBLE RIESGO NO SE CONSUME.
+        */
 
         if (
             pendingTrade
@@ -5245,6 +5285,14 @@ function processExecutionEvent(
         executionType ===
         "ORDER_CANCELLED"
     ) {
+
+        /*
+           Durante un cierre manual cTrader puede cancelar
+           primero la orden de protección y después mandar
+           el ORDER_FILLED del cierre.
+
+           NO desbloqueamos aquí si la posición ya figura CLOSED.
+        */
 
         if (
             activeTrade &&
@@ -5303,6 +5351,10 @@ function processExecutionEvent(
     }
 
 
+    /* =====================================================
+       OTROS
+    ===================================================== */
+
     log(
         `Evento no procesado específicamente: ${executionType}`,
         "normal"
@@ -5318,12 +5370,21 @@ async function executeTrade(
     side
 ) {
 
-    /*
-       executeTrade solo se alcanza mediante
-       el segundo toque de COMPRA o VENTA.
+    if (
+        tradePhase !==
+        PHASE.CONFIRM_BUY &&
+        tradePhase !==
+        PHASE.CONFIRM_SELL
+    ) {
 
-       NO se bloquea porque exista otra operación.
-    */
+        if (
+            tradePhase !==
+            PHASE.IDLE
+        ) {
+            return;
+        }
+    }
+
 
     if (
         !connected ||
@@ -5391,11 +5452,8 @@ async function executeTrade(
 
 
     /*
-       Bloqueamos solo la confirmación actual
-       mientras se prepara la orden.
-
-       Después updateButtons() vuelve a dejar
-       COMPRA/VENTA disponibles.
+       Bloqueamos inmediatamente para evitar
+       dos órdenes por doble toque o taps rápidos.
     */
 
     tradePhase =
@@ -5467,6 +5525,12 @@ async function executeTrade(
         await loadAccountData();
 
 
+        /*
+           SL ANTES de la entrada:
+           últimas N velas cerradas.
+           Nunca la actual.
+        */
+
         const sl =
             await calculateSL(
                 side,
@@ -5490,6 +5554,10 @@ async function executeTrade(
             "ok"
         );
 
+
+        /*
+           Volumen automático según riesgo.
+        */
 
         const sizing =
             await calculateRiskVolume(
@@ -5526,6 +5594,13 @@ async function executeTrade(
             "ok"
         );
 
+
+        /*
+           IMPORTANTE:
+           createNewOrder utiliza MARKET.
+           El precio mostrado por el plugin NO se utiliza
+           para ejecutar la operación.
+        */
 
         createNewOrder(
             adapter,
@@ -5576,6 +5651,11 @@ async function executeTrade(
                     "error"
                 );
 
+
+                /*
+                   DOBLE RIESGO NO se consume aquí,
+                   porque todavía no existe fill.
+                */
 
                 pendingTrade =
                     null;
@@ -5791,9 +5871,9 @@ function initialize() {
     });
 
 
-    /* =====================================================
-       QUOTES EN TIEMPO REAL
-    ===================================================== */
+    /*
+       Quotes en tiempo real.
+    */
 
     quoteEvent(
         adapter
@@ -5817,9 +5897,9 @@ function initialize() {
     });
 
 
-    /* =====================================================
-       EVENTOS EJECUCIÓN
-    ===================================================== */
+    /*
+       Eventos de ejecución en tiempo real.
+    */
 
     executionEvent(
         adapter
@@ -5860,12 +5940,11 @@ initialize();
 
 
 /* =========================================================
-   SEGURIDAD DOBLE RIESGO
+   SEGURIDAD:
+   EL DOBLE RIESGO ES VOLÁTIL.
 
-   NO se guarda en localStorage/sessionStorage.
-
-   Al cerrar o recargar el plugin:
-   doubleRiskArmed desaparece y vuelve a OFF.
+   No se guarda en localStorage/sessionStorage.
+   Al cerrar o recargar el plugin queda OFF.
 ========================================================= */
 
 window.addEventListener(
