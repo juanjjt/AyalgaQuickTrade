@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Ayalga Quick Trade v27</title>
+<title>Ayalga Quick Trade V27</title>
 
 <style>
     * {
@@ -200,7 +200,7 @@
 <div class="container">
 
     <div class="title">
-        Ayalga Quick Trade <span class="version">v24</span>
+        Ayalga Quick Trade <span class="version">V27</span>
     </div>
 
     <div id="status" class="status">
@@ -852,7 +852,7 @@ function getSymbolFromURL() {
 async function initialize() {
 
     log(
-        "Ayalga Quick Trade v24",
+        "Ayalga Quick Trade V27",
         "ok"
     );
 
@@ -2203,12 +2203,12 @@ function processExecutionEvent(response) {
 
         const executionType =
             String(
-                getField(
-                    payload,
-                    "ExecutionType",
-                    "executionType"
-                ) ?? ""
-            );
+            getField(
+                payload,
+                "ExecutionType",
+                "executionType"
+            ) ?? ""
+        );
 
 
         log(
@@ -3909,3 +3909,5 @@ initialize();
 </body>
 </html>
 ```
+
+Listo. Esta versión ya lleva **V27** en el título, en el encabezado visible y en el log de inicio.
