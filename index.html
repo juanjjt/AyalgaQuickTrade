@@ -22,7 +22,6 @@
         max-width: 520px;
         margin: 0 auto;
     }
-    /* Cabecera: símbolo + piloto */
     .header {
         display: flex;
         justify-content: space-between;
@@ -39,12 +38,12 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        background: #b32626; /* rojo = no conectado */
+        background: #b32626;
         box-shadow: 0 0 6px rgba(179, 38, 38, 0.7);
         flex-shrink: 0;
     }
     .pilot.connected {
-        background: #168a45; /* verde = conectado */
+        background: #168a45;
         box-shadow: 0 0 6px rgba(22, 138, 69, 0.7);
     }
     .section {
@@ -62,48 +61,15 @@
     .row:last-child {
         margin-bottom: 0;
     }
-    /* Fila de timeframes: siempre una sola línea */
     #timeframeButtons {
         flex-wrap: nowrap;
         gap: 5px;
-    }
-    .field {
-        flex: 1;
     }
     label {
         display: block;
         font-size: 13px;
         color: #aaa;
         margin-bottom: 6px;
-    }
-    input {
-        width: 100%;
-        height: 42px;
-        border: 1px solid #444;
-        border-radius: 7px;
-        background: #101010;
-        color: white;
-        padding: 0 12px;
-        font-size: 16px;
-    }
-    /* Fila única: título + recuadro de velas */
-    .swing-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .swing-row label {
-        margin: 0;
-        white-space: nowrap;
-        font-size: 14px;
-        color: #ccc;
-    }
-    #candleCount {
-        width: 80px;
-        height: 38px;
-        font-size: 15px;
-        text-align: center;
-        flex-shrink: 0;
     }
     button {
         border: none;
@@ -136,7 +102,7 @@
         min-height: 52px;
         font-size: 16px;
     }
-    .rr-button, .risk-button {
+    .rr-button, .risk-button, .candle-button {
         flex: 1;
         background: #333;
         border: 2px solid #555;
@@ -144,7 +110,6 @@
         font-size: 15px;
         min-width: 58px;
     }
-    /* Botones de timeframe más pequeños y siempre en una fila */
     .tf-button {
         flex: 1;
         background: #333;
@@ -154,7 +119,7 @@
         min-width: 0;
         padding: 0 2px;
     }
-    .rr-button.active, .tf-button.active, .risk-button.active {
+    .rr-button.active, .tf-button.active, .risk-button.active, .candle-button.active {
         background: #555;
         border-color: white;
     }
@@ -198,6 +163,16 @@
         <div id="pilot" class="pilot" title="Estado de conexión"></div>
     </div>
 
+    <!-- 1ª fila: Velas de Swing para SL -->
+    <div class="section">
+        <label>Velas de Swing para SL</label>
+        <div class="row">
+            <button class="candle-button" data-candles="5">5</button>
+            <button class="candle-button active" data-candles="10">10</button>
+        </div>
+        <input id="candleCount" type="hidden" value="10">
+    </div>
+
     <div class="section">
         <label>Marco temporal</label>
         <div class="row" id="timeframeButtons">
@@ -238,13 +213,6 @@
     <div class="section">
         <div class="row">
             <button id="closePositionButton" class="close-test" disabled>CIERRE MANUAL</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="swing-row">
-            <label>Velas de Swing para SL</label>
-            <input id="candleCount" type="number" min="1" max="500" value="10">
         </div>
     </div>
 
@@ -432,6 +400,17 @@ document.querySelectorAll(".tf-button").forEach(btn => {
         btn.classList.add("active");
         selectedTimeframe = Number(btn.dataset.tf);
         log(`Timeframe SL seleccionado: ${getTimeframeName(selectedTimeframe)}`, "ok");
+    });
+});
+// ============================================================
+// BOTONES VELAS DE SWING
+// ============================================================
+document.querySelectorAll(".candle-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".candle-button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        candleCountInput.value = btn.dataset.candles;
+        log(`Velas de Swing para SL: ${btn.dataset.candles}`, "ok");
     });
 });
 // ============================================================
@@ -1031,23 +1010,17 @@ function calculateVolumeFromRisk(side, sl) {
         throw new Error("Datos de volumen del símbolo no válidos.");
     }
     const pips = distance * Math.pow(10, pipPosition);
-    // ---------- Fórmula automática universal ----------
     let riskPerPipForMinVolume;
-    if (minVolume >= 10000) {
-        // Forex clásico (EURUSD, GBPUSD...)
+    if (minVolume >= 1000) {
         riskPerPipForMinVolume = 0.10;
     } else if (currentPrice > 500) {
-        // Oro y metales caros → ahora 1.00 $
         riskPerPipForMinVolume = 1.00;
     } else if (currentPrice > 50) {
-        // Índices / otros
         riskPerPipForMinVolume = 0.20;
     } else {
-        // Resto
         riskPerPipForMinVolume = 0.15;
     }
     let volume = (risk / (pips * riskPerPipForMinVolume)) * minVolume;
-    // Redondeo al step
     volume = Math.round(volume / stepVolume) * stepVolume;
     if (volume < minVolume) volume = minVolume;
     if (Number.isFinite(maxVolume) && maxVolume > 0 && volume > maxVolume) volume = maxVolume;
