@@ -279,10 +279,6 @@
 
     </div>
 
-    <!-- =====================================================
-         CIERRE MANUAL
-         ===================================================== -->
-
     <div class="section">
 
         <div class="row">
@@ -440,7 +436,7 @@ const protectionRetryDelays = [
 
 
 // ============================================================
-// VARIABLES PRUEBA closePosition
+// VARIABLES closePosition
 // ============================================================
 
 let lastPositionId = null;
@@ -1088,7 +1084,7 @@ function subscribeQuoteEvents() {
 
 
 // ============================================================
-// PROCESAR QUOTES
+// PROCESAR QUOTES  (CORREGIDO - escala de precios)
 // ============================================================
 
 function processQuote(response) {
@@ -1098,6 +1094,18 @@ function processQuote(response) {
 
     if (!payload) {
         return;
+    }
+
+    // Normaliza precios de cotización (a veces llegan ×100000)
+    function normalizeQuotePrice(raw) {
+        let p = Number(raw);
+        if (!Number.isFinite(p) || p <= 0) return null;
+
+        if (p > 100) {
+            p = p / 100000;
+        }
+
+        return p;
     }
 
     const quotes =
@@ -1128,7 +1136,7 @@ function processQuote(response) {
             }
 
             const bid =
-                Number(
+                normalizeQuotePrice(
                     getField(
                         q,
                         "bid",
@@ -1137,7 +1145,7 @@ function processQuote(response) {
                 );
 
             const ask =
-                Number(
+                normalizeQuotePrice(
                     getField(
                         q,
                         "ask",
@@ -1145,28 +1153,14 @@ function processQuote(response) {
                     )
                 );
 
-            if (
-                Number.isFinite(bid) &&
-                bid > 0
-            ) {
-
+            if (bid !== null) {
                 lastValidBid = bid;
-
-                bidDisplay.textContent =
-                    formatPrice(bid);
-
+                bidDisplay.textContent = formatPrice(bid);
             }
 
-            if (
-                Number.isFinite(ask) &&
-                ask > 0
-            ) {
-
+            if (ask !== null) {
                 lastValidAsk = ask;
-
-                askDisplay.textContent =
-                    formatPrice(ask);
-
+                askDisplay.textContent = formatPrice(ask);
             }
 
         }
@@ -1175,10 +1169,7 @@ function processQuote(response) {
     }
 
 
-    // --------------------------------------------------------
-    // Algunos formatos pueden entregar directamente Bid / Ask
-    // --------------------------------------------------------
-
+    // Formato directo
     const qSymbolId =
         Number(
             getField(
@@ -1197,7 +1188,7 @@ function processQuote(response) {
     }
 
     const bid =
-        Number(
+        normalizeQuotePrice(
             getField(
                 payload,
                 "bid",
@@ -1206,7 +1197,7 @@ function processQuote(response) {
         );
 
     const ask =
-        Number(
+        normalizeQuotePrice(
             getField(
                 payload,
                 "ask",
@@ -1214,28 +1205,14 @@ function processQuote(response) {
             )
         );
 
-    if (
-        Number.isFinite(bid) &&
-        bid > 0
-    ) {
-
+    if (bid !== null) {
         lastValidBid = bid;
-
-        bidDisplay.textContent =
-            formatPrice(bid);
-
+        bidDisplay.textContent = formatPrice(bid);
     }
 
-    if (
-        Number.isFinite(ask) &&
-        ask > 0
-    ) {
-
+    if (ask !== null) {
         lastValidAsk = ask;
-
-        askDisplay.textContent =
-            formatPrice(ask);
-
+        askDisplay.textContent = formatPrice(ask);
     }
 }
 
@@ -1613,8 +1590,6 @@ function getDetailedSymbol() {
 
 // ============================================================
 // OBTENER VELAS CERRADAS
-// ============================================================
-// ESTA PARTE SE MANTIENE COMO EN V21
 // ============================================================
 
 function getClosedTrendbars(
@@ -2255,12 +2230,6 @@ function processExecutionEvent(response) {
             "ORDER_ACCEPTED"
         ) {
 
-            /*
-             * Si este ORDER_ACCEPTED corresponde al
-             * closePosition, NO lo procesamos como una
-             * nueva orden.
-             */
-
             const eventPositionId =
                 extractPositionId(
                     payload
@@ -2809,7 +2778,6 @@ async function handleFilledExecution(
 
 
 // ============================================================
-// V23
 // ENVIAR SL + TP CON REINTENTOS
 // ============================================================
 
@@ -2840,10 +2808,6 @@ function sendProtection(
         return;
     }
 
-
-    // --------------------------------------------------------
-    // PAYLOAD EXACTO
-    // --------------------------------------------------------
 
     const protectionPayload = {
 
@@ -3105,7 +3069,6 @@ function sendProtection(
 
 
 // ============================================================
-// V23
 // PROGRAMAR SIGUIENTE INTENTO
 // ============================================================
 
@@ -3454,7 +3417,7 @@ function testClosePosition() {
 
 
 // ============================================================
-// CALCULAR VOLUMEN DESDE RIESGO EN DÓLARES
+// CALCULAR VOLUMEN DESDE RIESGO EN DÓLARES  (CORREGIDO)
 // ============================================================
 
 function calculateVolumeFromRisk(side, sl) {
@@ -3491,17 +3454,19 @@ function calculateVolumeFromRisk(side, sl) {
     const distance =
         Math.abs(currentPrice - sl);
 
+    // Seguridad: distancia absurda = error de escala
     if (
         !Number.isFinite(distance) ||
-        distance <= 0
+        distance <= 0 ||
+        distance > 1
     ) {
         throw new Error(
-            "Distancia al SL inválida para calcular el volumen."
+            `Distancia al SL inválida (${distance}). Posible problema de escala de precios.`
         );
     }
 
-    // Para pares con cotización en USD (ej. EURUSD):
-    // Pérdida ≈ volume_units * distancia_en_precio
+    // Fórmula correcta para EURUSD (pares USD quote)
+    // Pérdida ≈ volume_units × distancia_en_precio
     let volume = risk / distance;
 
     const minVolume =
@@ -3560,7 +3525,6 @@ function calculateVolumeFromRisk(side, sl) {
         volume = maxVolume;
     }
 
-    // Evitar valores extraños por redondeo
     volume = Number(volume.toFixed(0));
 
     if (volume < minVolume) {
@@ -3570,9 +3534,18 @@ function calculateVolumeFromRisk(side, sl) {
     }
 
     log(
-        `Riesgo: ${risk} $ | Distancia estimada: ${distance} | Volumen calculado: ${volume}`,
+        `Riesgo: ${risk} $ | Distancia estimada: ${distance.toFixed(6)} | Volumen calculado: ${volume}`,
         "ok"
     );
+
+    // Aviso si el mínimo ya supera el riesgo deseado
+    const minRisk = minVolume * distance;
+    if (minRisk > risk * 1.3) {
+        log(
+            `⚠️ El volumen mínimo de este bróker ya arriesga ≈ ${minRisk.toFixed(2)} $ (más de lo que pediste)`,
+            "warning"
+        );
+    }
 
     return volume;
 }
