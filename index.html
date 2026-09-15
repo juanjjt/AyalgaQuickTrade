@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ayalga Quick Trade v14</title>
+    <title>Ayalga Quick Trade v15</title>
 
     <style>
         * {
@@ -64,16 +64,41 @@
         .symbol-name {
             font-size: 22px;
             font-weight: bold;
+            margin-bottom: 12px;
         }
 
         .symbol-id {
-            margin-top: 5px;
             opacity: 0.7;
+        }
+
+        .prices {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .price-box {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            background: #181818;
+            text-align: center;
+        }
+
+        .price-title {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-bottom: 6px;
+        }
+
+        .price-value {
+            font-size: 20px;
+            font-weight: bold;
         }
 
         .symbols {
             margin-top: 15px;
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             background: #181818;
             border-radius: 8px;
@@ -116,14 +141,15 @@
 
     <h1>
         Ayalga Quick Trade
-        <span class="version">v14</span>
+        <span class="version">v15</span>
     </h1>
 
     <div id="status" class="status">
         Conectando...
     </div>
 
-    <div id="symbolBox" class="symbol-box">
+    <div class="symbol-box">
+
         <div class="symbol-name" id="symbolName">
             Buscando símbolo...
         </div>
@@ -131,14 +157,41 @@
         <div class="symbol-id" id="symbolId">
             ID: -
         </div>
+
+        <div class="prices">
+
+            <div class="price-box">
+                <div class="price-title">
+                    BID
+                </div>
+
+                <div class="price-value" id="bid">
+                    -
+                </div>
+            </div>
+
+            <div class="price-box">
+                <div class="price-title">
+                    ASK
+                </div>
+
+                <div class="price-value" id="ask">
+                    -
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
     <div class="symbol-box">
+
         <strong>Símbolos recibidos</strong>
 
         <div id="symbols" class="symbols">
             Esperando...
         </div>
+
     </div>
 
     <div id="log"></div>
@@ -176,11 +229,26 @@ import {
 // ELEMENTOS
 // ============================================================
 
-const statusElement = document.getElementById("status");
-const symbolNameElement = document.getElementById("symbolName");
-const symbolIdElement = document.getElementById("symbolId");
-const symbolsElement = document.getElementById("symbols");
-const logElement = document.getElementById("log");
+const statusElement =
+    document.getElementById("status");
+
+const symbolNameElement =
+    document.getElementById("symbolName");
+
+const symbolIdElement =
+    document.getElementById("symbolId");
+
+const symbolsElement =
+    document.getElementById("symbols");
+
+const bidElement =
+    document.getElementById("bid");
+
+const askElement =
+    document.getElementById("ask");
+
+const logElement =
+    document.getElementById("log");
 
 
 // ============================================================
@@ -189,13 +257,16 @@ const logElement = document.getElementById("log");
 
 function log(message, type = "") {
 
-    const time = new Date().toLocaleTimeString();
+    const time =
+        new Date().toLocaleTimeString();
 
-    const line = `[${time}] ${message}`;
+    const line =
+        `[${time}] ${message}`;
 
     console.log(line);
 
-    const div = document.createElement("div");
+    const div =
+        document.createElement("div");
 
     div.textContent = line;
 
@@ -213,7 +284,8 @@ function log(message, type = "") {
 
     logElement.appendChild(div);
 
-    logElement.scrollTop = logElement.scrollHeight;
+    logElement.scrollTop =
+        logElement.scrollHeight;
 }
 
 
@@ -221,19 +293,52 @@ function log(message, type = "") {
 // URL
 // ============================================================
 
-const params = new URLSearchParams(window.location.search);
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
 
-const urlSymbol = params.get("symbol");
-const platform = params.get("platform");
-const placement = params.get("placement");
-const theme = params.get("theme");
+const urlSymbol =
+    params.get("symbol");
 
-log("URL: " + window.location.href);
+const platform =
+    params.get("platform");
 
-log("Símbolo recibido por URL: " + (urlSymbol || "ninguno"), "info");
-log("Plataforma: " + (platform || "desconocida"), "info");
-log("Placement: " + (placement || "desconocido"), "info");
-log("Tema: " + (theme || "desconocido"), "info");
+const placement =
+    params.get("placement");
+
+const theme =
+    params.get("theme");
+
+
+log(
+    "URL: " +
+    window.location.href
+);
+
+log(
+    "Símbolo recibido por URL: " +
+    (urlSymbol || "ninguno"),
+    "info"
+);
+
+log(
+    "Plataforma: " +
+    (platform || "desconocida"),
+    "info"
+);
+
+log(
+    "Placement: " +
+    (placement || "desconocido"),
+    "info"
+);
+
+log(
+    "Tema: " +
+    (theme || "desconocido"),
+    "info"
+);
 
 
 // ============================================================
@@ -251,49 +356,72 @@ function init() {
 
     try {
 
-        log("Creando Client Adapter...");
-
-        const logger = createLogger(
-            location.href.includes("showLogs")
+        log(
+            "Creando Client Adapter..."
         );
 
-        adapter = createClientAdapter({
-            logger
-        });
+        const logger =
+            createLogger(
+                location.href.includes(
+                    "showLogs"
+                )
+            );
 
-        log("Client Adapter creado correctamente.", "ok");
+        adapter =
+            createClientAdapter({
+                logger
+            });
+
+        log(
+            "Client Adapter creado correctamente.",
+            "ok"
+        );
 
 
         // ====================================================
         // CONFIRMACIÓN
         // ====================================================
 
-        log("Enviando confirmación...");
+        log(
+            "Enviando confirmación..."
+        );
 
-        handleConfirmEvent(adapter, {})
-            .pipe(take(1))
-            .subscribe({
+        handleConfirmEvent(
+            adapter,
+            {}
+        )
+        .pipe(take(1))
+        .subscribe({
 
-                next: () => {
-                    log("Confirmación recibida.", "ok");
-                },
+            next: () => {
 
-                error: (err) => {
-                    log(
-                        "Error en confirmación: " +
-                        JSON.stringify(err),
-                        "error"
-                    );
-                }
+                log(
+                    "Confirmación recibida.",
+                    "ok"
+                );
 
-            });
+            },
+
+            error: (err) => {
+
+                log(
+                    "Error en confirmación: " +
+                    JSON.stringify(err),
+                    "error"
+                );
+
+            }
+
+        });
 
 
         // ====================================================
         // REGISTER
         // ====================================================
 
-        log("Registrando plugin...");
+        log(
+            "Registrando plugin..."
+        );
 
         registerEvent(adapter)
             .pipe(
@@ -307,12 +435,16 @@ function init() {
                         "ok"
                     );
 
-                    // Volvemos a confirmar exactamente
-                    // como en el código que funcionaba.
 
-                    handleConfirmEvent(adapter, {})
-                        .pipe(take(1))
-                        .subscribe();
+                    // Mantener exactamente
+                    // el handshake que funcionaba.
+
+                    handleConfirmEvent(
+                        adapter,
+                        {}
+                    )
+                    .pipe(take(1))
+                    .subscribe();
 
                 }),
 
@@ -327,7 +459,9 @@ function init() {
                     statusElement.textContent =
                         "Error registrando plugin";
 
-                    statusElement.classList.add("error");
+                    statusElement.classList.add(
+                        "error"
+                    );
 
                     return [];
 
@@ -352,6 +486,7 @@ function init() {
                     );
 
                     loadSymbols();
+
                 },
 
                 error: (err) => {
@@ -380,7 +515,9 @@ function init() {
         statusElement.textContent =
             "Error inicializando";
 
-        statusElement.classList.add("error");
+        statusElement.classList.add(
+            "error"
+        );
 
         log(
             "ERROR INICIALIZANDO: " +
@@ -389,6 +526,7 @@ function init() {
         );
 
     }
+
 }
 
 
@@ -398,212 +536,244 @@ function init() {
 
 function loadSymbols() {
 
-    log("Solicitando lista de símbolos...");
+    log(
+        "Solicitando lista de símbolos..."
+    );
 
-    getLightSymbolList(adapter, {})
-        .pipe(take(1))
-        .subscribe({
+    getLightSymbolList(
+        adapter,
+        {}
+    )
+    .pipe(take(1))
+    .subscribe({
 
-            next: (response) => {
+        next: (response) => {
+
+            log(
+                "Respuesta getLightSymbolList recibida.",
+                "ok"
+            );
+
+
+            log(
+                "Claves de respuesta: " +
+                Object.keys(
+                    response || {}
+                ).join(", "),
+                "info"
+            );
+
+
+            // =================================================
+            // ESTRUCTURA REAL CONFIRMADA
+            //
+            // response
+            //     payload
+            //         Symbol
+            //
+            // =================================================
+
+            const symbols =
+                response?.payload?.Symbol ?? [];
+
+
+            log(
+                "Cantidad de símbolos recibidos: " +
+                symbols.length,
+                "ok"
+            );
+
+
+            // =================================================
+            // MOSTRAR LISTA
+            // =================================================
+
+            symbolsElement.innerHTML = "";
+
+
+            if (symbols.length === 0) {
+
+                symbolsElement.textContent =
+                    "No se encontraron símbolos.";
 
                 log(
-                    "Respuesta getLightSymbolList recibida.",
-                    "ok"
+                    "La lista de símbolos está vacía.",
+                    "error"
                 );
 
-
-                // =================================================
-                // MOSTRAMOS LAS CLAVES DE LA RESPUESTA
-                // =================================================
-
-                log(
-                    "Claves de respuesta: " +
-                    Object.keys(response || {}).join(", "),
-                    "info"
-                );
+                return;
+            }
 
 
-                // =================================================
-                // AQUÍ ESTABA EL PROBLEMA
-                //
-                // La respuesta real es:
-                //
-                // response
-                //    └── payload
-                //          └── Symbol
-                //
-                // =================================================
+            symbols.forEach(symbol => {
 
-                const symbols =
-                    response?.payload?.Symbol ?? [];
-
-
-                log(
-                    "Cantidad de símbolos recibidos: " +
-                    symbols.length,
-                    "ok"
-                );
-
-
-                // =================================================
-                // MOSTRAR SÍMBOLOS
-                // =================================================
-
-                symbolsElement.innerHTML = "";
-
-
-                if (symbols.length === 0) {
-
-                    symbolsElement.textContent =
-                        "No se encontraron símbolos.";
-
-                    log(
-                        "La lista de símbolos está vacía.",
-                        "error"
+                const row =
+                    document.createElement(
+                        "div"
                     );
 
-                    return;
-                }
+                row.className =
+                    "symbol-row";
 
 
-                symbols.forEach(symbol => {
+                const name =
+                    document.createElement(
+                        "span"
+                    );
 
-                    const row =
-                        document.createElement("div");
-
-                    row.className = "symbol-row";
-
-
-                    const name =
-                        document.createElement("span");
-
-                    name.textContent =
-                        symbol?.Name ?? "SIN NOMBRE";
+                name.textContent =
+                    symbol?.Name ??
+                    "SIN NOMBRE";
 
 
-                    const id =
-                        document.createElement("span");
+                const id =
+                    document.createElement(
+                        "span"
+                    );
 
-                    id.className =
-                        "symbol-id-small";
+                id.className =
+                    "symbol-id-small";
 
-                    id.textContent =
+                id.textContent =
+                    "ID: " +
+                    (
+                        symbol?.Id ??
+                        "-"
+                    );
+
+
+                row.appendChild(name);
+                row.appendChild(id);
+
+                symbolsElement.appendChild(
+                    row
+                );
+
+            });
+
+
+            // =================================================
+            // BUSCAR SÍMBOLO ACTIVO
+            // =================================================
+
+            if (urlSymbol) {
+
+                const found =
+                    symbols.find(
+                        s =>
+                            String(
+                                s?.Name
+                            ).toUpperCase() ===
+                            String(
+                                urlSymbol
+                            ).toUpperCase()
+                    );
+
+
+                if (found) {
+
+                    symbolNameElement.textContent =
+                        found.Name;
+
+                    symbolIdElement.textContent =
                         "ID: " +
-                        (symbol?.Id ?? "-");
+                        found.Id;
 
 
-                    row.appendChild(name);
-                    row.appendChild(id);
-
-                    symbolsElement.appendChild(row);
-
-                });
-
-
-                // =================================================
-                // BUSCAR EL SÍMBOLO DE LA URL
-                // =================================================
-
-                if (urlSymbol) {
-
-                    const found =
-                        symbols.find(
-                            s =>
-                                String(s?.Name)
-                                    .toUpperCase() ===
-                                String(urlSymbol)
-                                    .toUpperCase()
-                        );
+                    log(
+                        "Símbolo encontrado: " +
+                        found.Name +
+                        " | ID: " +
+                        found.Id,
+                        "ok"
+                    );
 
 
-                    if (found) {
+                    // =================================================
+                    // AHORA SUSCRIBIMOS LAS COTIZACIONES
+                    // =================================================
 
-                        symbolNameElement.textContent =
-                            found.Name;
-
-                        symbolIdElement.textContent =
-                            "ID: " + found.Id;
-
-
-                        log(
-                            "Símbolo encontrado: " +
-                            found.Name +
-                            " | ID: " +
-                            found.Id,
-                            "ok"
-                        );
+                    startQuotes(
+                        found.Id,
+                        found.Name
+                    );
 
 
-                        // =========================================
-                        // CARGAR INFORMACIÓN DEL SÍMBOLO
-                        // =========================================
+                    // También obtenemos la información
+                    // completa del símbolo.
 
-                        loadSymbol(found.Id);
-
-                    }
-
-                    else {
-
-                        symbolNameElement.textContent =
-                            "Símbolo no encontrado";
-
-                        symbolIdElement.textContent =
-                            "ID: -";
-
-
-                        log(
-                            "No se encontró " +
-                            urlSymbol +
-                            " en la lista.",
-                            "error"
-                        );
-
-                    }
+                    loadSymbol(
+                        found.Id
+                    );
 
                 }
 
                 else {
 
-                    // Si no viene símbolo en URL,
-                    // mostramos el primero.
+                    symbolNameElement.textContent =
+                        "Símbolo no encontrado";
 
-                    const first =
-                        symbols[0];
+                    symbolIdElement.textContent =
+                        "ID: -";
 
-                    if (first) {
 
-                        symbolNameElement.textContent =
-                            first.Name;
-
-                        symbolIdElement.textContent =
-                            "ID: " + first.Id;
-
-                    }
+                    log(
+                        "No se encontró " +
+                        urlSymbol +
+                        " en la lista.",
+                        "error"
+                    );
 
                 }
 
-            },
+            }
 
-            error: (err) => {
+            else {
 
-                log(
-                    "ERROR getLightSymbolList: " +
-                    JSON.stringify(err),
-                    "error"
-                );
+                const first =
+                    symbols[0];
 
-                symbolsElement.textContent =
-                    "Error obteniendo símbolos.";
+                if (first) {
+
+                    symbolNameElement.textContent =
+                        first.Name;
+
+                    symbolIdElement.textContent =
+                        "ID: " +
+                        first.Id;
+
+
+                    startQuotes(
+                        first.Id,
+                        first.Name
+                    );
+
+                }
 
             }
 
-        });
+        },
+
+        error: (err) => {
+
+            log(
+                "ERROR getLightSymbolList: " +
+                JSON.stringify(err),
+                "error"
+            );
+
+            symbolsElement.textContent =
+                "Error obteniendo símbolos.";
+
+        }
+
+    });
 
 }
 
 
 // ============================================================
-// CARGAR SÍMBOLO
+// INFORMACIÓN DEL SÍMBOLO
 // ============================================================
 
 function loadSymbol(symbolId) {
@@ -615,9 +785,12 @@ function loadSymbol(symbolId) {
     );
 
 
-    getSymbol(adapter, {
-        symbolId: [symbolId]
-    })
+    getSymbol(
+        adapter,
+        {
+            symbolId: [symbolId]
+        }
+    )
     .pipe(take(1))
     .subscribe({
 
@@ -628,20 +801,12 @@ function loadSymbol(symbolId) {
                 "ok"
             );
 
-
             log(
                 "Claves getSymbol: " +
-                Object.keys(response || {}).join(", "),
+                Object.keys(
+                    response || {}
+                ).join(", "),
                 "info"
-            );
-
-
-            // Mostramos la respuesta completa
-            // para conocer exactamente su estructura.
-
-            log(
-                "Respuesta getSymbol: " +
-                JSON.stringify(response)
             );
 
         },
@@ -657,6 +822,260 @@ function loadSymbol(symbolId) {
         }
 
     });
+
+}
+
+
+// ============================================================
+// COTIZACIONES
+// ============================================================
+
+function startQuotes(
+    symbolId,
+    symbolName
+) {
+
+    log(
+        "Suscribiendo cotizaciones de " +
+        symbolName +
+        " | ID " +
+        symbolId +
+        "..."
+    );
+
+
+    // ========================================================
+    // SUSCRIPCIÓN
+    // ========================================================
+
+    subscribeQuotes(
+        adapter,
+        {
+            symbolId: [symbolId]
+        }
+    )
+    .pipe(take(1))
+    .subscribe({
+
+        next: () => {
+
+            log(
+                "Suscripción a cotizaciones realizada.",
+                "ok"
+            );
+
+
+            listenQuotes(
+                symbolId,
+                symbolName
+            );
+
+        },
+
+        error: (err) => {
+
+            log(
+                "ERROR subscribeQuotes: " +
+                JSON.stringify(err),
+                "error"
+            );
+
+        }
+
+    });
+
+}
+
+
+// ============================================================
+// ESCUCHAR QUOTES
+// ============================================================
+
+function listenQuotes(
+    symbolId,
+    symbolName
+) {
+
+    log(
+        "Escuchando cotizaciones en tiempo real...",
+        "info"
+    );
+
+
+    quoteEvent(adapter)
+        .subscribe({
+
+            next: (quote) => {
+
+                try {
+
+                    // =================================================
+                    // MOSTRAR SOLO INFORMACIÓN ÚTIL EN LOG
+                    // =================================================
+
+                    const quoteSymbolId =
+                        quote?.symbolId ??
+                        quote?.SymbolId;
+
+
+                    // Si el evento pertenece a otro símbolo,
+                    // lo ignoramos.
+
+                    if (
+                        quoteSymbolId !== undefined &&
+                        Number(quoteSymbolId) !==
+                        Number(symbolId)
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    // =================================================
+                    // EXTRAER BID / ASK
+                    // =================================================
+
+                    const bidRaw =
+                        quote?.bid ??
+                        quote?.Bid;
+
+                    const askRaw =
+                        quote?.ask ??
+                        quote?.Ask;
+
+
+                    if (
+                        bidRaw === undefined &&
+                        askRaw === undefined
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    // =================================================
+                    // CONVERSIÓN
+                    //
+                    // cTrader puede entregar precios
+                    // en unidades internas.
+                    //
+                    // Para EURUSD:
+                    // 1.12345 -> 112345
+                    //
+                    // =================================================
+
+                    const bid =
+                        convertPrice(
+                            bidRaw
+                        );
+
+                    const ask =
+                        convertPrice(
+                            askRaw
+                        );
+
+
+                    if (bid !== null) {
+
+                        bidElement.textContent =
+                            formatPrice(bid);
+
+                    }
+
+
+                    if (ask !== null) {
+
+                        askElement.textContent =
+                            formatPrice(ask);
+
+                    }
+
+
+                }
+                catch (err) {
+
+                    log(
+                        "Error procesando quote: " +
+                        (err?.stack || err),
+                        "error"
+                    );
+
+                }
+
+            },
+
+            error: (err) => {
+
+                log(
+                    "ERROR quoteEvent: " +
+                    JSON.stringify(err),
+                    "error"
+                );
+
+            }
+
+        });
+
+}
+
+
+// ============================================================
+// CONVERTIR PRECIO
+// ============================================================
+
+function convertPrice(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return null;
+
+    }
+
+
+    const number =
+        Number(value);
+
+
+    if (
+        !Number.isFinite(number)
+    ) {
+
+        return null;
+
+    }
+
+
+    // ========================================================
+    // Si viene en formato interno de 1/100000.
+    // ========================================================
+
+    if (
+        Math.abs(number) > 10
+    ) {
+
+        return number / 100000;
+
+    }
+
+
+    return number;
+
+}
+
+
+// ============================================================
+// FORMATO PRECIO
+// ============================================================
+
+function formatPrice(price) {
+
+    return Number(price)
+        .toFixed(5);
 
 }
 
