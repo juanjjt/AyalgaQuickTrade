@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Ayalga Quick Trade V27</title>
+<title>Ayalga Quick Trade v28</title>
 
 <style>
     * {
@@ -200,7 +200,7 @@
 <div class="container">
 
     <div class="title">
-        Ayalga Quick Trade <span class="version">V27</span>
+        Ayalga Quick Trade <span class="version">v28</span>
     </div>
 
     <div id="status" class="status">
@@ -852,7 +852,7 @@ function getSymbolFromURL() {
 async function initialize() {
 
     log(
-        "Ayalga Quick Trade V27",
+        "Ayalga Quick Trade v28",
         "ok"
     );
 
@@ -1084,7 +1084,7 @@ function subscribeQuoteEvents() {
 
 
 // ============================================================
-// PROCESAR QUOTES  (CORREGIDO - escala de precios)
+// PROCESAR QUOTES  (con normalización de escala)
 // ============================================================
 
 function processQuote(response) {
@@ -2203,12 +2203,12 @@ function processExecutionEvent(response) {
 
         const executionType =
             String(
-            getField(
-                payload,
-                "ExecutionType",
-                "executionType"
-            ) ?? ""
-        );
+                getField(
+                    payload,
+                    "ExecutionType",
+                    "executionType"
+                ) ?? ""
+            );
 
 
         log(
@@ -3417,7 +3417,8 @@ function testClosePosition() {
 
 
 // ============================================================
-// CALCULAR VOLUMEN DESDE RIESGO EN DÓLARES  (CORREGIDO)
+// CALCULAR VOLUMEN DESDE RIESGO EN DÓLARES
+// Fórmula corregida para este bróker (V28)
 // ============================================================
 
 function calculateVolumeFromRisk(side, sl) {
@@ -3465,9 +3466,28 @@ function calculateVolumeFromRisk(side, sl) {
         );
     }
 
-    // Fórmula correcta para EURUSD (pares USD quote)
-    // Pérdida ≈ volume_units × distancia_en_precio
-    let volume = risk / distance;
+    // --------------------------------------------------------
+    // FÓRMULA CORRECTA PARA ESTE BRÓKER
+    // --------------------------------------------------------
+    // minVolume = 100000 → corresponde a 0.01 lotes
+    // En EURUSD: 0.01 lote ≈ 0.10 $ por pip
+    // pipPosition = 4 → 1 pip = 0.0001
+    // --------------------------------------------------------
+
+    const pipPosition =
+        Number(
+            getField(
+                symbolInfo,
+                "pipPosition",
+                "PipPosition"
+            ) ?? 4
+        );
+
+    const pips =
+        distance * Math.pow(10, pipPosition);
+
+    // Valor en $ de 1 pip para el volumen mínimo (0.01 lote)
+    const riskPerPipForMinVolume = 0.10;
 
     const minVolume =
         Number(
@@ -3507,6 +3527,11 @@ function calculateVolumeFromRisk(side, sl) {
         );
     }
 
+    // Volumen teórico
+    let volume =
+        (risk / (pips * riskPerPipForMinVolume)) *
+        minVolume;
+
     // Redondear al múltiplo de stepVolume más cercano
     volume =
         Math.round(volume / stepVolume) *
@@ -3533,16 +3558,492 @@ function calculateVolumeFromRisk(side, sl) {
         );
     }
 
+    // Riesgo real aproximado que se va a arriesgar
+    const realRiskApprox =
+        (volume / minVolume) *
+        pips *
+        riskPerPipForMinVolume;
+
     log(
-        `Riesgo: ${risk} $ | Distancia estimada: ${distance.toFixed(6)} | Volumen calculado: ${volume}`,
+        `Riesgo pedido: ${risk} $ | Pips estimados: ${pips.toFixed(1)} | Volumen calculado: ${volume}`,
         "ok"
     );
 
-    // Aviso si el mínimo ya supera el riesgo deseado
-    const minRisk = minVolume * distance;
-    if (minRisk > risk * 1.3) {
+    log(
+        `Riesgo real aproximado con este volumen: ≈ ${realRiskApprox.toFixed(2)} $`,
+        "ok"
+    );
+
+    // Aviso si se desvía mucho
+    if (Math.abs(realRiskApprox - risk) > risk * 0.25) {
         log(
-            `⚠️ El volumen mínimo de este bróker ya arriesga ≈ ${minRisk.toFixed(2)} $ (más de lo que pediste)`,
+            `⚠️ El redondeo del bróker hace que el riesgo real sea ≈ ${realRiskApprox.toFixed(2)} $ (en vez de ${risk} $)`,
+            "warning"
+        );
+    }
+
+    return volume;
+}
+
+
+// ============================================================
+// EJECUTAR OPERACIÓN
+// ============================================================
+
+async function executeTrade(side) {
+
+    if (!connected) {
+
+        log(
+            "Plugin todavía no conectado.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (symbolId === null) {
+
+        log(
+            "No hay símbolo seleccionado.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (!symbolInfo) {
+
+        log(
+            "No hay información del símbolo.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (pendingTrade) {
+
+        log(
+            "Ya existe una operación pendiente.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // CALCULAR SL ANTES DE ABRIR
+    // --------------------------------------------------------
+
+    let sl;
+
+
+    try {
+
+        sl =
+            await calculateSL(
+                side
+            );
+
+    } catch (error) {
+
+        log(
+            "Error calculando SL: " +
+            error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // CALCULAR VOLUMEN DESDE RIESGO EN $
+    // --------------------------------------------------------
+
+    let volume;
+
+    try {
+
+        volume =
+            calculateVolumeFromRisk(
+                side,
+                sl
+            );
+
+    } catch (error) {
+
+        log(
+            "Error calculando volumen: " +
+            error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // CREAR ESTADO
+    // --------------------------------------------------------
+
+    pendingTrade = {
+
+        side: side,
+
+        sl: sl,
+
+        volume: volume,
+
+        positionId: null,
+
+        orderId: null,
+
+        realEntry: null,
+
+        finalSL: null,
+
+        finalTP: null
+
+    };
+
+
+    protectionSent = false;
+
+    protectionRetryCount = 0;
+
+
+    // --------------------------------------------------------
+    // UI
+    // --------------------------------------------------------
+
+    slDisplay.textContent =
+        formatPrice(sl);
+
+    tpDisplay.textContent =
+        "---";
+
+    positionDisplay.textContent =
+        "---";
+
+    entryDisplay.textContent =
+        "---";
+
+    orderVolumeDisplay.textContent =
+        String(volume);
+
+
+    updateButtons();
+
+
+    // --------------------------------------------------------
+    // MARKET ORDER
+    // --------------------------------------------------------
+
+    log(
+        `Enviando MARKET con volumen calculado: ${volume}`,
+        "ok"
+    );
+
+
+    const clientOrderId =
+        "AQT_" +
+        Date.now();
+
+
+    try {
+
+        createNewOrder(
+            adapter,
+            {
+
+                symbolId: symbolId,
+
+                orderType:
+                    ServerInterfaces
+                    .ProtoOrderType
+                    .MARKET,
+
+                tradeSide:
+                    side === "BUY"
+                        ? ServerInterfaces
+                            .ProtoTradeSide
+                            .BUY
+                        : ServerInterfaces
+                            .ProtoTradeSide
+                            .SELL,
+
+                volume: volume,
+
+                clientOrderId:
+                    clientOrderId
+
+            }
+        )
+        .pipe(take(1))
+        .subscribe({
+
+            next: response => {
+
+                log(
+                    "RESPUESTA createNewOrder: " +
+                    JSON.stringify(
+                        response,
+                        null,
+                        2
+                    )
+                );
+
+                processOrderResponse(
+                    response
+                );
+
+            },
+
+            error: error => {
+
+                log(
+                    "❌ Error createNewOrder: " +
+                    JSON.stringify(error),
+                    "error"
+                );
+
+                pendingTrade = null;
+
+                protectionSent = false;
+
+                protectionRetryCount = 0;
+
+                updateButtons();
+
+            }
+
+        });
+
+    } catch (error) {
+
+        log(
+            "❌ Excepción createNewOrder: " +
+            error.message,
+            "error"
+        );
+
+        pendingTrade = null;
+
+        protectionSent = false;
+
+        protectionRetryCount = 0;
+
+        updateButtons();
+
+    }
+}
+
+
+// ============================================================
+// BOTONES COMPRA / VENTA / CIERRE (DOBLE PULSACIÓN 1.5s)
+// ============================================================
+
+buyButton.addEventListener(
+    "click",
+    () => {
+
+        const now = Date.now();
+
+        if (
+            now - lastClickBuy <
+            DOUBLE_CLICK_MS
+        ) {
+
+            lastClickBuy = 0;
+            executeTrade("BUY");
+
+        } else {
+
+            lastClickBuy = now;
+            log(
+                "Pulsa COMPRA de nuevo en 1.5 s para confirmar",
+                "warning"
+            );
+
+        }
+
+    }
+);
+
+
+sellButton.addEventListener(
+    "click",
+    () => {
+
+        const now = Date.now();
+
+        if (
+            now - lastClickSell <
+            DOUBLE_CLICK_MS
+        ) {
+
+            lastClickSell = 0;
+            executeTrade("SELL");
+
+        } else {
+
+            lastClickSell = now;
+            log(
+                "Pulsa VENTA de nuevo en 1.5 s para confirmar",
+                "warning"
+            );
+
+        }
+
+    }
+);
+
+
+closePositionButton.addEventListener(
+    "click",
+    () => {
+
+        const now = Date.now();
+
+        if (
+            now - lastClickClose <
+            DOUBLE_CLICK_MS
+        ) {
+
+            lastClickClose = 0;
+            testClosePosition();
+
+        } else {
+
+            lastClickClose = now;
+            log(
+                "Pulsa CIERRE MANUAL de nuevo en 1.5 s para confirmar",
+                "warning"
+            );
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// INICIO
+// ============================================================
+
+initialize();
+
+</script>
+
+</body>
+</html>
+```                symbolInfo,
+                "pipPosition",
+                "PipPosition"
+            ) ?? 4
+        );
+
+    const pips =
+        distance * Math.pow(10, pipPosition);
+
+    // Valor en $ de 1 pip para el volumen mínimo (0.01 lote)
+    const riskPerPipForMinVolume = 0.10;
+
+    const minVolume =
+        Number(
+            getField(
+                symbolInfo,
+                "minVolume",
+                "MinVolume"
+            )
+        );
+
+    const stepVolume =
+        Number(
+            getField(
+                symbolInfo,
+                "stepVolume",
+                "StepVolume"
+            )
+        );
+
+    const maxVolume =
+        Number(
+            getField(
+                symbolInfo,
+                "maxVolume",
+                "MaxVolume"
+            )
+        );
+
+    if (
+        !Number.isFinite(minVolume) ||
+        minVolume <= 0 ||
+        !Number.isFinite(stepVolume) ||
+        stepVolume <= 0
+    ) {
+        throw new Error(
+            "No se pudo obtener minVolume / stepVolume del símbolo."
+        );
+    }
+
+    // Volumen teórico
+    let volume =
+        (risk / (pips * riskPerPipForMinVolume)) *
+        minVolume;
+
+    // Redondear al múltiplo de stepVolume más cercano
+    volume =
+        Math.round(volume / stepVolume) *
+        stepVolume;
+
+    // Asegurar límites
+    if (volume < minVolume) {
+        volume = minVolume;
+    }
+
+    if (
+        Number.isFinite(maxVolume) &&
+        maxVolume > 0 &&
+        volume > maxVolume
+    ) {
+        volume = maxVolume;
+    }
+
+    volume = Number(volume.toFixed(0));
+
+    if (volume < minVolume) {
+        throw new Error(
+            `El volumen calculado (${volume}) es inferior al mínimo permitido (${minVolume}).`
+        );
+    }
+
+    // Riesgo real aproximado que se va a arriesgar
+    const realRiskApprox =
+        (volume / minVolume) *
+        pips *
+        riskPerPipForMinVolume;
+
+    log(
+        `Riesgo pedido: ${risk} $ | Pips estimados: ${pips.toFixed(1)} | Volumen calculado: ${volume}`,
+        "ok"
+    );
+
+    log(
+        `Riesgo real aproximado con este volumen: ≈ ${realRiskApprox.toFixed(2)} $`,
+        "ok"
+    );
+
+    // Aviso si se desvía mucho
+    if (Math.abs(realRiskApprox - risk) > risk * 0.25) {
+        log(
+            `⚠️ El redondeo del bróker hace que el riesgo real sea ≈ ${realRiskApprox.toFixed(2)} $ (en vez de ${risk} $)`,
             "warning"
         );
     }
@@ -3909,5 +4410,3 @@ initialize();
 </body>
 </html>
 ```
-
-Listo. Esta versión ya lleva **V27** en el título, en el encabezado visible y en el log de inicio.
