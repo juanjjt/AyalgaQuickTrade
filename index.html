@@ -3,225 +3,221 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<title>Ayalga Quick Trade v29</title>
-
+<title>Ayalga Quick Trade V1</title>
 <style>
     * {
         box-sizing: border-box;
         -webkit-tap-highlight-color: transparent;
     }
-
     body {
         margin: 0;
-        padding: 12px;
+        padding: 14px;
         background: #111;
         color: #fff;
         font-family: Arial, sans-serif;
-        font-size: 14px;
+        font-size: 15px;
     }
-
     .container {
         width: 100%;
-        max-width: 500px;
+        max-width: 520px;
         margin: 0 auto;
     }
-
-    .title {
-        text-align: center;
-        font-size: 21px;
+    /* Cabecera: símbolo + piloto */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding: 0 2px;
+    }
+    .symbol-top {
+        font-size: 20px;
         font-weight: bold;
-        margin-bottom: 14px;
+        letter-spacing: 0.5px;
     }
-
-    .version {
-        font-size: 14px;
-        font-weight: normal;
+    .pilot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #b32626; /* rojo = no conectado */
+        box-shadow: 0 0 6px rgba(179, 38, 38, 0.7);
+        flex-shrink: 0;
     }
-
-    .status {
-        text-align: center;
-        padding: 8px;
-        border-radius: 6px;
-        background: #222;
-        margin-bottom: 12px;
-        font-weight: bold;
+    .pilot.connected {
+        background: #168a45; /* verde = conectado */
+        box-shadow: 0 0 6px rgba(22, 138, 69, 0.7);
     }
-
     .section {
         background: #1b1b1b;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 10px;
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
     }
-
     .row {
         display: flex;
-        gap: 6px;
-        margin-bottom: 8px;
+        gap: 8px;
+        margin-bottom: 10px;
         flex-wrap: wrap;
     }
-
     .row:last-child {
         margin-bottom: 0;
     }
-
+    /* Fila de timeframes: siempre una sola línea */
+    #timeframeButtons {
+        flex-wrap: nowrap;
+        gap: 5px;
+    }
     .field {
         flex: 1;
     }
-
     label {
         display: block;
-        font-size: 12px;
+        font-size: 13px;
         color: #aaa;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
     }
-
     input {
         width: 100%;
-        height: 40px;
+        height: 42px;
         border: 1px solid #444;
-        border-radius: 6px;
+        border-radius: 7px;
         background: #101010;
         color: white;
-        padding: 0 10px;
-        font-size: 15px;
+        padding: 0 12px;
+        font-size: 16px;
     }
-
+    /* Fila única: título + recuadro de velas */
+    .swing-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .swing-row label {
+        margin: 0;
+        white-space: nowrap;
+        font-size: 14px;
+        color: #ccc;
+    }
+    #candleCount {
+        width: 80px;
+        height: 38px;
+        font-size: 15px;
+        text-align: center;
+        flex-shrink: 0;
+    }
     button {
         border: none;
-        border-radius: 8px;
+        border-radius: 9px;
         color: white;
         font-weight: bold;
-        font-size: 15px;
-        min-height: 44px;
+        font-size: 16px;
+        min-height: 48px;
         cursor: pointer;
         touch-action: manipulation;
     }
-
     button:disabled {
         opacity: 0.35;
     }
-
     .buy {
         background: #168a45;
         flex: 1;
-        font-size: 17px;
-        min-height: 52px;
+        font-size: 18px;
+        min-height: 56px;
     }
-
     .sell {
         background: #b32626;
         flex: 1;
-        font-size: 17px;
-        min-height: 52px;
+        font-size: 18px;
+        min-height: 56px;
     }
-
     .close-test {
         background: #d17a00;
         width: 100%;
-        min-height: 48px;
-        font-size: 15px;
+        min-height: 52px;
+        font-size: 16px;
     }
-
-    .rr-button, .tf-button {
+    .rr-button, .risk-button {
+        flex: 1;
+        background: #333;
+        border: 2px solid #555;
+        min-height: 46px;
+        font-size: 15px;
+        min-width: 58px;
+    }
+    /* Botones de timeframe más pequeños y siempre en una fila */
+    .tf-button {
         flex: 1;
         background: #333;
         border: 2px solid #555;
         min-height: 42px;
-        font-size: 14px;
-        min-width: 60px;
+        font-size: 13px;
+        min-width: 0;
+        padding: 0 2px;
     }
-
-    .rr-button.active, .tf-button.active {
+    .rr-button.active, .tf-button.active, .risk-button.active {
         background: #555;
         border-color: white;
     }
-
-    .info {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
+    .info-section {
+        display: none;
     }
-
-    .info-item {
-        background: #101010;
-        border-radius: 5px;
-        padding: 8px;
-    }
-
-    .info-label {
-        color: #888;
-        font-size: 11px;
-        margin-bottom: 3px;
-    }
-
-    .info-value {
-        font-size: 14px;
-        font-weight: bold;
-        word-break: break-word;
-    }
-
     .log-title {
         font-weight: bold;
-        margin-bottom: 7px;
+        margin-bottom: 8px;
+        font-size: 15px;
     }
-
     #log {
         background: #050505;
         border: 1px solid #333;
-        border-radius: 6px;
-        padding: 8px;
-        height: 250px;
+        border-radius: 7px;
+        padding: 10px;
+        height: 260px;
         overflow-y: auto;
         font-family: monospace;
-        font-size: 11px;
-        line-height: 1.35;
+        font-size: 12px;
+        line-height: 1.4;
         white-space: pre-wrap;
         word-break: break-word;
     }
-
+    .plugin-footer {
+        text-align: center;
+        margin-top: 14px;
+        font-size: 13px;
+        color: #888;
+    }
     .danger { color: #ff6666; }
     .success { color: #4ddd82; }
     .warning { color: #ffd35a; }
     .muted { color: #999; }
 </style>
 </head>
-
 <body>
-
 <div class="container">
-
-    <div class="title">
-        Ayalga Quick Trade <span class="version">v29</span>
-    </div>
-
-    <div id="status" class="status">Iniciando...</div>
-
-    <div class="section">
-        <div class="row">
-            <div class="field">
-                <label>VELAS CERRADAS PARA SL</label>
-                <input id="candleCount" type="number" min="1" max="500" value="10">
-            </div>
-        </div>
+    <div class="header">
+        <div id="symbolDisplay" class="symbol-top">---</div>
+        <div id="pilot" class="pilot" title="Estado de conexión"></div>
     </div>
 
     <div class="section">
-        <label>TIMEFRAME SL</label>
+        <label>Marco temporal</label>
         <div class="row" id="timeframeButtons">
             <button class="tf-button active" data-tf="1">M1</button>
             <button class="tf-button" data-tf="2">M2</button>
             <button class="tf-button" data-tf="3">M3</button>
             <button class="tf-button" data-tf="4">M4</button>
             <button class="tf-button" data-tf="5">M5</button>
-            <button class="tf-button" data-tf="1">H1</button>
         </div>
     </div>
 
     <div class="section">
         <label>RIESGO EN DÓLARES</label>
-        <input id="riskAmount" type="number" min="0.01" step="0.01" placeholder="Ej: 10">
+        <div class="row">
+            <button class="risk-button active" data-risk="25">25</button>
+            <button class="risk-button" data-risk="50">50</button>
+            <button class="risk-button" data-risk="100">100</button>
+            <button class="risk-button" data-risk="200">200</button>
+        </div>
+        <input id="riskAmount" type="hidden" value="25">
     </div>
 
     <div class="section">
@@ -246,10 +242,17 @@
     </div>
 
     <div class="section">
+        <div class="swing-row">
+            <label>Velas de Swing para SL</label>
+            <input id="candleCount" type="number" min="1" max="500" value="10">
+        </div>
+    </div>
+
+    <div class="section info-section">
         <div class="info">
             <div class="info-item">
                 <div class="info-label">SÍMBOLO</div>
-                <div id="symbolDisplay" class="info-value">---</div>
+                <div id="symbolDisplayHidden" class="info-value">---</div>
             </div>
             <div class="info-item">
                 <div class="info-label">RR</div>
@@ -295,10 +298,12 @@
         <div id="log"></div>
     </div>
 
+    <div class="plugin-footer">
+        Ayalga Quick Trade · V1
+    </div>
 </div>
 
 <script type="module">
-
 import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api";
 import {
     handleConfirmEvent, registerEvent, getLightSymbolList, getSymbol,
@@ -307,11 +312,9 @@ import {
 } from "https://esm.sh/@spotware-web-team/sdk";
 import { take, tap, catchError } from "https://esm.sh/rxjs";
 import { createLogger } from "https://esm.sh/@veksa/logger";
-
 // ============================================================
 // VARIABLES
 // ============================================================
-
 let adapter = null;
 let connected = false;
 let symbolId = null;
@@ -323,24 +326,19 @@ let selectedRR = 1;
 let selectedTimeframe = 1; // M1 por defecto
 let pendingTrade = null;
 let protectionSent = false;
-
 let protectionRetryCount = 0;
 const protectionRetryDelays = [300, 500, 700, 1000, 1500];
-
 let lastPositionId = null;
 let lastPositionVolume = null;
 let closePositionRequest = false;
-
 const DOUBLE_CLICK_MS = 1500;
 let lastClickBuy = 0;
 let lastClickSell = 0;
 let lastClickClose = 0;
-
 // ============================================================
 // ELEMENTOS UI
 // ============================================================
-
-const statusElement = document.getElementById("status");
+const pilotElement = document.getElementById("pilot");
 const buyButton = document.getElementById("buyButton");
 const sellButton = document.getElementById("sellButton");
 const closePositionButton = document.getElementById("closePositionButton");
@@ -359,13 +357,10 @@ const tpDisplay = document.getElementById("tpDisplay");
 const positionDisplay = document.getElementById("positionDisplay");
 const entryDisplay = document.getElementById("entryDisplay");
 const logElement = document.getElementById("log");
-
 const logger = createLogger(location.href.includes("showLogs"));
-
 // ============================================================
 // LOG
 // ============================================================
-
 function log(message, type = "") {
     const now = new Date();
     const time = now.toLocaleTimeString("es-ES", { hour12: false });
@@ -380,15 +375,16 @@ function log(message, type = "") {
     logElement.scrollTop = logElement.scrollHeight;
     console.log(line);
 }
-
 function setStatus(text) {
-    statusElement.textContent = text;
+    if (text === "CONECTADO") {
+        pilotElement.classList.add("connected");
+    } else {
+        pilotElement.classList.remove("connected");
+    }
 }
-
 // ============================================================
 // HELPERS
 // ============================================================
-
 function getField(obj, ...names) {
     if (!obj) return null;
     for (const name of names) {
@@ -396,12 +392,10 @@ function getField(obj, ...names) {
     }
     return null;
 }
-
 function getPayload(response) {
     if (!response) return null;
     return response.payload || response;
 }
-
 function getArray(obj, ...names) {
     if (!obj) return [];
     for (const name of names) {
@@ -409,7 +403,6 @@ function getArray(obj, ...names) {
     }
     return [];
 }
-
 function normalizePrice(price) {
     const numericPrice = Number(price);
     if (!Number.isFinite(numericPrice)) return null;
@@ -417,27 +410,22 @@ function normalizePrice(price) {
     const factor = Math.pow(10, digits);
     return Number((Math.round((numericPrice + Number.EPSILON) * factor) / factor).toFixed(digits));
 }
-
 function formatPrice(price) {
     const numericPrice = Number(price);
     if (!Number.isFinite(numericPrice)) return "---";
     const digits = Number(getField(symbolInfo, "digits", "Digits") ?? 5);
     return numericPrice.toFixed(digits);
 }
-
 function getTimeframeName(period) {
     const names = {1:"M1",5:"M5",15:"M15",30:"M30",60:"H1",240:"H4"};
     return names[period] || String(period);
 }
-
 function getTimeframeMinutes(period) {
-    return period; // ahora usamos minutos directamente
+    return period;
 }
-
 // ============================================================
-// BOTONES TIMEFRAME (arreglado)
+// BOTONES TIMEFRAME
 // ============================================================
-
 document.querySelectorAll(".tf-button").forEach(btn => {
     btn.addEventListener("click", () => {
         document.querySelectorAll(".tf-button").forEach(b => b.classList.remove("active"));
@@ -446,11 +434,20 @@ document.querySelectorAll(".tf-button").forEach(btn => {
         log(`Timeframe SL seleccionado: ${getTimeframeName(selectedTimeframe)}`, "ok");
     });
 });
-
+// ============================================================
+// BOTONES DE RIESGO
+// ============================================================
+document.querySelectorAll(".risk-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".risk-button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        riskAmountInput.value = btn.dataset.risk;
+        log(`Riesgo seleccionado: ${btn.dataset.risk} $`, "ok");
+    });
+});
 // ============================================================
 // RR
 // ============================================================
-
 rr1Button.addEventListener("click", () => {
     selectedRR = 1;
     rr1Button.classList.add("active");
@@ -458,7 +455,6 @@ rr1Button.addEventListener("click", () => {
     rrDisplay.textContent = "1:1";
     log("RR seleccionado: 1:1", "ok");
 });
-
 rr2Button.addEventListener("click", () => {
     selectedRR = 2;
     rr2Button.classList.add("active");
@@ -466,42 +462,33 @@ rr2Button.addEventListener("click", () => {
     rrDisplay.textContent = "1:2";
     log("RR seleccionado: 1:2", "ok");
 });
-
 // ============================================================
 // ACTUALIZAR BOTONES
 // ============================================================
-
 function updateButtons() {
     const enabled = connected && symbolId !== null && symbolInfo !== null && !pendingTrade;
     buyButton.disabled = !enabled;
     sellButton.disabled = !enabled;
     closePositionButton.disabled = !connected || lastPositionId === null || closePositionRequest;
 }
-
 // ============================================================
 // URL / SÍMBOLO
 // ============================================================
-
 function getSymbolFromURL() {
     return new URLSearchParams(window.location.search).get("symbol");
 }
-
 // ============================================================
 // INICIO
 // ============================================================
-
 async function initialize() {
     log("Ayalga Quick Trade v29", "ok");
     log("Iniciando...");
-
     try {
         adapter = createClientAdapter({ logger });
-
         handleConfirmEvent(adapter, {}).pipe(take(1)).subscribe({
             next: () => log("Confirmación inicial recibida.", "ok"),
             error: err => log("Error en confirmación: " + JSON.stringify(err), "error")
         });
-
         registerEvent(adapter).pipe(
             take(1),
             tap(() => {
@@ -521,16 +508,13 @@ async function initialize() {
         ).subscribe({
             error: err => log("Error general de registro: " + JSON.stringify(err), "error")
         });
-
     } catch (error) {
         log("ERROR INICIANDO: " + error.message, "error");
     }
 }
-
 // ============================================================
 // SUBSCRIPCIONES
 // ============================================================
-
 function subscribeExecutionEvents() {
     try {
         log("Suscribiendo executionEvent...");
@@ -543,7 +527,6 @@ function subscribeExecutionEvents() {
         log("Error suscribiendo executionEvent: " + error.message, "error");
     }
 }
-
 function subscribeQuoteEvents() {
     try {
         log("Suscribiendo quoteEvent...");
@@ -556,31 +539,25 @@ function subscribeQuoteEvents() {
         log("Error suscribiendo quoteEvent: " + error.message, "error");
     }
 }
-
 // ============================================================
 // PROCESAR QUOTES
 // ============================================================
-
 function processQuote(response) {
     const payload = getPayload(response);
     if (!payload) return;
-
     function normalizeQuotePrice(raw) {
         let p = Number(raw);
         if (!Number.isFinite(p) || p <= 0) return null;
         if (p > 10000) p = p / 100000;
         return p;
     }
-
     const quotes = getArray(payload, "quote", "Quote");
     if (quotes.length > 0) {
         for (const q of quotes) {
             const qSymbolId = Number(getField(q, "symbolId", "SymbolId"));
             if (symbolId !== null && qSymbolId !== symbolId) continue;
-
             const bid = normalizeQuotePrice(getField(q, "bid", "Bid"));
             const ask = normalizeQuotePrice(getField(q, "ask", "Ask"));
-
             if (bid !== null) {
                 lastValidBid = bid;
                 bidDisplay.textContent = formatPrice(bid);
@@ -592,13 +569,10 @@ function processQuote(response) {
         }
         return;
     }
-
     const qSymbolId = Number(getField(payload, "symbolId", "SymbolId"));
     if (symbolId !== null && Number.isFinite(qSymbolId) && qSymbolId !== symbolId) return;
-
     const bid = normalizeQuotePrice(getField(payload, "bid", "Bid"));
     const ask = normalizeQuotePrice(getField(payload, "ask", "Ask"));
-
     if (bid !== null) {
         lastValidBid = bid;
         bidDisplay.textContent = formatPrice(bid);
@@ -608,11 +582,9 @@ function processQuote(response) {
         askDisplay.textContent = formatPrice(ask);
     }
 }
-
 // ============================================================
 // CARGAR SÍMBOLOS
 // ============================================================
-
 function loadSymbols() {
     log("Buscando símbolos en cTrader...");
     getLightSymbolList(adapter, {}).pipe(take(1)).subscribe({
@@ -621,10 +593,8 @@ function loadSymbols() {
                 const payload = getPayload(response);
                 const symbols = getArray(payload, "Symbol", "symbol");
                 log("Símbolos recibidos: " + symbols.length);
-
                 const requestedSymbol = getSymbolFromURL();
                 let selectedSymbol = null;
-
                 if (requestedSymbol) {
                     selectedSymbol = symbols.find(s =>
                         String(getField(s, "Name", "name")).toUpperCase() === requestedSymbol.toUpperCase()
@@ -639,7 +609,6 @@ function loadSymbols() {
                     log("No se encontró el símbolo.", "error");
                     return;
                 }
-
                 symbolId = Number(getField(selectedSymbol, "Id", "id"));
                 symbolName = String(getField(selectedSymbol, "Name", "name"));
                 symbolDisplay.textContent = symbolName;
@@ -652,11 +621,9 @@ function loadSymbols() {
         error: error => log("Error obteniendo símbolos: " + JSON.stringify(error), "error")
     });
 }
-
 // ============================================================
 // INFORMACIÓN DETALLADA
 // ============================================================
-
 function getDetailedSymbol() {
     log("Obteniendo información detallada de cTrader...");
     getSymbol(adapter, { symbolId: [symbolId] }).pipe(take(1)).subscribe({
@@ -664,39 +631,31 @@ function getDetailedSymbol() {
             try {
                 let payload = getPayload(response);
                 let detail = null;
-
                 if (payload && (payload.Id !== undefined || payload.Name !== undefined)) detail = payload;
                 if (!detail) {
                     const symbols = getArray(payload, "Symbol", "symbol");
                     if (symbols.length > 0) detail = symbols[0];
                 }
                 if (!detail && response && (response.Id !== undefined || response.Name !== undefined)) detail = response;
-
                 if (!detail) {
                     log("No se pudo extraer la información detallada.", "error");
                     return;
                 }
-
                 symbolInfo = detail;
-
                 const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
                 const stepVolume = Number(getField(symbolInfo, "stepVolume", "StepVolume"));
                 const maxVolume = Number(getField(symbolInfo, "maxVolume", "MaxVolume"));
                 const digits = Number(getField(symbolInfo, "digits", "Digits"));
                 const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition"));
-
                 minVolumeDisplay.textContent = String(minVolume);
                 orderVolumeDisplay.textContent = "---";
-
                 log(`minVolume: ${minVolume} | stepVolume: ${stepVolume}`);
                 log(`digits: ${digits} | pipPosition: ${pipPosition}`);
                 log("Información detallada recibida.", "ok");
-
                 subscribeQuotes(adapter, { symbolId: [symbolId] }).pipe(take(1)).subscribe({
                     next: () => log("Suscripción de precios activa.", "ok"),
                     error: error => log("Error suscribiendo precios: " + JSON.stringify(error), "error")
                 });
-
                 updateButtons();
             } catch (error) {
                 log("Error procesando detalle del símbolo: " + error.message, "error");
@@ -705,22 +664,17 @@ function getDetailedSymbol() {
         error: error => log("Error obteniendo detalle: " + JSON.stringify(error), "error")
     });
 }
-
 // ============================================================
 // VELAS CERRADAS
 // ============================================================
-
 function getClosedTrendbars(periodMinutes, count) {
     return new Promise((resolve, reject) => {
         const now = Date.now();
         const timeframeMs = periodMinutes * 60 * 1000;
         const requestCount = Math.max(count + 5, 20);
         const fromTimestamp = now - timeframeMs * (requestCount + 10);
-
-        // Mapear minutos a el valor que espera cTrader
         const periodMap = {1:1, 5:5, 15:7, 30:8, 60:9, 240:10};
         const period = periodMap[periodMinutes] || 1;
-
         getTrendbarList(adapter, {
             symbolId,
             period,
@@ -734,16 +688,13 @@ function getClosedTrendbars(periodMinutes, count) {
                     const payload = getPayload(response);
                     let bars = getArray(payload, "Trendbar", "trendbar");
                     if (bars.length === 0 && Array.isArray(payload)) bars = payload;
-
                     const currentBarStart = Math.floor(now / timeframeMs) * timeframeMs;
-
                     const closedBars = bars.map(bar => {
                         const timestampMinutes = Number(getField(bar, "utcTimestampInMinutes", "UtcTimestampInMinutes"));
                         const lowRaw = Number(getField(bar, "low", "Low"));
                         const deltaOpen = Number(getField(bar, "deltaOpen", "DeltaOpen") ?? 0);
                         const deltaClose = Number(getField(bar, "deltaClose", "DeltaClose") ?? 0);
                         const deltaHigh = Number(getField(bar, "deltaHigh", "DeltaHigh") ?? 0);
-
                         return {
                             timestampMs: timestampMinutes * 60 * 1000,
                             open: (lowRaw + deltaOpen) / 100000,
@@ -754,7 +705,6 @@ function getClosedTrendbars(periodMinutes, count) {
                     })
                     .filter(bar => Number.isFinite(bar.low) && Number.isFinite(bar.high) && bar.timestampMs < currentBarStart)
                     .sort((a, b) => a.timestampMs - b.timestampMs);
-
                     resolve(closedBars.slice(-count));
                 } catch (error) {
                     reject(error);
@@ -764,37 +714,28 @@ function getClosedTrendbars(periodMinutes, count) {
         });
     });
 }
-
 // ============================================================
 // CALCULAR SL
 // ============================================================
-
 async function calculateSL(side) {
     const count = Math.max(1, Math.min(500, Number(candleCountInput.value) || 10));
     const periodMinutes = selectedTimeframe;
-
     log(`${side}: calculando SL con ${count} velas cerradas...`);
     log(`Timeframe SL: ${getTimeframeName(periodMinutes)}`);
-
     const bars = await getClosedTrendbars(periodMinutes, count);
-
     if (!bars || bars.length < count) {
         throw new Error(`No hay suficientes velas cerradas. Disponibles: ${bars ? bars.length : 0}`);
     }
-
     let extreme = side === "BUY"
         ? Math.min(...bars.map(b => b.low))
         : Math.max(...bars.map(b => b.high));
-
     extreme = normalizePrice(extreme);
     log(`${side} SL calculado: ${formatPrice(extreme)}`, "ok");
     return extreme;
 }
-
 // ============================================================
 // EXTRACTORES
 // ============================================================
-
 function extractPositionId(payload) {
     if (!payload) return null;
     const candidates = [
@@ -810,7 +751,6 @@ function extractPositionId(payload) {
     }
     return null;
 }
-
 function extractExecutionPrice(payload) {
     if (!payload) return null;
     const candidates = [
@@ -824,15 +764,12 @@ function extractExecutionPrice(payload) {
     }
     return null;
 }
-
 // ============================================================
 // PROCESAR RESPUESTA ORDEN
 // ============================================================
-
 function processOrderResponse(response) {
     const payload = getPayload(response);
     if (!payload) return;
-
     const errorCode = String(getField(payload, "ErrorCode", "errorCode") ?? "");
     if (errorCode) {
         log(`❌ Error al crear orden: ${errorCode}`, "error");
@@ -844,12 +781,10 @@ function processOrderResponse(response) {
         updateButtons();
         return;
     }
-
     const executionType = String(getField(payload, "ExecutionType", "executionType") ?? "");
     const positionId = extractPositionId(payload);
     const order = getField(payload, "Order", "order");
     const orderId = Number(getField(order, "OrderId", "orderId"));
-
     if (Number.isFinite(positionId) && positionId > 0) {
         pendingTrade.positionId = positionId;
         positionDisplay.textContent = String(positionId);
@@ -859,24 +794,19 @@ function processOrderResponse(response) {
         pendingTrade.orderId = orderId;
         log(`Order ID: ${orderId}`);
     }
-
     log(`ExecutionType recibido: ${executionType}`);
     if (executionType === "ORDER_ACCEPTED") log("cTrader respondió a la orden.", "ok");
     log("RESPUESTA createNewOrder: " + JSON.stringify(response, null, 2));
 }
-
 // ============================================================
 // EXECUTION EVENT
 // ============================================================
-
 function processExecutionEvent(response) {
     try {
         const payload = getPayload(response);
         if (!payload) return;
-
         const executionType = String(getField(payload, "ExecutionType", "executionType") ?? "");
         log("EXECUTION EVENT: " + JSON.stringify(payload, null, 2));
-
         if (executionType === "ORDER_ACCEPTED") {
             const eventPositionId = extractPositionId(payload);
             if (closePositionRequest && lastPositionId !== null && eventPositionId === Number(lastPositionId)) {
@@ -886,7 +816,6 @@ function processExecutionEvent(response) {
             processOrderResponse(response);
             return;
         }
-
         if (executionType === "ORDER_FILLED" || executionType === "ORDER_PARTIAL_FILL") {
             log("================================", "ok");
             log("✅ ORDER_FILLED RECIBIDO", "ok");
@@ -894,7 +823,6 @@ function processExecutionEvent(response) {
             handleFilledExecution(payload);
             return;
         }
-
         if (executionType === "ORDER_REJECTED") {
             log("❌ ORDEN RECHAZADA", "error");
             if (closePositionRequest) {
@@ -908,7 +836,6 @@ function processExecutionEvent(response) {
             updateButtons();
             return;
         }
-
         if (executionType === "ORDER_REPLACED") {
             log("🛡️ SL + TP CONFIRMADOS POR cTRADER", "ok");
             pendingTrade = null;
@@ -920,51 +847,41 @@ function processExecutionEvent(response) {
         log("Error procesando executionEvent: " + error.message, "error");
     }
 }
-
 // ============================================================
 // FILL + PROTECCIÓN
 // ============================================================
-
 async function handleFilledExecution(payload) {
     if (!pendingTrade || protectionSent) return;
-
     const positionId = extractPositionId(payload);
     const realEntry = extractExecutionPrice(payload);
-
     if (!positionId || !Number.isFinite(realEntry)) {
         log("No se pudo obtener Position ID o entrada real.", "error");
         return;
     }
-
     pendingTrade.positionId = positionId;
     pendingTrade.realEntry = realEntry;
     lastPositionId = Number(positionId);
     lastPositionVolume = Number(pendingTrade.volume);
     closePositionRequest = false;
-
     positionDisplay.textContent = String(positionId);
     entryDisplay.textContent = formatPrice(realEntry);
     log(`Position ID REAL: ${positionId}`, "ok");
     log(`Entrada REAL: ${formatPrice(realEntry)}`, "ok");
     updateButtons();
-
     const side = pendingTrade.side;
     const finalSL = normalizePrice(pendingTrade.sl);
-
     if (!Number.isFinite(finalSL)) {
         log("SL no válido.", "error");
         pendingTrade = null;
         updateButtons();
         return;
     }
-
     if ((side === "BUY" && finalSL >= realEntry) || (side === "SELL" && finalSL <= realEntry)) {
         log(`❌ SL inválido respecto a la entrada.`, "error");
         pendingTrade = null;
         updateButtons();
         return;
     }
-
     const distanceSL = Math.abs(realEntry - finalSL);
     if (distanceSL <= 0) {
         log("Distancia SL inválida.", "error");
@@ -972,11 +889,9 @@ async function handleFilledExecution(payload) {
         updateButtons();
         return;
     }
-
     let calculatedTP = selectedRR === 1
         ? (side === "BUY" ? realEntry + distanceSL : realEntry - distanceSL)
         : (side === "BUY" ? realEntry + distanceSL * 2 : realEntry - distanceSL * 2);
-
     const finalTP = normalizePrice(calculatedTP);
     if (!Number.isFinite(finalTP)) {
         log("TP no válido.", "error");
@@ -984,38 +899,30 @@ async function handleFilledExecution(payload) {
         updateButtons();
         return;
     }
-
     pendingTrade.finalSL = finalSL;
     pendingTrade.finalTP = finalTP;
     slDisplay.textContent = formatPrice(finalSL);
     tpDisplay.textContent = formatPrice(finalTP);
-
     log("🛡️ ENVIANDO SL + TP", "ok");
     log(`SL: ${formatPrice(finalSL)} | TP: ${formatPrice(finalTP)}`, "ok");
-
     protectionRetryCount = 0;
     protectionSent = false;
     sendProtection(positionId, finalSL, finalTP);
 }
-
 function sendProtection(positionId, finalSL, finalTP) {
     if (!pendingTrade || protectionSent) return;
-
     const protectionPayload = {
         positionId: Number(positionId),
         stopLoss: finalSL,
         takeProfit: finalTP
     };
-
     log(`🛡️ INTENTO DE PROTECCIÓN ${protectionRetryCount + 1}/${protectionRetryDelays.length + 1}`, "ok");
-
     try {
         modifyOrderProtection(adapter, protectionPayload).pipe(take(1)).subscribe({
             next: response => {
                 const responsePayload = getPayload(response);
                 const responseType = String(getField(responsePayload, "ExecutionType", "executionType", "PayloadType", "payloadType") ?? "");
                 const errorCode = String(getField(responsePayload, "ErrorCode", "errorCode") ?? "");
-
                 if (responseType === "ORDER_REPLACED") {
                     protectionSent = true;
                     log("🛡️ SL + TP ACEPTADOS POR cTRADER", "ok");
@@ -1024,12 +931,10 @@ function sendProtection(positionId, finalSL, finalTP) {
                     updateButtons();
                     return;
                 }
-
                 if (errorCode === "POSITION_NOT_FOUND") {
                     scheduleProtectionRetry(positionId, finalSL, finalTP);
                     return;
                 }
-
                 if (errorCode) {
                     log(`❌ Error cTrader: ${errorCode}`, "error");
                     pendingTrade = null;
@@ -1038,7 +943,6 @@ function sendProtection(positionId, finalSL, finalTP) {
                     updateButtons();
                     return;
                 }
-
                 scheduleProtectionRetry(positionId, finalSL, finalTP);
             },
             error: () => scheduleProtectionRetry(positionId, finalSL, finalTP)
@@ -1047,10 +951,8 @@ function sendProtection(positionId, finalSL, finalTP) {
         scheduleProtectionRetry(positionId, finalSL, finalTP);
     }
 }
-
 function scheduleProtectionRetry(positionId, finalSL, finalTP) {
     if (!pendingTrade || protectionSent) return;
-
     if (protectionRetryCount >= protectionRetryDelays.length) {
         log("❌ AGOTADOS LOS REINTENTOS DE SL + TP", "error");
         pendingTrade = null;
@@ -1059,38 +961,30 @@ function scheduleProtectionRetry(positionId, finalSL, finalTP) {
         updateButtons();
         return;
     }
-
     const delay = protectionRetryDelays[protectionRetryCount++];
     log(`⏳ Reintentando en ${delay} ms...`, "warning");
     setTimeout(() => {
         if (pendingTrade && !protectionSent) sendProtection(positionId, finalSL, finalTP);
     }, delay);
 }
-
 // ============================================================
 // CIERRE MANUAL
 // ============================================================
-
 function testClosePosition() {
     if (!connected || lastPositionId === null) {
         log("No se puede cerrar la posición.", "error");
         return;
     }
-
     const positionId = Number(lastPositionId);
     const volume = Number(lastPositionVolume);
-
     if (!Number.isFinite(positionId) || positionId <= 0 || !Number.isFinite(volume) || volume <= 0) {
         log("Datos de posición inválidos.", "error");
         return;
     }
-
     closePositionRequest = true;
     updateButtons();
-
     log("CIERRE MANUAL", "warning");
     log(`PositionId: ${positionId} | Volume: ${volume}`, "ok");
-
     try {
         closePosition(adapter, { positionId, volume }).pipe(take(1)).subscribe({
             next: response => {
@@ -1113,49 +1007,38 @@ function testClosePosition() {
         updateButtons();
     }
 }
-
 // ============================================================
 // VOLUMEN AUTOMÁTICO PARA TODOS LOS INSTRUMENTOS
 // ============================================================
-
 function calculateVolumeFromRisk(side, sl) {
     const risk = Number(riskAmountInput.value);
     if (!Number.isFinite(risk) || risk <= 0) {
         throw new Error("Introduce un riesgo en dólares válido.");
     }
-
     const currentPrice = side === "BUY" ? lastValidAsk : lastValidBid;
     if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
         throw new Error("No hay precio actual válido.");
     }
-
     const distance = Math.abs(currentPrice - sl);
     if (!Number.isFinite(distance) || distance <= 0) {
         throw new Error("Distancia al SL inválida.");
     }
-
     const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
     const stepVolume = Number(getField(symbolInfo, "stepVolume", "StepVolume"));
     const maxVolume = Number(getField(symbolInfo, "maxVolume", "MaxVolume"));
     const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition") ?? 4);
-
     if (!Number.isFinite(minVolume) || minVolume <= 0 || !Number.isFinite(stepVolume) || stepVolume <= 0) {
         throw new Error("Datos de volumen del símbolo no válidos.");
     }
-
     const pips = distance * Math.pow(10, pipPosition);
-
     // ---------- Fórmula automática universal ----------
-    // Estimamos el valor en $ de 1 pip del volumen mínimo
-    // según el tipo de instrumento (precio y minVolume)
     let riskPerPipForMinVolume;
-
     if (minVolume >= 10000) {
         // Forex clásico (EURUSD, GBPUSD...)
         riskPerPipForMinVolume = 0.10;
     } else if (currentPrice > 500) {
-        // Oro y metales caros
-        riskPerPipForMinVolume = 1.05;
+        // Oro y metales caros → ahora 1.00 $
+        riskPerPipForMinVolume = 1.00;
     } else if (currentPrice > 50) {
         // Índices / otros
         riskPerPipForMinVolume = 0.20;
@@ -1163,37 +1046,28 @@ function calculateVolumeFromRisk(side, sl) {
         // Resto
         riskPerPipForMinVolume = 0.15;
     }
-
     let volume = (risk / (pips * riskPerPipForMinVolume)) * minVolume;
-
     // Redondeo al step
     volume = Math.round(volume / stepVolume) * stepVolume;
     if (volume < minVolume) volume = minVolume;
     if (Number.isFinite(maxVolume) && maxVolume > 0 && volume > maxVolume) volume = maxVolume;
     volume = Number(volume.toFixed(0));
-
     const realRiskApprox = (volume / minVolume) * pips * riskPerPipForMinVolume;
-
     log(`Riesgo pedido: ${risk} $ | Pips: ${pips.toFixed(2)} | Volumen: ${volume}`, "ok");
     log(`Riesgo real aproximado: ≈ ${realRiskApprox.toFixed(2)} $`, "ok");
-
     if (Math.abs(realRiskApprox - risk) > risk * 0.4) {
         log(`⚠️ El redondeo del bróker hace que el riesgo real sea ≈ ${realRiskApprox.toFixed(2)} $`, "warning");
     }
-
     return volume;
 }
-
 // ============================================================
 // EJECUTAR OPERACIÓN
 // ============================================================
-
 async function executeTrade(side) {
     if (!connected || symbolId === null || !symbolInfo || pendingTrade) {
         log("No se puede operar ahora.", "warning");
         return;
     }
-
     let sl, volume;
     try {
         sl = await calculateSL(side);
@@ -1202,20 +1076,16 @@ async function executeTrade(side) {
         log("Error: " + error.message, "error");
         return;
     }
-
     pendingTrade = { side, sl, volume, positionId: null, orderId: null, realEntry: null, finalSL: null, finalTP: null };
     protectionSent = false;
     protectionRetryCount = 0;
-
     slDisplay.textContent = formatPrice(sl);
     tpDisplay.textContent = "---";
     positionDisplay.textContent = "---";
     entryDisplay.textContent = "---";
     orderVolumeDisplay.textContent = String(volume);
     updateButtons();
-
     log(`Enviando MARKET | Volumen: ${volume}`, "ok");
-
     try {
         createNewOrder(adapter, {
             symbolId,
@@ -1240,11 +1110,9 @@ async function executeTrade(side) {
         updateButtons();
     }
 }
-
 // ============================================================
 // BOTONES DOBLE PULSACIÓN
 // ============================================================
-
 buyButton.addEventListener("click", () => {
     const now = Date.now();
     if (now - lastClickBuy < DOUBLE_CLICK_MS) {
@@ -1255,7 +1123,6 @@ buyButton.addEventListener("click", () => {
         log("Pulsa COMPRA de nuevo en 1.5 s para confirmar", "warning");
     }
 });
-
 sellButton.addEventListener("click", () => {
     const now = Date.now();
     if (now - lastClickSell < DOUBLE_CLICK_MS) {
@@ -1266,7 +1133,6 @@ sellButton.addEventListener("click", () => {
         log("Pulsa VENTA de nuevo en 1.5 s para confirmar", "warning");
     }
 });
-
 closePositionButton.addEventListener("click", () => {
     const now = Date.now();
     if (now - lastClickClose < DOUBLE_CLICK_MS) {
@@ -1277,13 +1143,10 @@ closePositionButton.addEventListener("click", () => {
         log("Pulsa CIERRE MANUAL de nuevo en 1.5 s para confirmar", "warning");
     }
 });
-
 // ============================================================
 // INICIO
 // ============================================================
-
 initialize();
-
 </script>
 </body>
 </html>
