@@ -211,11 +211,11 @@
         <label>TIMEFRAME SL</label>
         <div class="row" id="timeframeButtons">
             <button class="tf-button active" data-tf="1">M1</button>
+            <button class="tf-button" data-tf="2">M2</button>
+            <button class="tf-button" data-tf="3">M3</button>
+            <button class="tf-button" data-tf="4">M4</button>
             <button class="tf-button" data-tf="5">M5</button>
-            <button class="tf-button" data-tf="15">M15</button>
-            <button class="tf-button" data-tf="30">M30</button>
-            <button class="tf-button" data-tf="60">H1</button>
-            <button class="tf-button" data-tf="240">H4</button>
+            <button class="tf-button" data-tf="1">H1</button>
         </div>
     </div>
 
@@ -1155,7 +1155,7 @@ function calculateVolumeFromRisk(side, sl) {
         riskPerPipForMinVolume = 0.10;
     } else if (currentPrice > 500) {
         // Oro y metales caros
-        riskPerPipForMinVolume = 0.35;
+        riskPerPipForMinVolume = 1.05;
     } else if (currentPrice > 50) {
         // Índices / otros
         riskPerPipForMinVolume = 0.20;
