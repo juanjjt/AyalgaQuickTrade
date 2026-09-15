@@ -2,9 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
-    <title>Ayalga Quick Trade v16</title>
+    <title>Ayalga Quick Trade</title>
 
     <style>
         * {
@@ -13,124 +16,168 @@
 
         body {
             margin: 0;
-            padding: 20px;
+            padding: 14px;
+            background: #111111;
+            color: #ffffff;
             font-family: Arial, sans-serif;
-            background: #111;
-            color: white;
         }
 
         .container {
+            width: 100%;
             max-width: 500px;
             margin: 0 auto;
         }
 
-        h1 {
-            margin: 0 0 20px 0;
-            font-size: 24px;
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 3px;
         }
 
         .version {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: normal;
-            opacity: 0.7;
+            opacity: 0.75;
         }
 
         .status {
-            padding: 15px;
+            margin-top: 12px;
+            padding: 10px;
             border-radius: 8px;
-            background: #222;
-            margin-bottom: 15px;
+            background: #222222;
+            font-size: 14px;
         }
 
-        .connected {
-            color: #00c853;
+        .status.ok {
+            border: 1px solid #22c55e;
         }
 
-        .error {
-            color: #ff5252;
+        .status.error {
+            border: 1px solid #ef4444;
+        }
+
+        .section {
+            margin-top: 14px;
+            padding: 12px;
+            background: #1b1b1b;
+            border-radius: 10px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        input,
+        select {
+            width: 100%;
+            height: 42px;
+            border: 1px solid #444444;
+            border-radius: 7px;
+            background: #101010;
+            color: #ffffff;
+            padding: 0 10px;
+            font-size: 15px;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .row > div {
+            flex: 1;
+        }
+
+        .rr-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rr-button {
+            flex: 1;
+            height: 42px;
+            border: 1px solid #555555;
+            border-radius: 7px;
+            background: #252525;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .rr-button.active {
+            border: 2px solid #ffffff;
+            background: #3b3b3b;
+        }
+
+        .trade-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .trade-button {
+            flex: 1;
+            height: 65px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .trade-button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .buy {
+            background: #16a34a;
+        }
+
+        .sell {
+            background: #dc2626;
         }
 
         .info {
-            color: #64b5f6;
-        }
-
-        .symbol-box {
-            padding: 15px;
+            margin-top: 12px;
+            padding: 10px;
+            background: #161616;
             border-radius: 8px;
-            background: #222;
-            margin-bottom: 15px;
+            font-size: 13px;
+            line-height: 1.6;
         }
 
-        .symbol-name {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .symbol-id {
-            opacity: 0.7;
-        }
-
-        .prices {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .price-box {
-            flex: 1;
-            padding: 15px;
-            border-radius: 8px;
-            background: #181818;
-            text-align: center;
-        }
-
-        .price-title {
-            font-size: 12px;
-            opacity: 0.6;
-            margin-bottom: 6px;
-        }
-
-        .price-value {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .symbols {
-            margin-top: 15px;
-            max-height: 250px;
-            overflow-y: auto;
-            background: #181818;
-            border-radius: 8px;
-        }
-
-        .symbol-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 12px;
-            border-bottom: 1px solid #292929;
-        }
-
-        .symbol-row:last-child {
-            border-bottom: none;
-        }
-
-        .symbol-id-small {
-            opacity: 0.5;
-        }
-
-        #log {
-            margin-top: 15px;
-            padding: 12px;
+        .log {
+            margin-top: 12px;
+            padding: 10px;
             background: #080808;
+            border: 1px solid #292929;
             border-radius: 8px;
             font-family: monospace;
-            font-size: 12px;
-            line-height: 1.5;
-            max-height: 250px;
+            font-size: 11px;
+            line-height: 1.45;
+            max-height: 220px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-break: break-word;
+        }
+
+        .small {
+            font-size: 12px;
+            opacity: 0.65;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -139,66 +186,184 @@
 
 <div class="container">
 
-    <h1>
+    <div class="title">
         Ayalga Quick Trade
-        <span class="version">v16</span>
-    </h1>
+        <span class="version">v18</span>
+    </div>
 
     <div id="status" class="status">
-        Conectando...
+        Conectando con cTrader...
     </div>
 
-    <div class="symbol-box">
+    <div class="section">
 
-        <div class="symbol-name" id="symbolName">
-            Buscando símbolo...
+        <div class="section-title">
+            CONFIGURACIÓN SL / TP
         </div>
 
-        <div class="symbol-id" id="symbolId">
-            ID: -
-        </div>
+        <div class="row">
 
-        <div class="prices">
+            <div>
+                <label for="candleCount">
+                    Velas cerradas
+                </label>
 
-            <div class="price-box">
-
-                <div class="price-title">
-                    BID
-                </div>
-
-                <div class="price-value" id="bid">
-                    -
-                </div>
-
+                <input
+                    id="candleCount"
+                    type="number"
+                    min="1"
+                    max="500"
+                    value="10"
+                >
             </div>
 
-            <div class="price-box">
+            <div>
+                <label for="timeframe">
+                    Timeframe
+                </label>
 
-                <div class="price-title">
-                    ASK
-                </div>
+                <select id="timeframe">
 
-                <div class="price-value" id="ask">
-                    -
-                </div>
+                    <option value="1" selected>M1</option>
+                    <option value="2">M2</option>
+                    <option value="3">M3</option>
+                    <option value="4">M4</option>
+                    <option value="5">M5</option>
+                    <option value="6">M10</option>
+                    <option value="7">M15</option>
+                    <option value="8">M30</option>
+                    <option value="9">H1</option>
+                    <option value="10">H4</option>
+                    <option value="11">H12</option>
+                    <option value="12">D1</option>
+                    <option value="13">W1</option>
+                    <option value="14">MN1</option>
 
+                </select>
+            </div>
+
+        </div>
+
+        <div class="small">
+            Se utilizan únicamente velas cerradas. La vela actual queda excluida.
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="section-title">
+            TAKE PROFIT
+        </div>
+
+        <div class="rr-row">
+
+            <button
+                id="rr1"
+                class="rr-button active"
+                onclick="setRR(1)"
+            >
+                RR 1:1
+            </button>
+
+            <button
+                id="rr2"
+                class="rr-button"
+                onclick="setRR(2)"
+            >
+                RR 1:2
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="section-title">
+            SÍMBOLO
+        </div>
+
+        <div class="info">
+
+            <div>
+                Símbolo:
+                <strong id="symbolName">---</strong>
+            </div>
+
+            <div>
+                Volumen mínimo cTrader:
+                <strong id="minVolume">---</strong>
+            </div>
+
+            <div>
+                Volumen enviado:
+                <strong id="orderVolume">---</strong>
             </div>
 
         </div>
 
     </div>
 
-    <div class="symbol-box">
 
-        <strong>Símbolos recibidos</strong>
+    <div class="trade-row">
 
-        <div id="symbols" class="symbols">
-            Esperando...
+        <button
+            id="buyButton"
+            class="trade-button buy"
+            onclick="executeTrade('BUY')"
+            disabled
+        >
+            COMPRA
+        </button>
+
+        <button
+            id="sellButton"
+            class="trade-button sell"
+            onclick="executeTrade('SELL')"
+            disabled
+        >
+            VENTA
+        </button>
+
+    </div>
+
+
+    <div class="info">
+
+        <div>
+            BID:
+            <strong id="bid">---</strong>
+        </div>
+
+        <div>
+            ASK:
+            <strong id="ask">---</strong>
+        </div>
+
+        <div>
+            RR seleccionado:
+            <strong id="rrText">1:1</strong>
+        </div>
+
+        <div>
+            Último SL:
+            <strong id="lastSL">---</strong>
+        </div>
+
+        <div>
+            Último TP:
+            <strong id="lastTP">---</strong>
         </div>
 
     </div>
 
-    <div id="log"></div>
+
+    <div id="log" class="log">
+        Iniciando...
+    </div>
 
 </div>
 
@@ -215,7 +380,12 @@ import {
     getLightSymbolList,
     getSymbol,
     subscribeQuotes,
-    quoteEvent
+    quoteEvent,
+    getTrendbarList,
+    createNewOrder,
+    modifyOrderProtection,
+    executionEvent,
+    ServerInterfaces
 } from "https://esm.sh/@spotware-web-team/sdk";
 
 import {
@@ -229,212 +399,385 @@ import {
 } from "https://esm.sh/@veksa/logger";
 
 
-// ============================================================
-// ELEMENTOS
-// ============================================================
+/* =========================================================
+   CONFIGURACIÓN
+   ========================================================= */
 
-const statusElement =
-    document.getElementById("status");
+const VERSION = "18";
 
-const symbolNameElement =
-    document.getElementById("symbolName");
-
-const symbolIdElement =
-    document.getElementById("symbolId");
-
-const symbolsElement =
-    document.getElementById("symbols");
-
-const bidElement =
-    document.getElementById("bid");
-
-const askElement =
-    document.getElementById("ask");
-
-const logElement =
-    document.getElementById("log");
-
-
-// ============================================================
-// VARIABLES PRINCIPALES
-// ============================================================
+const PRICE_SCALE = 100000;
 
 let adapter = null;
 
+let connected = false;
+
 let activeSymbolId = null;
+let activeSymbolName = "";
 
-let activeSymbolName = null;
-
-
-// ============================================================
-// ÚLTIMOS PRECIOS VÁLIDOS
-//
-// IMPORTANTE:
-// BID y ASK se almacenan por separado.
-//
-// Si cTrader manda un evento donde solamente cambia BID,
-// conservamos el último ASK válido.
-//
-// Si solamente cambia ASK,
-// conservamos el último BID válido.
-//
-// Nunca sustituimos un precio válido por 0.
-// ============================================================
+let symbolInfo = null;
 
 let lastValidBid = null;
-
 let lastValidAsk = null;
 
+let selectedRR = 1;
 
-// ============================================================
-// LOG
-// ============================================================
+let pendingTrade = null;
+
+let lastOrderId = null;
+
+
+/* =========================================================
+   ELEMENTOS HTML
+   ========================================================= */
+
+const statusEl = document.getElementById("status");
+
+const symbolNameEl =
+    document.getElementById("symbolName");
+
+const minVolumeEl =
+    document.getElementById("minVolume");
+
+const orderVolumeEl =
+    document.getElementById("orderVolume");
+
+const bidEl =
+    document.getElementById("bid");
+
+const askEl =
+    document.getElementById("ask");
+
+const rrTextEl =
+    document.getElementById("rrText");
+
+const lastSLEl =
+    document.getElementById("lastSL");
+
+const lastTPEl =
+    document.getElementById("lastTP");
+
+const logEl =
+    document.getElementById("log");
+
+const buyButton =
+    document.getElementById("buyButton");
+
+const sellButton =
+    document.getElementById("sellButton");
+
+
+/* =========================================================
+   LOG
+   ========================================================= */
 
 function log(message, type = "") {
 
     const time =
         new Date().toLocaleTimeString();
 
-    const line =
-        `[${time}] ${message}`;
-
-    console.log(line);
-
-    const div =
-        document.createElement("div");
-
-    div.textContent = line;
-
-    if (type === "ok") {
-        div.className = "connected";
-    }
+    logEl.textContent =
+        `[${time}] ${message}\n` +
+        logEl.textContent;
 
     if (type === "error") {
-        div.className = "error";
+        console.error(message);
+    } else {
+        console.log(message);
     }
-
-    if (type === "info") {
-        div.className = "info";
-    }
-
-    logElement.appendChild(div);
-
-    logElement.scrollTop =
-        logElement.scrollHeight;
 }
 
 
-// ============================================================
-// INFORMACIÓN DE LA URL
-// ============================================================
+/* =========================================================
+   STATUS
+   ========================================================= */
 
-const params =
-    new URLSearchParams(
-        window.location.search
+function setStatus(message, ok = false) {
+
+    statusEl.textContent = message;
+
+    statusEl.classList.remove(
+        "ok",
+        "error"
     );
 
-const urlSymbol =
-    params.get("symbol");
-
-const platform =
-    params.get("platform");
-
-const placement =
-    params.get("placement");
-
-const theme =
-    params.get("theme");
+    if (ok) {
+        statusEl.classList.add("ok");
+    }
+}
 
 
-log(
-    "URL: " +
-    window.location.href
-);
+/* =========================================================
+   RR
+   ========================================================= */
 
-log(
-    "Símbolo recibido por URL: " +
-    (urlSymbol || "ninguno"),
-    "info"
-);
+window.setRR = function(value) {
 
-log(
-    "Plataforma: " +
-    (platform || "desconocida"),
-    "info"
-);
+    selectedRR = value;
 
-log(
-    "Placement: " +
-    (placement || "desconocido"),
-    "info"
-);
-
-log(
-    "Tema: " +
-    (theme || "desconocido"),
-    "info"
-);
-
-
-// ============================================================
-// INICIALIZACIÓN
-// ============================================================
-
-function init() {
-
-    try {
-
-        log(
-            "Creando Client Adapter..."
+    document
+        .getElementById("rr1")
+        .classList.toggle(
+            "active",
+            value === 1
         );
 
-        const logger =
-            createLogger(
-                location.href.includes(
-                    "showLogs"
-                )
+    document
+        .getElementById("rr2")
+        .classList.toggle(
+            "active",
+            value === 2
+        );
+
+    rrTextEl.textContent =
+        value === 1 ? "1:1" : "1:2";
+
+    log(
+        `RR seleccionado: 1:${value}`
+    );
+};
+
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+
+function getField(object, ...names) {
+
+    if (!object) {
+        return undefined;
+    }
+
+    for (const name of names) {
+
+        if (
+            object[name] !== undefined &&
+            object[name] !== null
+        ) {
+            return object[name];
+        }
+    }
+
+    return undefined;
+}
+
+
+function getPayload(response) {
+
+    return response?.payload ??
+           response?.Payload ??
+           response;
+}
+
+
+function getArray(response, ...names) {
+
+    const payload =
+        getPayload(response);
+
+    for (const name of names) {
+
+        const value =
+            payload?.[name];
+
+        if (Array.isArray(value)) {
+            return value;
+        }
+    }
+
+    return [];
+}
+
+
+function normalizePrice(value) {
+
+    if (
+        value === undefined ||
+        value === null
+    ) {
+        return null;
+    }
+
+    const number =
+        Number(value);
+
+    if (!Number.isFinite(number)) {
+        return null;
+    }
+
+    /*
+       cTrader transmite los precios internos
+       normalmente en 1/100000.
+    */
+
+    if (Math.abs(number) > 10000) {
+        return number / PRICE_SCALE;
+    }
+
+    return number;
+}
+
+
+function formatPrice(price) {
+
+    if (
+        price === null ||
+        price === undefined ||
+        !Number.isFinite(price)
+    ) {
+        return "---";
+    }
+
+    const digits =
+        Number(
+            getField(
+                symbolInfo,
+                "digits",
+                "Digits"
+            )
+        );
+
+    if (
+        Number.isFinite(digits)
+    ) {
+        return price.toFixed(digits);
+    }
+
+    return price.toFixed(5);
+}
+
+
+/* =========================================================
+   URL / SÍMBOLO
+   ========================================================= */
+
+function getSymbolFromURL() {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const symbol =
+        params.get("symbol");
+
+    return symbol
+        ? symbol.toUpperCase()
+        : null;
+}
+
+
+/* =========================================================
+   CONEXIÓN
+   ========================================================= */
+
+function connect() {
+
+    log(
+        `Ayalga Quick Trade v${VERSION}`
+    );
+
+    const logger =
+        createLogger(
+            location.href.includes("showLogs")
+        );
+
+    adapter =
+        createClientAdapter({
+            logger
+        });
+
+
+    /*
+       Confirmación inicial
+    */
+
+    handleConfirmEvent(
+        adapter,
+        {}
+    )
+    .pipe(
+        take(1)
+    )
+    .subscribe({
+        next: () => {
+            log(
+                "Confirmación inicial enviada."
             );
+        },
+        error: error => {
+            log(
+                "Error en confirmación inicial: " +
+                JSON.stringify(error),
+                "error"
+            );
+        }
+    });
 
-        adapter =
-            createClientAdapter({
-                logger
-            });
 
-        log(
-            "Client Adapter creado correctamente.",
-            "ok"
-        );
+    /*
+       Registro del plugin
+    */
 
+    registerEvent(adapter)
+        .pipe(
 
-        // ====================================================
-        // CONFIRMACIÓN
-        // ====================================================
+            take(1),
 
-        log(
-            "Enviando confirmación..."
-        );
+            tap(() => {
 
-        handleConfirmEvent(
-            adapter,
-            {}
+                connected = true;
+
+                setStatus(
+                    "Conectado con cTrader",
+                    true
+                );
+
+                log(
+                    "Plugin registrado correctamente.",
+                    "ok"
+                );
+
+                handleConfirmEvent(
+                    adapter,
+                    {}
+                )
+                .pipe(
+                    take(1)
+                )
+                .subscribe();
+
+            }),
+
+            catchError(error => {
+
+                log(
+                    "Error registrando plugin: " +
+                    JSON.stringify(error),
+                    "error"
+                );
+
+                setStatus(
+                    "Error de conexión"
+                );
+
+                return [];
+
+            })
+
         )
-        .pipe(take(1))
         .subscribe({
 
             next: () => {
 
-                log(
-                    "Confirmación recibida.",
-                    "ok"
-                );
+                loadSymbols();
 
             },
 
-            error: (err) => {
+            error: error => {
 
                 log(
-                    "Error en confirmación: " +
-                    safeStringify(err),
+                    "Error de registro: " +
+                    JSON.stringify(error),
                     "error"
                 );
 
@@ -443,345 +786,215 @@ function init() {
         });
 
 
-        // ====================================================
-        // REGISTER
-        // ====================================================
+    /*
+       Eventos de cotización
+    */
 
-        log(
-            "Registrando plugin..."
-        );
+    quoteEvent(adapter)
+        .subscribe({
 
-        registerEvent(adapter)
-            .pipe(
+            next: event => {
 
-                take(1),
+                processQuoteEvent(
+                    event
+                );
 
-                tap(() => {
+            },
 
-                    log(
-                        "Plugin registrado correctamente.",
-                        "ok"
-                    );
+            error: error => {
+
+                log(
+                    "Error quoteEvent: " +
+                    JSON.stringify(error),
+                    "error"
+                );
+
+            }
+
+        });
 
 
-                    // Mantenemos exactamente
-                    // el handshake que ya funcionaba.
+    /*
+       Eventos de ejecución
+    */
 
-                    handleConfirmEvent(
-                        adapter,
-                        {}
-                    )
-                    .pipe(take(1))
-                    .subscribe();
+    executionEvent(adapter)
+        .subscribe({
 
-                }),
+            next: event => {
 
-                catchError(err => {
+                processExecutionEvent(
+                    event
+                );
 
-                    log(
-                        "Error registrando plugin: " +
-                        safeStringify(err),
-                        "error"
-                    );
+            },
 
-                    statusElement.textContent =
-                        "Error registrando plugin";
+            error: error => {
 
-                    statusElement.classList.add(
-                        "error"
-                    );
+                log(
+                    "Error executionEvent: " +
+                    JSON.stringify(error),
+                    "error"
+                );
 
-                    return [];
+            }
 
-                })
-
-            )
-
-            .subscribe({
-
-                next: () => {
-
-                    statusElement.textContent =
-                        "CONECTADO";
-
-                    statusElement.classList.add(
-                        "connected"
-                    );
-
-                    log(
-                        "Conexión establecida. Cargando símbolos...",
-                        "ok"
-                    );
-
-                    loadSymbols();
-
-                },
-
-                error: (err) => {
-
-                    statusElement.textContent =
-                        "Error de conexión";
-
-                    statusElement.classList.add(
-                        "error"
-                    );
-
-                    log(
-                        "Error final de registro: " +
-                        safeStringify(err),
-                        "error"
-                    );
-
-                }
-
-            });
-
-    }
-
-    catch (err) {
-
-        statusElement.textContent =
-            "Error inicializando";
-
-        statusElement.classList.add(
-            "error"
-        );
-
-        log(
-            "ERROR INICIALIZANDO: " +
-            (err?.stack || err),
-            "error"
-        );
-
-    }
+        });
 
 }
 
 
-// ============================================================
-// LISTA DE SÍMBOLOS
-// ============================================================
+/* =========================================================
+   CARGAR SÍMBOLOS
+   ========================================================= */
 
 function loadSymbols() {
 
     log(
-        "Solicitando lista de símbolos..."
+        "Buscando símbolos en cTrader..."
     );
 
     getLightSymbolList(
         adapter,
         {}
     )
-    .pipe(take(1))
+    .pipe(
+        take(1)
+    )
     .subscribe({
 
-        next: (response) => {
-
-            log(
-                "Respuesta getLightSymbolList recibida.",
-                "ok"
-            );
-
-
-            log(
-                "Claves de respuesta: " +
-                Object.keys(
-                    response || {}
-                ).join(", "),
-                "info"
-            );
-
-
-            // =================================================
-            // ESTRUCTURA REAL DE CTRADER
-            //
-            // response.payload.Symbol
-            // =================================================
+        next: response => {
 
             const symbols =
-                response?.payload?.Symbol ?? [];
-
+                getArray(
+                    response,
+                    "Symbol",
+                    "symbol",
+                    "Symbols",
+                    "symbols"
+                );
 
             log(
-                "Cantidad de símbolos recibidos: " +
-                symbols.length,
-                "ok"
+                `Símbolos recibidos: ${symbols.length}`
             );
 
-
-            symbolsElement.innerHTML = "";
-
-
-            if (symbols.length === 0) {
-
-                symbolsElement.textContent =
-                    "No se encontraron símbolos.";
-
-                log(
-                    "La lista de símbolos está vacía.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            // =================================================
-            // MOSTRAR TODOS LOS SÍMBOLOS
-            // =================================================
-
-            symbols.forEach(symbol => {
-
-                const row =
-                    document.createElement(
-                        "div"
-                    );
-
-                row.className =
-                    "symbol-row";
-
-
-                const name =
-                    document.createElement(
-                        "span"
-                    );
-
-                name.textContent =
-                    symbol?.Name ??
-                    "SIN NOMBRE";
-
-
-                const id =
-                    document.createElement(
-                        "span"
-                    );
-
-                id.className =
-                    "symbol-id-small";
-
-                id.textContent =
-                    "ID: " +
-                    (
-                        symbol?.Id ??
-                        "-"
-                    );
-
-
-                row.appendChild(name);
-                row.appendChild(id);
-
-                symbolsElement.appendChild(
-                    row
-                );
-
-            });
-
-
-            // =================================================
-            // BUSCAR SÍMBOLO ACTIVO
-            // =================================================
+            const requestedSymbol =
+                getSymbolFromURL();
 
             let found = null;
 
 
-            if (urlSymbol) {
+            if (requestedSymbol) {
 
                 found =
                     symbols.find(
-                        s =>
-                            String(
-                                s?.Name
-                            ).toUpperCase() ===
-                            String(
-                                urlSymbol
-                            ).toUpperCase()
+                        symbol => {
+
+                            const name =
+                                getField(
+                                    symbol,
+                                    "Name",
+                                    "name"
+                                );
+
+                            return String(name)
+                                .toUpperCase() ===
+                                requestedSymbol;
+                        }
                     );
 
             }
 
 
-            // Si no viene símbolo por URL,
-            // utilizamos el primero disponible.
+            /*
+               Si cTrader no pasa symbol,
+               utilizamos EURUSD solamente
+               como respaldo de prueba.
+            */
 
-            if (!found && symbols.length > 0) {
+            if (!found) {
 
                 found =
-                    symbols[0];
+                    symbols.find(
+                        symbol => {
+
+                            const name =
+                                getField(
+                                    symbol,
+                                    "Name",
+                                    "name"
+                                );
+
+                            return String(name)
+                                .toUpperCase() ===
+                                "EURUSD";
+
+                        }
+                    );
 
             }
 
 
             if (!found) {
 
-                symbolNameElement.textContent =
-                    "Símbolo no encontrado";
+                log(
+                    "No se encontró el símbolo.",
+                    "error"
+                );
 
-                symbolIdElement.textContent =
-                    "ID: -";
+                setStatus(
+                    "No se encontró el símbolo"
+                );
 
                 return;
-
             }
 
 
-            // =================================================
-            // GUARDAR SÍMBOLO ACTIVO
-            // =================================================
-
             activeSymbolId =
-                Number(found.Id);
+                Number(
+                    getField(
+                        found,
+                        "Id",
+                        "id"
+                    )
+                );
 
             activeSymbolName =
-                found.Name;
+                String(
+                    getField(
+                        found,
+                        "Name",
+                        "name"
+                    )
+                );
 
 
-            symbolNameElement.textContent =
+            symbolNameEl.textContent =
                 activeSymbolName;
-
-            symbolIdElement.textContent =
-                "ID: " +
-                activeSymbolId;
 
 
             log(
-                "Símbolo activo: " +
-                activeSymbolName +
-                " | ID: " +
-                activeSymbolId,
+                `Símbolo detectado: ${activeSymbolName} ` +
+                `(ID ${activeSymbolId})`,
                 "ok"
             );
 
 
-            // =================================================
-            // INFORMACIÓN DEL SÍMBOLO
-            // =================================================
-
-            loadSymbol(
-                activeSymbolId
-            );
-
-
-            // =================================================
-            // COTIZACIONES
-            // =================================================
-
-            startQuotes(
-                activeSymbolId,
-                activeSymbolName
-            );
+            loadDetailedSymbol();
 
         },
 
-        error: (err) => {
+        error: error => {
 
             log(
-                "ERROR getLightSymbolList: " +
-                safeStringify(err),
+                "Error obteniendo símbolos: " +
+                JSON.stringify(error),
                 "error"
             );
 
-            symbolsElement.textContent =
-                "Error obteniendo símbolos.";
+            setStatus(
+                "Error obteniendo símbolos"
+            );
 
         }
 
@@ -790,373 +1003,1800 @@ function loadSymbols() {
 }
 
 
-// ============================================================
-// INFORMACIÓN DEL SÍMBOLO
-// ============================================================
+/* =========================================================
+   INFORMACIÓN DETALLADA DEL SÍMBOLO
+   ========================================================= */
 
-function loadSymbol(symbolId) {
+function loadDetailedSymbol() {
 
     log(
-        "Solicitando información del símbolo ID " +
-        symbolId +
-        "..."
+        "Obteniendo información detallada de cTrader..."
     );
 
 
     getSymbol(
         adapter,
         {
-            symbolId: [symbolId]
+            symbolId: [
+                activeSymbolId
+            ]
         }
     )
-    .pipe(take(1))
-    .subscribe({
-
-        next: (response) => {
-
-            log(
-                "Respuesta getSymbol recibida.",
-                "ok"
-            );
-
-
-            log(
-                "Claves getSymbol: " +
-                Object.keys(
-                    response || {}
-                ).join(", "),
-                "info"
-            );
-
-        },
-
-        error: (err) => {
-
-            log(
-                "ERROR getSymbol: " +
-                safeStringify(err),
-                "error"
-            );
-
-        }
-
-    });
-
-}
-
-
-// ============================================================
-// SUSCRIBIR COTIZACIONES
-// ============================================================
-
-function startQuotes(
-    symbolId,
-    symbolName
-) {
-
-    log(
-        "Suscribiendo cotizaciones de " +
-        symbolName +
-        " | ID " +
-        symbolId +
-        "..."
-    );
-
-
-    subscribeQuotes(
-        adapter,
-        {
-            symbolId: [symbolId]
-        }
+    .pipe(
+        take(1)
     )
-    .pipe(take(1))
     .subscribe({
 
-        next: () => {
+        next: response => {
 
             log(
-                "Suscripción a cotizaciones realizada.",
-                "ok"
+                "Información detallada recibida."
             );
 
 
-            listenQuotes(
-                symbolId,
-                symbolName
-            );
-
-        },
-
-        error: (err) => {
-
-            log(
-                "ERROR subscribeQuotes: " +
-                safeStringify(err),
-                "error"
-            );
-
-        }
-
-    });
-
-}
+            const payload =
+                getPayload(response);
 
 
-// ============================================================
-// ESCUCHAR COTIZACIONES
-// ============================================================
-
-function listenQuotes(
-    symbolId,
-    symbolName
-) {
-
-    log(
-        "Escuchando cotizaciones en tiempo real...",
-        "info"
-    );
+            let symbols =
+                getArray(
+                    response,
+                    "Symbol",
+                    "symbol",
+                    "Symbols",
+                    "symbols"
+                );
 
 
-    quoteEvent(adapter)
-        .subscribe({
+            /*
+               Algunos wrappers pueden devolver
+               directamente el objeto.
+            */
 
-            next: (quote) => {
+            if (
+                symbols.length === 0 &&
+                payload
+            ) {
 
-                try {
+                if (
+                    getField(
+                        payload,
+                        "symbolId",
+                        "SymbolId"
+                    ) !== undefined
+                ) {
 
-                    // =================================================
-                    // IDENTIFICAR SÍMBOLO
-                    // =================================================
-
-                    const quoteSymbolId =
-                        quote?.symbolId ??
-                        quote?.SymbolId;
-
-
-                    if (
-                        quoteSymbolId !== undefined &&
-                        Number(quoteSymbolId) !==
-                        Number(symbolId)
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    // =================================================
-                    // OBTENER BID Y ASK
-                    // =================================================
-
-                    const bidRaw =
-                        quote?.bid ??
-                        quote?.Bid;
-
-                    const askRaw =
-                        quote?.ask ??
-                        quote?.Ask;
-
-
-                    // =================================================
-                    // BID
-                    //
-                    // SOLO aceptamos un BID positivo.
-                    //
-                    // Si viene 0, null o undefined:
-                    // conservamos el último BID.
-                    // =================================================
-
-                    const bid =
-                        convertPrice(
-                            bidRaw
-                        );
-
-
-                    if (
-                        bid !== null &&
-                        bid > 0
-                    ) {
-
-                        lastValidBid =
-                            bid;
-
-                        bidElement.textContent =
-                            formatPrice(
-                                lastValidBid
-                            );
-
-                    }
-
-
-                    // =================================================
-                    // ASK
-                    //
-                    // SOLO aceptamos un ASK positivo.
-                    //
-                    // Si viene 0, null o undefined:
-                    // conservamos el último ASK.
-                    // =================================================
-
-                    const ask =
-                        convertPrice(
-                            askRaw
-                        );
-
-
-                    if (
-                        ask !== null &&
-                        ask > 0
-                    ) {
-
-                        lastValidAsk =
-                            ask;
-
-                        askElement.textContent =
-                            formatPrice(
-                                lastValidAsk
-                            );
-
-                    }
-
-
-                    // =================================================
-                    // IMPORTANTE
-                    //
-                    // Estos precios son únicamente INFORMATIVOS.
-                    //
-                    // NO se utilizarán para ejecutar operaciones.
-                    //
-                    // Las operaciones futuras serán enviadas:
-                    //
-                    //       A MERCADO
-                    //
-                    // y el precio real será el que devuelva
-                    // CTRADER en el evento de ejecución.
-                    // =================================================
+                    symbols = [
+                        payload
+                    ];
 
                 }
-                catch (err) {
+
+            }
+
+
+            let info =
+                symbols.find(
+                    symbol => {
+
+                        return Number(
+                            getField(
+                                symbol,
+                                "symbolId",
+                                "SymbolId",
+                                "id",
+                                "Id"
+                            )
+                        ) ===
+                        activeSymbolId;
+
+                    }
+                );
+
+
+            if (!info) {
+
+                info =
+                    symbols[0];
+            }
+
+
+            if (!info) {
+
+                log(
+                    "No se pudo obtener ProtoSymbol.",
+                    "error"
+                );
+
+                setStatus(
+                    "No se pudo obtener información del símbolo"
+                );
+
+                return;
+            }
+
+
+            symbolInfo = info;
+
+
+            const minVolume =
+                Number(
+                    getField(
+                        info,
+                        "minVolume",
+                        "MinVolume"
+                    )
+                );
+
+
+            const stepVolume =
+                Number(
+                    getField(
+                        info,
+                        "stepVolume",
+                        "StepVolume"
+                    )
+                );
+
+
+            const maxVolume =
+                Number(
+                    getField(
+                        info,
+                        "maxVolume",
+                        "MaxVolume"
+                    )
+                );
+
+
+            const digits =
+                Number(
+                    getField(
+                        info,
+                        "digits",
+                        "Digits"
+                    )
+                );
+
+
+            const pipPosition =
+                Number(
+                    getField(
+                        info,
+                        "pipPosition",
+                        "PipPosition"
+                    )
+                );
+
+
+            log(
+                `minVolume cTrader: ${minVolume}`
+            );
+
+            log(
+                `stepVolume cTrader: ${stepVolume}`
+            );
+
+            log(
+                `maxVolume cTrader: ${maxVolume}`
+            );
+
+            log(
+                `digits: ${digits}`
+            );
+
+            log(
+                `pipPosition: ${pipPosition}`
+            );
+
+
+            /*
+               IMPORTANTE:
+
+               cTrader expresa volume en CENTÉSIMAS
+               de la unidad de volumen.
+
+               Ejemplo:
+               1000 = 10.00 unidades.
+
+               Nosotros NO convertimos minVolume
+               a lotes para enviar la orden.
+
+               Enviamos directamente el valor que
+               cTrader nos proporciona.
+            */
+
+            minVolumeEl.textContent =
+                Number.isFinite(minVolume)
+                    ? minVolume
+                    : "---";
+
+
+            orderVolumeEl.textContent =
+                Number.isFinite(minVolume)
+                    ? minVolume
+                    : "---";
+
+
+            if (
+                !Number.isFinite(minVolume) ||
+                minVolume <= 0
+            ) {
+
+                log(
+                    "cTrader no proporcionó un minVolume válido.",
+                    "error"
+                );
+
+                setStatus(
+                    "Volumen mínimo no disponible"
+                );
+
+                return;
+            }
+
+
+            /*
+               Suscripción de cotizaciones.
+            */
+
+            subscribeQuotes(
+                adapter,
+                {
+                    symbolId: [
+                        activeSymbolId
+                    ]
+                }
+            )
+            .pipe(
+                take(1)
+            )
+            .subscribe({
+
+                next: () => {
 
                     log(
-                        "Error procesando quote: " +
-                        (
-                            err?.stack ||
-                            err
-                        ),
+                        "Suscripción de precios activa."
+                    );
+
+                },
+
+                error: error => {
+
+                    log(
+                        "Error suscribiendo precios: " +
+                        JSON.stringify(error),
                         "error"
                     );
 
                 }
 
-            },
+            });
 
-            error: (err) => {
 
-                log(
-                    "ERROR quoteEvent: " +
-                    safeStringify(err),
-                    "error"
+            buyButton.disabled = false;
+            sellButton.disabled = false;
+
+            setStatus(
+                `${activeSymbolName} listo para operar`,
+                true
+            );
+
+            log(
+                "COMPRA y VENTA habilitadas."
+            );
+
+        },
+
+        error: error => {
+
+            log(
+                "Error obteniendo ProtoSymbol: " +
+                JSON.stringify(error),
+                "error"
+            );
+
+            setStatus(
+                "Error información símbolo"
+            );
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   QUOTES
+   ========================================================= */
+
+function processQuoteEvent(event) {
+
+    const payload =
+        getPayload(event);
+
+    if (!payload) {
+        return;
+    }
+
+
+    /*
+       El evento puede contener varios quotes.
+    */
+
+    const quotes =
+        getArray(
+            event,
+            "quote",
+            "Quote",
+            "quotes",
+            "Quotes"
+        );
+
+
+    if (quotes.length === 0) {
+        return;
+    }
+
+
+    for (const quote of quotes) {
+
+        const symbolId =
+            Number(
+                getField(
+                    quote,
+                    "symbolId",
+                    "SymbolId"
+                )
+            );
+
+
+        if (
+            symbolId !== activeSymbolId
+        ) {
+            continue;
+        }
+
+
+        const rawBid =
+            getField(
+                quote,
+                "bid",
+                "Bid"
+            );
+
+
+        const rawAsk =
+            getField(
+                quote,
+                "ask",
+                "Ask"
+            );
+
+
+        /*
+           cTrader puede mandar actualizaciones
+           parciales.
+
+           Por eso NO ponemos el otro precio
+           a cero cuando solo cambia BID o ASK.
+        */
+
+        const bid =
+            normalizePrice(rawBid);
+
+        const ask =
+            normalizePrice(rawAsk);
+
+
+        if (
+            bid !== null &&
+            bid > 0
+        ) {
+
+            lastValidBid = bid;
+
+            bidEl.textContent =
+                formatPrice(bid);
+        }
+
+
+        if (
+            ask !== null &&
+            ask > 0
+        ) {
+
+            lastValidAsk = ask;
+
+            askEl.textContent =
+                formatPrice(ask);
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   TREND BARS
+   ========================================================= */
+
+function getTrendbarPeriodName(value) {
+
+    const map = {
+
+        1: "M1",
+        2: "M2",
+        3: "M3",
+        4: "M4",
+        5: "M5",
+        6: "M10",
+        7: "M15",
+        8: "M30",
+        9: "H1",
+        10: "H4",
+        11: "H12",
+        12: "D1",
+        13: "W1",
+        14: "MN1"
+
+    };
+
+    return map[value] || "?";
+}
+
+
+/*
+   Duración de cada periodo en minutos.
+*/
+
+function getPeriodMinutes(period) {
+
+    const map = {
+
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 4,
+        5: 5,
+        6: 10,
+        7: 15,
+        8: 30,
+        9: 60,
+        10: 240,
+        11: 720,
+        12: 1440,
+        13: 10080,
+        14: 43200
+
+    };
+
+    return map[period] || 1;
+}
+
+
+/*
+   Obtiene las últimas N velas CERRADAS.
+
+   Se pide N + 2 para asegurarnos de disponer
+   de suficientes barras aunque cTrader incluya
+   la vela actualmente en formación.
+*/
+
+function getClosedTrendbars(
+    count,
+    period,
+    callback
+) {
+
+    const now =
+        Date.now();
+
+
+    const periodMinutes =
+        getPeriodMinutes(period);
+
+
+    /*
+       Timestamp de apertura de la vela actual
+       según el periodo elegido.
+    */
+
+    const currentBarStartMinutes =
+        Math.floor(
+            (now / 60000) /
+            periodMinutes
+        ) *
+        periodMinutes;
+
+
+    const currentBarStartMs =
+        currentBarStartMinutes *
+        60000;
+
+
+    const fromTimestamp =
+        now -
+        (
+            Math.max(
+                count + 20,
+                50
+            ) *
+            periodMinutes *
+            60000
+        );
+
+
+    const toTimestamp =
+        now;
+
+
+    getTrendbarList(
+        adapter,
+        {
+            symbolId: activeSymbolId,
+            period: period,
+            fromTimestamp: fromTimestamp,
+            toTimestamp: toTimestamp,
+            count: count + 5,
+            type:
+                ServerInterfaces
+                    .ProtoTrendbarType
+                    .REGULAR_OHLC
+        }
+    )
+    .pipe(
+        take(1)
+    )
+    .subscribe({
+
+        next: response => {
+
+            const bars =
+                getArray(
+                    response,
+                    "Trendbar",
+                    "trendbar",
+                    "Trendbars",
+                    "trendbars"
                 );
+
+
+            const parsed = [];
+
+
+            for (const bar of bars) {
+
+                const timestampMinutes =
+                    Number(
+                        getField(
+                            bar,
+                            "utcTimestampInMinutes",
+                            "UtcTimestampInMinutes"
+                        )
+                    );
+
+
+                if (
+                    !Number.isFinite(
+                        timestampMinutes
+                    )
+                ) {
+                    continue;
+                }
+
+
+                const barStartMs =
+                    timestampMinutes *
+                    60000;
+
+
+                /*
+                   EXCLUIR SI ES LA VELA ACTUAL.
+                */
+
+                if (
+                    barStartMs >=
+                    currentBarStartMs
+                ) {
+                    continue;
+                }
+
+
+                const lowRaw =
+                    Number(
+                        getField(
+                            bar,
+                            "low",
+                            "Low"
+                        )
+                    );
+
+
+                const deltaHigh =
+                    Number(
+                        getField(
+                            bar,
+                            "deltaHigh",
+                            "DeltaHigh"
+                        )
+                    );
+
+
+                if (
+                    !Number.isFinite(lowRaw) ||
+                    !Number.isFinite(deltaHigh)
+                ) {
+                    continue;
+                }
+
+
+                const low =
+                    lowRaw /
+                    PRICE_SCALE;
+
+
+                const high =
+                    (
+                        lowRaw +
+                        deltaHigh
+                    ) /
+                    PRICE_SCALE;
+
+
+                parsed.push({
+
+                    timestamp:
+                        barStartMs,
+
+                    low:
+                        low,
+
+                    high:
+                        high
+
+                });
 
             }
 
-        });
+
+            /*
+               Orden cronológico.
+            */
+
+            parsed.sort(
+                (a, b) =>
+                    a.timestamp -
+                    b.timestamp
+            );
+
+
+            /*
+               Nos quedamos con las últimas N
+               velas cerradas.
+            */
+
+            const closedBars =
+                parsed.slice(
+                    -count
+                );
+
+
+            callback(
+                closedBars
+            );
+
+        },
+
+        error: error => {
+
+            log(
+                "Error obteniendo velas: " +
+                JSON.stringify(error),
+                "error"
+            );
+
+            callback(
+                null,
+                error
+            );
+
+        }
+
+    });
 
 }
 
 
-// ============================================================
-// CONVERSIÓN DE PRECIO
-// ============================================================
+/* =========================================================
+   CALCULAR EXTREMO
+   ========================================================= */
 
-function convertPrice(value) {
+function calculateSL(
+    side,
+    bars
+) {
 
     if (
-        value === null ||
-        value === undefined
+        !bars ||
+        bars.length === 0
     ) {
 
         return null;
+    }
+
+
+    if (side === "BUY") {
+
+        let lowest =
+            Infinity;
+
+
+        for (const bar of bars) {
+
+            if (
+                bar.low <
+                lowest
+            ) {
+
+                lowest =
+                    bar.low;
+            }
+
+        }
+
+
+        return Number.isFinite(
+            lowest
+        )
+            ? lowest
+            : null;
 
     }
 
 
-    const number =
-        Number(value);
+    if (side === "SELL") {
+
+        let highest =
+            -Infinity;
 
 
-    if (
-        !Number.isFinite(number) ||
-        number <= 0
-    ) {
+        for (const bar of bars) {
 
-        return null;
+            if (
+                bar.high >
+                highest
+            ) {
 
-    }
+                highest =
+                    bar.high;
+            }
+
+        }
 
 
-    // ========================================================
-    // Formato interno de precio de cTrader.
-    //
-    // Ejemplo:
-    //
-    // 112345 -> 1.12345
-    //
-    // ========================================================
-
-    if (
-        Math.abs(number) > 10
-    ) {
-
-        return number / 100000;
+        return Number.isFinite(
+            highest
+        )
+            ? highest
+            : null;
 
     }
 
 
-    return number;
-
+    return null;
 }
 
 
-// ============================================================
-// FORMATO
-// ============================================================
+/* =========================================================
+   EJECUTAR OPERACIÓN
+   ========================================================= */
 
-function formatPrice(price) {
+window.executeTrade = function(side) {
 
-    return Number(price)
-        .toFixed(5);
+    if (!connected) {
 
-}
+        log(
+            "cTrader todavía no está conectado.",
+            "error"
+        );
+
+        return;
+    }
 
 
-// ============================================================
-// JSON SEGURO PARA LOG
-// ============================================================
+    if (
+        !activeSymbolId ||
+        !symbolInfo
+    ) {
 
-function safeStringify(value) {
+        log(
+            "El símbolo todavía no está preparado.",
+            "error"
+        );
 
-    try {
+        return;
+    }
 
-        return JSON.stringify(
-            value
+
+    if (pendingTrade) {
+
+        log(
+            "Ya existe una operación pendiente de ejecución.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const candleCount =
+        Math.max(
+            1,
+            Math.min(
+                500,
+                Number(
+                    document.getElementById(
+                        "candleCount"
+                    ).value
+                ) || 10
+            )
+        );
+
+
+    const period =
+        Number(
+            document.getElementById(
+                "timeframe"
+            ).value
+        );
+
+
+    const minVolume =
+        Number(
+            getField(
+                symbolInfo,
+                "minVolume",
+                "MinVolume"
+            )
+        );
+
+
+    if (
+        !Number.isFinite(minVolume) ||
+        minVolume <= 0
+    ) {
+
+        log(
+            "Volumen mínimo inválido.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       Guardamos la intención.
+
+       MUY IMPORTANTE:
+       todavía NO conocemos el precio de entrada.
+
+       Primero calculamos el SL histórico.
+       Después enviamos MARKET.
+       Luego esperamos a que cTrader confirme
+       el precio real de ejecución.
+    */
+
+    pendingTrade = {
+
+        side: side,
+
+        candleCount:
+            candleCount,
+
+        period:
+            period,
+
+        rr:
+            selectedRR,
+
+        volume:
+            minVolume,
+
+        sl:
+            null,
+
+        orderId:
+            null,
+
+        positionId:
+            null
+
+    };
+
+
+    buyButton.disabled = true;
+    sellButton.disabled = true;
+
+
+    log(
+        `${side}: calculando SL con ` +
+        `${candleCount} velas cerradas ` +
+        `${getPeriodMinutes(period)}m...`
+    );
+
+
+    getClosedTrendbars(
+        candleCount,
+        period,
+        (bars, error) => {
+
+            if (error) {
+
+                cancelPendingTrade();
+
+                return;
+            }
+
+
+            if (
+                !bars ||
+                bars.length <
+                candleCount
+            ) {
+
+                log(
+                    `No hay suficientes velas cerradas. ` +
+                    `Disponibles: ${bars?.length || 0} / ${candleCount}`,
+                    "error"
+                );
+
+                cancelPendingTrade();
+
+                return;
+            }
+
+
+            const sl =
+                calculateSL(
+                    side,
+                    bars
+                );
+
+
+            if (
+                sl === null ||
+                !Number.isFinite(sl)
+            ) {
+
+                log(
+                    "No se pudo calcular el SL.",
+                    "error"
+                );
+
+                cancelPendingTrade();
+
+                return;
+            }
+
+
+            pendingTrade.sl =
+                sl;
+
+
+            log(
+                `${side} SL calculado por cTrader: ` +
+                formatPrice(sl)
+            );
+
+
+            log(
+                `Enviando MARKET con volumen mínimo: ` +
+                minVolume
+            );
+
+
+            /*
+               ORDEN REAL A MERCADO.
+
+               No enviamos BID.
+               No enviamos ASK.
+               No enviamos precio de entrada.
+
+               cTrader decide la ejecución.
+            */
+
+            const tradeSide =
+                side === "BUY"
+                    ? ServerInterfaces
+                        .ProtoTradeSide
+                        .BUY
+                    : ServerInterfaces
+                        .ProtoTradeSide
+                        .SELL;
+
+
+            createNewOrder(
+                adapter,
+                {
+
+                    symbolId:
+                        activeSymbolId,
+
+                    orderType:
+                        ServerInterfaces
+                            .ProtoOrderType
+                            .MARKET,
+
+                    tradeSide:
+                        tradeSide,
+
+                    volume:
+                        minVolume,
+
+                    /*
+                       Identificador para poder
+                       reconocer nuestra ejecución.
+                    */
+
+                    clientOrderId:
+                        "AQT_" +
+                        Date.now()
+
+                }
+            )
+            .pipe(
+                take(1)
+            )
+            .subscribe({
+
+                next: response => {
+
+                    processOrderResponse(
+                        response
+                    );
+
+                },
+
+                error: error => {
+
+                    log(
+                        "Error enviando MARKET: " +
+                        JSON.stringify(error),
+                        "error"
+                    );
+
+                    cancelPendingTrade();
+
+                }
+
+            });
+
+        }
+    );
+
+};
+
+
+/* =========================================================
+   RESPUESTA DE ORDEN
+   ========================================================= */
+
+function processOrderResponse(response) {
+
+    log(
+        "cTrader respondió a la orden."
+    );
+
+
+    const payload =
+        getPayload(response);
+
+
+    const order =
+        getField(
+            payload,
+            "order",
+            "Order"
+        );
+
+
+    if (order) {
+
+        const orderId =
+            getField(
+                order,
+                "orderId",
+                "OrderId"
+            );
+
+
+        if (
+            orderId !== undefined
+        ) {
+
+            pendingTrade.orderId =
+                Number(orderId);
+
+            lastOrderId =
+                Number(orderId);
+
+
+            log(
+                `Order ID: ${orderId}`
+            );
+
+        }
+
+    }
+
+
+    /*
+       Algunas respuestas de createNewOrder
+       pueden traer directamente los campos.
+    */
+
+    const directOrderId =
+        getField(
+            payload,
+            "orderId",
+            "OrderId"
+        );
+
+
+    if (
+        directOrderId !== undefined
+    ) {
+
+        pendingTrade.orderId =
+            Number(directOrderId);
+
+        lastOrderId =
+            Number(directOrderId);
+
+        log(
+            `Order ID: ${directOrderId}`
         );
 
     }
-    catch {
-
-        return String(value);
-
-    }
 
 }
 
 
-// ============================================================
-// ARRANCAR
-// ============================================================
+/* =========================================================
+   EVENTOS DE EJECUCIÓN
+   ========================================================= */
 
-init();
+function processExecutionEvent(event) {
+
+    const payload =
+        getPayload(event);
+
+
+    if (!payload) {
+        return;
+    }
+
+
+    const executionType =
+        getField(
+            payload,
+            "executionType",
+            "ExecutionType"
+        );
+
+
+    const typeNumber =
+        Number(executionType);
+
+
+    /*
+       3 = ORDER_FILLED
+       7 = ORDER_REJECTED
+       11 = ORDER_PARTIAL_FILL
+    */
+
+
+    if (
+        typeNumber ===
+        ServerInterfaces
+            .ProtoExecutionType
+            .ORDER_REJECTED
+    ) {
+
+        log(
+            "❌ cTrader rechazó la orden: " +
+            JSON.stringify(payload),
+            "error"
+        );
+
+        cancelPendingTrade();
+
+        return;
+    }
+
+
+    if (
+        typeNumber ===
+        ServerInterfaces
+            .ProtoExecutionType
+            .ORDER_PARTIAL_FILL
+    ) {
+
+        log(
+            "⚠️ cTrader informa un PARTIAL FILL."
+        );
+
+        handleFilledExecution(
+            payload,
+            true
+        );
+
+        return;
+    }
+
+
+    if (
+        typeNumber !==
+        ServerInterfaces
+            .ProtoExecutionType
+            .ORDER_FILLED
+    ) {
+
+        return;
+    }
+
+
+    log(
+        "✅ ORDEN EJECUTADA POR cTRADER."
+    );
+
+
+    handleFilledExecution(
+        payload,
+        false
+    );
+
+}
+
+
+/* =========================================================
+   PROCESAR FILL
+   ========================================================= */
+
+function handleFilledExecution(
+    payload,
+    partial
+) {
+
+    if (!pendingTrade) {
+
+        return;
+    }
+
+
+    const order =
+        getField(
+            payload,
+            "order",
+            "Order"
+        );
+
+
+    const position =
+        getField(
+            payload,
+            "position",
+            "Position"
+        );
+
+
+    const deal =
+        getField(
+            payload,
+            "deal",
+            "Deal"
+        );
+
+
+    /*
+       Comprobar símbolo si tenemos información.
+    */
+
+    const eventSymbolId =
+        getField(
+            payload,
+            "symbolId",
+            "SymbolId"
+        ) ??
+        getField(
+            position?.tradeData,
+            "symbolId",
+            "SymbolId"
+        ) ??
+        getField(
+            deal,
+            "symbolId",
+            "SymbolId"
+        );
+
+
+    if (
+        eventSymbolId !== undefined &&
+        Number(eventSymbolId) !==
+        Number(activeSymbolId)
+    ) {
+
+        return;
+    }
+
+
+    /*
+       Comprobar Order ID cuando esté disponible.
+    */
+
+    const eventOrderId =
+        getField(
+            payload,
+            "orderId",
+            "OrderId"
+        ) ??
+        getField(
+            order,
+            "orderId",
+            "OrderId"
+        ) ??
+        getField(
+            deal,
+            "orderId",
+            "OrderId"
+        );
+
+
+    if (
+        pendingTrade.orderId !== null &&
+        eventOrderId !== undefined &&
+        Number(eventOrderId) !==
+        Number(pendingTrade.orderId)
+    ) {
+
+        return;
+    }
+
+
+    /*
+       PRECIO REAL DE EJECUCIÓN.
+
+       Prioridad:
+
+       1. position.price
+       2. deal.executionPrice
+       3. order.executionPrice
+       4. payload.executionPrice
+    */
+
+    let entryPrice =
+        null;
+
+
+    const positionPrice =
+        getField(
+            position,
+            "price",
+            "Price"
+        );
+
+
+    if (
+        positionPrice !== undefined &&
+        positionPrice !== null
+    ) {
+
+        entryPrice =
+            Number(positionPrice);
+
+    }
+
+
+    if (
+        !Number.isFinite(entryPrice) ||
+        entryPrice <= 0
+    ) {
+
+        const dealPrice =
+            getField(
+                deal,
+                "executionPrice",
+                "ExecutionPrice"
+            );
+
+
+        if (
+            dealPrice !== undefined &&
+            dealPrice !== null
+        ) {
+
+            entryPrice =
+                Number(dealPrice);
+
+        }
+
+    }
+
+
+    if (
+        !Number.isFinite(entryPrice) ||
+        entryPrice <= 0
+    ) {
+
+        const orderPrice =
+            getField(
+                order,
+                "executionPrice",
+                "ExecutionPrice"
+            );
+
+
+        if (
+            orderPrice !== undefined &&
+            orderPrice !== null
+        ) {
+
+            entryPrice =
+                Number(orderPrice);
+
+        }
+
+    }
+
+
+    if (
+        !Number.isFinite(entryPrice) ||
+        entryPrice <= 0
+    ) {
+
+        const eventPrice =
+            getField(
+                payload,
+                "executionPrice",
+                "ExecutionPrice"
+            );
+
+
+        if (
+            eventPrice !== undefined &&
+            eventPrice !== null
+        ) {
+
+            entryPrice =
+                Number(eventPrice);
+
+        }
+
+    }
+
+
+    if (
+        !Number.isFinite(entryPrice) ||
+        entryPrice <= 0
+    ) {
+
+        log(
+            "Fill recibido, pero todavía no tenemos el precio real de ejecución.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       Position ID
+    */
+
+    let positionId =
+        getField(
+            position,
+            "positionId",
+            "PositionId"
+        );
+
+
+    if (
+        positionId === undefined ||
+        positionId === null
+    ) {
+
+        positionId =
+            getField(
+                payload,
+                "positionId",
+                "PositionId"
+            );
+
+    }
+
+
+    if (
+        positionId === undefined ||
+        positionId === null
+    ) {
+
+        log(
+            "Fill recibido pero no encontramos Position ID.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    positionId =
+        Number(positionId);
+
+
+    /*
+       VALIDACIÓN DEL SL.
+
+       Jamás movemos el SL para hacerlo válido.
+
+       Si el extremo histórico queda en el lado
+       incorrecto del precio real de ejecución,
+       abortamos la protección para no alterar
+       la lógica solicitada.
+    */
+
+    const sl =
+        Number(
+            pendingTrade.sl
+        );
+
+
+    if (
+        pendingTrade.side === "BUY" &&
+        sl >= entryPrice
+    ) {
+
+        log(
+            `❌ BUY inválida: SL ${formatPrice(sl)} ` +
+            `no está por debajo de entrada ${formatPrice(entryPrice)}.`,
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        pendingTrade.side === "SELL" &&
+        sl <= entryPrice
+    ) {
+
+        log(
+            `❌ SELL inválida: SL ${formatPrice(sl)} ` +
+            `no está por encima de entrada ${formatPrice(entryPrice)}.`,
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       DISTANCIA REAL:
+
+       entrada cTrader -> SL
+    */
+
+    const slDistance =
+        Math.abs(
+            entryPrice -
+            sl
+        );
+
+
+    if (
+        !Number.isFinite(slDistance) ||
+        slDistance <= 0
+    ) {
+
+        log(
+            "Distancia SL inválida.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+       TP:
+
+       RR 1:1 -> 1 × distancia
+       RR 1:2 -> 2 × distancia
+    */
+
+    let tp;
+
+
+    if (
+        pendingTrade.side ===
+        "BUY"
+    ) {
+
+        tp =
+            entryPrice +
+            (
+                slDistance *
+                pendingTrade.rr
+            );
+
+    } else {
+
+        tp =
+            entryPrice -
+            (
+                slDistance *
+                pendingTrade.rr
+            );
+
+    }
+
+
+    /*
+       Mostrar resultados.
+    */
+
+    lastSLEl.textContent =
+        formatPrice(sl);
+
+    lastTPEl.textContent =
+        formatPrice(tp);
+
+
+    log(
+        `Entrada REAL cTrader: ${formatPrice(entryPrice)}`
+    );
+
+    log(
+        `SL absoluto: ${formatPrice(sl)}`
+    );
+
+    log(
+        `Distancia SL: ${formatPrice(slDistance)}`
+    );
+
+    log(
+        `TP RR 1:${pendingTrade.rr}: ${formatPrice(tp)}`
+    );
+
+
+    /*
+       POSITION ID
+    */
+
+    pendingTrade.positionId =
+        positionId;
+
+
+    /*
+       PROTECCIÓN NATIVA DE cTRADER.
+
+       SL y TP son precios absolutos.
+    */
+
+    modifyOrderProtection(
+        adapter,
+        {
+
+            positionId:
+                positionId,
+
+            stopLoss:
+                sl,
+
+            takeProfit:
+                tp
+
+        }
+    )
+    .pipe(
+        take(1)
+    )
+    .subscribe({
+
+        next: protectionResponse => {
+
+            log(
+                `🛡️ SL/TP enviados a cTrader. ` +
+                `Position ID: ${positionId}`,
+                "ok"
+            );
+
+            log(
+                `SL ${formatPrice(sl)} | ` +
+                `TP ${formatPrice(tp)}`
+            );
+
+
+            if (!partial) {
+
+                /*
+                   Ya no necesitamos conservar
+                   la operación pendiente.
+                */
+
+                pendingTrade =
+                    null;
+
+                buyButton.disabled =
+                    false;
+
+                sellButton.disabled =
+                    false;
+
+            }
+
+        },
+
+        error: error => {
+
+            log(
+                "❌ ERROR colocando SL/TP: " +
+                JSON.stringify(error),
+                "error"
+            );
+
+            /*
+               No intentamos modificar el SL
+               ni el TP automáticamente.
+            */
+
+            if (!partial) {
+
+                pendingTrade =
+                    null;
+
+                buyButton.disabled =
+                    false;
+
+                sellButton.disabled =
+                    false;
+
+            }
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   CANCELAR OPERACIÓN PENDIENTE
+   ========================================================= */
+
+function cancelPendingTrade() {
+
+    pendingTrade =
+        null;
+
+    buyButton.disabled =
+        false;
+
+    sellButton.disabled =
+        false;
+
+}
+
+
+/* =========================================================
+   INICIO
+   ========================================================= */
+
+connect();
 
 </script>
 
