@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ayalga Quick Trade v15</title>
+    <title>Ayalga Quick Trade v16</title>
 
     <style>
         * {
@@ -64,7 +64,7 @@
         .symbol-name {
             font-size: 22px;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .symbol-id {
@@ -141,7 +141,7 @@
 
     <h1>
         Ayalga Quick Trade
-        <span class="version">v15</span>
+        <span class="version">v16</span>
     </h1>
 
     <div id="status" class="status">
@@ -161,6 +161,7 @@
         <div class="prices">
 
             <div class="price-box">
+
                 <div class="price-title">
                     BID
                 </div>
@@ -168,9 +169,11 @@
                 <div class="price-value" id="bid">
                     -
                 </div>
+
             </div>
 
             <div class="price-box">
+
                 <div class="price-title">
                     ASK
                 </div>
@@ -178,6 +181,7 @@
                 <div class="price-value" id="ask">
                     -
                 </div>
+
             </div>
 
         </div>
@@ -252,6 +256,37 @@ const logElement =
 
 
 // ============================================================
+// VARIABLES PRINCIPALES
+// ============================================================
+
+let adapter = null;
+
+let activeSymbolId = null;
+
+let activeSymbolName = null;
+
+
+// ============================================================
+// ÚLTIMOS PRECIOS VÁLIDOS
+//
+// IMPORTANTE:
+// BID y ASK se almacenan por separado.
+//
+// Si cTrader manda un evento donde solamente cambia BID,
+// conservamos el último ASK válido.
+//
+// Si solamente cambia ASK,
+// conservamos el último BID válido.
+//
+// Nunca sustituimos un precio válido por 0.
+// ============================================================
+
+let lastValidBid = null;
+
+let lastValidAsk = null;
+
+
+// ============================================================
 // LOG
 // ============================================================
 
@@ -290,7 +325,7 @@ function log(message, type = "") {
 
 
 // ============================================================
-// URL
+// INFORMACIÓN DE LA URL
 // ============================================================
 
 const params =
@@ -339,13 +374,6 @@ log(
     (theme || "desconocido"),
     "info"
 );
-
-
-// ============================================================
-// ADAPTER
-// ============================================================
-
-let adapter = null;
 
 
 // ============================================================
@@ -406,7 +434,7 @@ function init() {
 
                 log(
                     "Error en confirmación: " +
-                    JSON.stringify(err),
+                    safeStringify(err),
                     "error"
                 );
 
@@ -436,8 +464,8 @@ function init() {
                     );
 
 
-                    // Mantener exactamente
-                    // el handshake que funcionaba.
+                    // Mantenemos exactamente
+                    // el handshake que ya funcionaba.
 
                     handleConfirmEvent(
                         adapter,
@@ -452,7 +480,7 @@ function init() {
 
                     log(
                         "Error registrando plugin: " +
-                        JSON.stringify(err),
+                        safeStringify(err),
                         "error"
                     );
 
@@ -500,7 +528,7 @@ function init() {
 
                     log(
                         "Error final de registro: " +
-                        JSON.stringify(err),
+                        safeStringify(err),
                         "error"
                     );
 
@@ -531,7 +559,7 @@ function init() {
 
 
 // ============================================================
-// CARGAR LISTA DE SÍMBOLOS
+// LISTA DE SÍMBOLOS
 // ============================================================
 
 function loadSymbols() {
@@ -565,12 +593,9 @@ function loadSymbols() {
 
 
             // =================================================
-            // ESTRUCTURA REAL CONFIRMADA
+            // ESTRUCTURA REAL DE CTRADER
             //
-            // response
-            //     payload
-            //         Symbol
-            //
+            // response.payload.Symbol
             // =================================================
 
             const symbols =
@@ -583,10 +608,6 @@ function loadSymbols() {
                 "ok"
             );
 
-
-            // =================================================
-            // MOSTRAR LISTA
-            // =================================================
 
             symbolsElement.innerHTML = "";
 
@@ -604,6 +625,10 @@ function loadSymbols() {
                 return;
             }
 
+
+            // =================================================
+            // MOSTRAR TODOS LOS SÍMBOLOS
+            // =================================================
 
             symbols.forEach(symbol => {
 
@@ -656,9 +681,12 @@ function loadSymbols() {
             // BUSCAR SÍMBOLO ACTIVO
             // =================================================
 
+            let found = null;
+
+
             if (urlSymbol) {
 
-                const found =
+                found =
                     symbols.find(
                         s =>
                             String(
@@ -669,88 +697,78 @@ function loadSymbols() {
                             ).toUpperCase()
                     );
 
-
-                if (found) {
-
-                    symbolNameElement.textContent =
-                        found.Name;
-
-                    symbolIdElement.textContent =
-                        "ID: " +
-                        found.Id;
-
-
-                    log(
-                        "Símbolo encontrado: " +
-                        found.Name +
-                        " | ID: " +
-                        found.Id,
-                        "ok"
-                    );
-
-
-                    // =================================================
-                    // AHORA SUSCRIBIMOS LAS COTIZACIONES
-                    // =================================================
-
-                    startQuotes(
-                        found.Id,
-                        found.Name
-                    );
-
-
-                    // También obtenemos la información
-                    // completa del símbolo.
-
-                    loadSymbol(
-                        found.Id
-                    );
-
-                }
-
-                else {
-
-                    symbolNameElement.textContent =
-                        "Símbolo no encontrado";
-
-                    symbolIdElement.textContent =
-                        "ID: -";
-
-
-                    log(
-                        "No se encontró " +
-                        urlSymbol +
-                        " en la lista.",
-                        "error"
-                    );
-
-                }
-
             }
 
-            else {
 
-                const first =
+            // Si no viene símbolo por URL,
+            // utilizamos el primero disponible.
+
+            if (!found && symbols.length > 0) {
+
+                found =
                     symbols[0];
 
-                if (first) {
-
-                    symbolNameElement.textContent =
-                        first.Name;
-
-                    symbolIdElement.textContent =
-                        "ID: " +
-                        first.Id;
+            }
 
 
-                    startQuotes(
-                        first.Id,
-                        first.Name
-                    );
+            if (!found) {
 
-                }
+                symbolNameElement.textContent =
+                    "Símbolo no encontrado";
+
+                symbolIdElement.textContent =
+                    "ID: -";
+
+                return;
 
             }
+
+
+            // =================================================
+            // GUARDAR SÍMBOLO ACTIVO
+            // =================================================
+
+            activeSymbolId =
+                Number(found.Id);
+
+            activeSymbolName =
+                found.Name;
+
+
+            symbolNameElement.textContent =
+                activeSymbolName;
+
+            symbolIdElement.textContent =
+                "ID: " +
+                activeSymbolId;
+
+
+            log(
+                "Símbolo activo: " +
+                activeSymbolName +
+                " | ID: " +
+                activeSymbolId,
+                "ok"
+            );
+
+
+            // =================================================
+            // INFORMACIÓN DEL SÍMBOLO
+            // =================================================
+
+            loadSymbol(
+                activeSymbolId
+            );
+
+
+            // =================================================
+            // COTIZACIONES
+            // =================================================
+
+            startQuotes(
+                activeSymbolId,
+                activeSymbolName
+            );
 
         },
 
@@ -758,7 +776,7 @@ function loadSymbols() {
 
             log(
                 "ERROR getLightSymbolList: " +
-                JSON.stringify(err),
+                safeStringify(err),
                 "error"
             );
 
@@ -801,6 +819,7 @@ function loadSymbol(symbolId) {
                 "ok"
             );
 
+
             log(
                 "Claves getSymbol: " +
                 Object.keys(
@@ -815,7 +834,7 @@ function loadSymbol(symbolId) {
 
             log(
                 "ERROR getSymbol: " +
-                JSON.stringify(err),
+                safeStringify(err),
                 "error"
             );
 
@@ -827,7 +846,7 @@ function loadSymbol(symbolId) {
 
 
 // ============================================================
-// COTIZACIONES
+// SUSCRIBIR COTIZACIONES
 // ============================================================
 
 function startQuotes(
@@ -843,10 +862,6 @@ function startQuotes(
         "..."
     );
 
-
-    // ========================================================
-    // SUSCRIPCIÓN
-    // ========================================================
 
     subscribeQuotes(
         adapter,
@@ -876,7 +891,7 @@ function startQuotes(
 
             log(
                 "ERROR subscribeQuotes: " +
-                JSON.stringify(err),
+                safeStringify(err),
                 "error"
             );
 
@@ -888,7 +903,7 @@ function startQuotes(
 
 
 // ============================================================
-// ESCUCHAR QUOTES
+// ESCUCHAR COTIZACIONES
 // ============================================================
 
 function listenQuotes(
@@ -910,16 +925,13 @@ function listenQuotes(
                 try {
 
                     // =================================================
-                    // MOSTRAR SOLO INFORMACIÓN ÚTIL EN LOG
+                    // IDENTIFICAR SÍMBOLO
                     // =================================================
 
                     const quoteSymbolId =
                         quote?.symbolId ??
                         quote?.SymbolId;
 
-
-                    // Si el evento pertenece a otro símbolo,
-                    // lo ignoramos.
 
                     if (
                         quoteSymbolId !== undefined &&
@@ -933,7 +945,7 @@ function listenQuotes(
 
 
                     // =================================================
-                    // EXTRAER BID / ASK
+                    // OBTENER BID Y ASK
                     // =================================================
 
                     const bidRaw =
@@ -945,25 +957,13 @@ function listenQuotes(
                         quote?.Ask;
 
 
-                    if (
-                        bidRaw === undefined &&
-                        askRaw === undefined
-                    ) {
-
-                        return;
-
-                    }
-
-
                     // =================================================
-                    // CONVERSIÓN
+                    // BID
                     //
-                    // cTrader puede entregar precios
-                    // en unidades internas.
+                    // SOLO aceptamos un BID positivo.
                     //
-                    // Para EURUSD:
-                    // 1.12345 -> 112345
-                    //
+                    // Si viene 0, null o undefined:
+                    // conservamos el último BID.
                     // =================================================
 
                     const bid =
@@ -971,34 +971,78 @@ function listenQuotes(
                             bidRaw
                         );
 
+
+                    if (
+                        bid !== null &&
+                        bid > 0
+                    ) {
+
+                        lastValidBid =
+                            bid;
+
+                        bidElement.textContent =
+                            formatPrice(
+                                lastValidBid
+                            );
+
+                    }
+
+
+                    // =================================================
+                    // ASK
+                    //
+                    // SOLO aceptamos un ASK positivo.
+                    //
+                    // Si viene 0, null o undefined:
+                    // conservamos el último ASK.
+                    // =================================================
+
                     const ask =
                         convertPrice(
                             askRaw
                         );
 
 
-                    if (bid !== null) {
+                    if (
+                        ask !== null &&
+                        ask > 0
+                    ) {
 
-                        bidElement.textContent =
-                            formatPrice(bid);
-
-                    }
-
-
-                    if (ask !== null) {
+                        lastValidAsk =
+                            ask;
 
                         askElement.textContent =
-                            formatPrice(ask);
+                            formatPrice(
+                                lastValidAsk
+                            );
 
                     }
 
+
+                    // =================================================
+                    // IMPORTANTE
+                    //
+                    // Estos precios son únicamente INFORMATIVOS.
+                    //
+                    // NO se utilizarán para ejecutar operaciones.
+                    //
+                    // Las operaciones futuras serán enviadas:
+                    //
+                    //       A MERCADO
+                    //
+                    // y el precio real será el que devuelva
+                    // CTRADER en el evento de ejecución.
+                    // =================================================
 
                 }
                 catch (err) {
 
                     log(
                         "Error procesando quote: " +
-                        (err?.stack || err),
+                        (
+                            err?.stack ||
+                            err
+                        ),
                         "error"
                     );
 
@@ -1010,7 +1054,7 @@ function listenQuotes(
 
                 log(
                     "ERROR quoteEvent: " +
-                    JSON.stringify(err),
+                    safeStringify(err),
                     "error"
                 );
 
@@ -1022,7 +1066,7 @@ function listenQuotes(
 
 
 // ============================================================
-// CONVERTIR PRECIO
+// CONVERSIÓN DE PRECIO
 // ============================================================
 
 function convertPrice(value) {
@@ -1042,7 +1086,8 @@ function convertPrice(value) {
 
 
     if (
-        !Number.isFinite(number)
+        !Number.isFinite(number) ||
+        number <= 0
     ) {
 
         return null;
@@ -1051,7 +1096,12 @@ function convertPrice(value) {
 
 
     // ========================================================
-    // Si viene en formato interno de 1/100000.
+    // Formato interno de precio de cTrader.
+    //
+    // Ejemplo:
+    //
+    // 112345 -> 1.12345
+    //
     // ========================================================
 
     if (
@@ -1069,13 +1119,35 @@ function convertPrice(value) {
 
 
 // ============================================================
-// FORMATO PRECIO
+// FORMATO
 // ============================================================
 
 function formatPrice(price) {
 
     return Number(price)
         .toFixed(5);
+
+}
+
+
+// ============================================================
+// JSON SEGURO PARA LOG
+// ============================================================
+
+function safeStringify(value) {
+
+    try {
+
+        return JSON.stringify(
+            value
+        );
+
+    }
+    catch {
+
+        return String(value);
+
+    }
 
 }
 
