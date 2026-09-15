@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -170,7 +171,7 @@
             font-family: monospace;
             font-size: 11px;
             line-height: 1.45;
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-break: break-word;
@@ -183,6 +184,7 @@
         }
 
     </style>
+
 </head>
 
 
@@ -192,7 +194,7 @@
 
     <div class="title">
         Ayalga Quick Trade
-        <span class="version">v19</span>
+        <span class="version">v20</span>
     </div>
 
 
@@ -200,6 +202,10 @@
         Conectando con cTrader...
     </div>
 
+
+    <!-- =====================================================
+         CONFIGURACIÓN
+         ===================================================== -->
 
     <div class="section">
 
@@ -264,6 +270,10 @@
     </div>
 
 
+    <!-- =====================================================
+         RR
+         ===================================================== -->
+
     <div class="section">
 
         <div class="section-title">
@@ -294,6 +304,10 @@
 
     </div>
 
+
+    <!-- =====================================================
+         SÍMBOLO
+         ===================================================== -->
 
     <div class="section">
 
@@ -326,6 +340,10 @@
     </div>
 
 
+    <!-- =====================================================
+         BOTONES
+         ===================================================== -->
+
     <div class="trade-row">
 
         <button
@@ -349,6 +367,10 @@
 
     </div>
 
+
+    <!-- =====================================================
+         INFORMACIÓN
+         ===================================================== -->
 
     <div class="info">
 
@@ -390,11 +412,16 @@
     </div>
 
 
+    <!-- =====================================================
+         LOG
+         ===================================================== -->
+
     <div id="log" class="log">
         Iniciando...
     </div>
 
 </div>
+
 
 
 <script type="module">
@@ -441,9 +468,10 @@ import {
    CONFIG
    ========================================================= */
 
-const VERSION = "19";
+const VERSION = "20";
 
 const PRICE_SCALE = 100000;
+
 
 
 /* =========================================================
@@ -471,8 +499,9 @@ let pendingTrade = null;
 let lastOrderId = null;
 
 
+
 /* =========================================================
-   HTML
+   ELEMENTOS
    ========================================================= */
 
 const statusEl =
@@ -540,6 +569,7 @@ function log(message, type = "") {
 
     const time =
         new Date().toLocaleTimeString();
+
 
     logEl.textContent =
         `[${time}] ${message}\n` +
@@ -665,7 +695,7 @@ window.setRR = function(value) {
 
 
 /* =========================================================
-   GENERIC FIELD
+   CAMPO FLEXIBLE
    ========================================================= */
 
 function getField(
@@ -835,7 +865,7 @@ function formatPrice(price) {
 
 
 /* =========================================================
-   URL SYMBOL
+   SYMBOL DESDE URL
    ========================================================= */
 
 function getSymbolFromURL() {
@@ -869,6 +899,11 @@ function connect() {
     );
 
 
+    log(
+        "Iniciando..."
+    );
+
+
     const logger =
         createLogger(
             location.href.includes(
@@ -883,9 +918,9 @@ function connect() {
         });
 
 
-    /*
-       CONFIRMACIÓN
-    */
+    /* =====================================================
+       CONFIRM
+       ===================================================== */
 
     handleConfirmEvent(
         adapter,
@@ -906,10 +941,9 @@ function connect() {
 
         error: error => {
 
-            log(
-                "Error confirmación: " +
-                JSON.stringify(error),
-                "error"
+            logRaw(
+                "ERROR confirmación",
+                error
             );
 
         }
@@ -918,9 +952,9 @@ function connect() {
 
 
 
-    /*
-       REGISTRO
-    */
+    /* =====================================================
+       REGISTER
+       ===================================================== */
 
     registerEvent(adapter)
         .pipe(
@@ -955,14 +989,8 @@ function connect() {
 
 
                 /*
-                   ==================================================
-                   IMPORTANTE V19
-
-                   LAS SUSCRIPCIONES DE QUOTES Y EXECUTION
-                   SE HACEN DESPUÉS DEL HANDSHAKE.
-
-                   ESTE ERA EL PROBLEMA DE V18.
-                   ==================================================
+                   SUSCRIBIR EVENTOS DESPUÉS
+                   DEL HANDSHAKE
                 */
 
                 subscribeExecutionEvents();
@@ -973,10 +1001,9 @@ function connect() {
 
             catchError(error => {
 
-                log(
-                    "Error registrando plugin: " +
-                    JSON.stringify(error),
-                    "error"
+                logRaw(
+                    "ERROR registerEvent",
+                    error
                 );
 
 
@@ -1002,10 +1029,9 @@ function connect() {
 
             error: error => {
 
-                log(
-                    "Error de registro: " +
-                    JSON.stringify(error),
-                    "error"
+                logRaw(
+                    "ERROR registro",
+                    error
                 );
 
             }
@@ -1017,13 +1043,13 @@ function connect() {
 
 
 /* =========================================================
-   EXECUTION EVENT
+   EXECUTION EVENTS
    ========================================================= */
 
 function subscribeExecutionEvents() {
 
     log(
-        "Suscribiendo executionEvent DESPUÉS del handshake..."
+        "Suscribiendo executionEvent..."
     );
 
 
@@ -1031,10 +1057,6 @@ function subscribeExecutionEvents() {
         .subscribe({
 
             next: event => {
-
-                /*
-                   MOSTRAR EVENTO REAL RECIBIDO.
-                */
 
                 logRaw(
                     "EXECUTION EVENT",
@@ -1056,9 +1078,10 @@ function subscribeExecutionEvents() {
                 );
 
 
-                log(
-                    "Error en executionEvent.",
-                    "error"
+                setStatus(
+                    "Error en eventos de ejecución",
+                    false,
+                    true
                 );
 
             }
@@ -1076,13 +1099,13 @@ function subscribeExecutionEvents() {
 
 
 /* =========================================================
-   QUOTE EVENT
+   QUOTE EVENTS
    ========================================================= */
 
 function subscribeQuoteEvents() {
 
     log(
-        "Suscribiendo quoteEvent DESPUÉS del handshake..."
+        "Suscribiendo quoteEvent..."
     );
 
 
@@ -1110,8 +1133,7 @@ function subscribeQuoteEvents() {
 
 
     log(
-        "quoteEvent suscrito correctamente.",
-        "ok"
+        "quoteEvent suscrito correctamente."
     );
 
 }
@@ -1272,13 +1294,6 @@ function loadSymbols() {
                 error
             );
 
-
-            setStatus(
-                "Error obteniendo símbolos",
-                false,
-                true
-            );
-
         }
 
     });
@@ -1384,15 +1399,8 @@ function loadDetailedSymbol() {
             if (!info) {
 
                 log(
-                    "No se pudo obtener ProtoSymbol.",
+                    "No se pudo obtener información del símbolo.",
                     "error"
-                );
-
-
-                setStatus(
-                    "No se pudo obtener información del símbolo",
-                    false,
-                    true
                 );
 
 
@@ -1492,29 +1500,6 @@ function loadDetailedSymbol() {
                     : "---";
 
 
-            if (
-                !Number.isFinite(minVolume) ||
-                minVolume <= 0
-            ) {
-
-                log(
-                    "cTrader no proporcionó un minVolume válido.",
-                    "error"
-                );
-
-
-                setStatus(
-                    "Volumen mínimo no disponible",
-                    false,
-                    true
-                );
-
-
-                return;
-
-            }
-
-
             subscribeQuotesForSymbol();
 
         },
@@ -1526,13 +1511,6 @@ function loadDetailedSymbol() {
                 error
             );
 
-
-            setStatus(
-                "Error información símbolo",
-                false,
-                true
-            );
-
         }
 
     });
@@ -1542,7 +1520,7 @@ function loadDetailedSymbol() {
 
 
 /* =========================================================
-   QUOTE SUBSCRIPTION
+   QUOTES
    ========================================================= */
 
 function subscribeQuotesForSymbol() {
@@ -1594,13 +1572,6 @@ function subscribeQuotesForSymbol() {
                 error
             );
 
-
-            setStatus(
-                "Error suscribiendo precios",
-                false,
-                true
-            );
-
         }
 
     });
@@ -1610,7 +1581,7 @@ function subscribeQuotesForSymbol() {
 
 
 /* =========================================================
-   QUOTE PROCESS
+   PROCESS QUOTE
    ========================================================= */
 
 function processQuoteEvent(event) {
@@ -1618,10 +1589,10 @@ function processQuoteEvent(event) {
     const quotes =
         getArray(
             event,
-            "quote",
             "Quote",
-            "quotes",
-            "Quotes"
+            "quote",
+            "Quotes",
+            "quotes"
         );
 
 
@@ -1640,8 +1611,8 @@ function processQuoteEvent(event) {
             Number(
                 getField(
                     quote,
-                    "symbolId",
-                    "SymbolId"
+                    "SymbolId",
+                    "symbolId"
                 )
             );
 
@@ -1656,28 +1627,24 @@ function processQuoteEvent(event) {
         }
 
 
-        const rawBid =
-            getField(
-                quote,
-                "bid",
-                "Bid"
-            );
-
-
-        const rawAsk =
-            getField(
-                quote,
-                "ask",
-                "Ask"
-            );
-
-
         const bid =
-            normalizePrice(rawBid);
+            normalizePrice(
+                getField(
+                    quote,
+                    "Bid",
+                    "bid"
+                )
+            );
 
 
         const ask =
-            normalizePrice(rawAsk);
+            normalizePrice(
+                getField(
+                    quote,
+                    "Ask",
+                    "ask"
+                )
+            );
 
 
         if (
@@ -1716,7 +1683,7 @@ function processQuoteEvent(event) {
 
 
 /* =========================================================
-   PERIOD
+   PERIOD MINUTES
    ========================================================= */
 
 function getPeriodMinutes(period) {
@@ -1871,7 +1838,7 @@ function getClosedTrendbars(
 
 
                 /*
-                   EXCLUIR VELA ACTUAL
+                   EXCLUIR LA VELA ACTUAL
                 */
 
                 if (
@@ -2073,7 +2040,7 @@ function calculateSL(
 
 
 /* =========================================================
-   EXECUTE TRADE
+   EXECUTE MARKET
    ========================================================= */
 
 window.executeTrade = function(side) {
@@ -2096,7 +2063,7 @@ window.executeTrade = function(side) {
     ) {
 
         log(
-            "El símbolo todavía no está preparado.",
+            "Símbolo no preparado.",
             "error"
         );
 
@@ -2192,7 +2159,10 @@ window.executeTrade = function(side) {
             null,
 
         positionId:
-            null
+            null,
+
+        protectionSent:
+            false
 
     };
 
@@ -2290,18 +2260,15 @@ window.executeTrade = function(side) {
                         .SELL;
 
 
+            /*
+               SIEMPRE MARKET.
+               NO ENVIAMOS PRECIO.
+            */
+
             log(
                 `Enviando MARKET con volumen mínimo: ${minVolume}`
             );
 
-
-            /*
-               SIEMPRE MARKET.
-
-               NO enviamos BID.
-               NO enviamos ASK.
-               NO enviamos precio.
-            */
 
             createNewOrder(
                 adapter,
@@ -2385,52 +2352,72 @@ function processOrderResponse(
         getPayload(response);
 
 
+    /*
+       AQUÍ cTrader devuelve:
+
+       ExecutionType:
+       ORDER_ACCEPTED
+    */
+
     const executionType =
-        getField(
-            payload,
-            "executionType",
-            "ExecutionType"
+        String(
+            getField(
+                payload,
+                "ExecutionType",
+                "executionType"
+            ) ?? ""
         );
 
 
-    if (
-        executionType !== undefined
-    ) {
-
-        log(
-            `ExecutionType recibido: ${executionType}`
-        );
-
-    }
+    log(
+        `ExecutionType recibido: ${executionType}`
+    );
 
 
     const order =
         getField(
             payload,
-            "order",
-            "Order"
+            "Order",
+            "order"
         );
 
 
-    const orderId =
+    const position =
         getField(
             payload,
-            "orderId",
-            "OrderId"
-        ) ??
+            "Position",
+            "position"
+        );
+
+
+    /*
+       ORDER ID
+    */
+
+    const orderId =
         getField(
             order,
-            "orderId",
-            "OrderId"
+            "OrderId",
+            "orderId"
+        ) ??
+        getField(
+            payload,
+            "OrderId",
+            "orderId"
         );
 
 
     if (
-        orderId !== undefined
+        orderId !== undefined &&
+        orderId !== null
     ) {
 
-        pendingTrade.orderId =
-            Number(orderId);
+        if (pendingTrade) {
+
+            pendingTrade.orderId =
+                Number(orderId);
+
+        }
 
 
         lastOrderId =
@@ -2445,30 +2432,75 @@ function processOrderResponse(
 
 
     /*
+       POSITION ID
+
        MUY IMPORTANTE:
 
-       Si la respuesta de createNewOrder
-       ya contiene ORDER_FILLED,
-       también la procesamos.
+       En tu log real cTrader ya lo
+       devuelve en ORDER_ACCEPTED.
+    */
+
+    const acceptedPositionId =
+        getField(
+            position,
+            "PositionId",
+            "positionId"
+        ) ??
+        getField(
+            order,
+            "PositionId",
+            "positionId"
+        ) ??
+        getField(
+            payload,
+            "PositionId",
+            "positionId"
+        );
+
+
+    if (
+        acceptedPositionId !== undefined &&
+        acceptedPositionId !== null &&
+        Number(acceptedPositionId) > 0
+    ) {
+
+        if (pendingTrade) {
+
+            pendingTrade.positionId =
+                Number(acceptedPositionId);
+
+        }
+
+
+        positionIdEl.textContent =
+            acceptedPositionId;
+
+
+        log(
+            `Position ID recibido: ${acceptedPositionId}`,
+            "ok"
+        );
+
+    }
+
+
+    /*
+       Si por cualquier motivo la respuesta
+       ya fuera ORDER_FILLED, procesarla.
     */
 
     if (
-        Number(executionType) ===
-        Number(
-            ServerInterfaces
-                .ProtoExecutionType
-                .ORDER_FILLED
-        )
+        executionType ===
+        "ORDER_FILLED"
     ) {
 
         log(
-            "La propia respuesta createNewOrder contiene ORDER_FILLED."
+            "ORDER_FILLED incluido en createNewOrder."
         );
 
 
         handleFilledExecution(
-            payload,
-            false
+            payload
         );
 
     }
@@ -2478,7 +2510,7 @@ function processOrderResponse(
 
 
 /* =========================================================
-   EXECUTION EVENT
+   PROCESS EXECUTION EVENT
    ========================================================= */
 
 function processExecutionEvent(
@@ -2496,16 +2528,25 @@ function processExecutionEvent(
     }
 
 
+    /*
+       =====================================================
+       CORRECCIÓN PRINCIPAL V20
+
+       NO HACEMOS Number("ORDER_FILLED").
+
+       cTrader nos entrega directamente:
+       "ORDER_FILLED"
+       =====================================================
+    */
+
     const executionType =
-        getField(
-            payload,
-            "executionType",
-            "ExecutionType"
+        String(
+            getField(
+                payload,
+                "ExecutionType",
+                "executionType"
+            ) ?? ""
         );
-
-
-    const typeNumber =
-        Number(executionType);
 
 
     log(
@@ -2514,41 +2555,93 @@ function processExecutionEvent(
 
 
     /*
-       ORDER_ACCEPTED = 2
+       =====================================================
+       ORDER_ACCEPTED
+       =====================================================
     */
 
     if (
-        typeNumber ===
-        Number(
-            ServerInterfaces
-                .ProtoExecutionType
-                .ORDER_ACCEPTED
-        )
+        executionType ===
+        "ORDER_ACCEPTED"
     ) {
+
+        const position =
+            getField(
+                payload,
+                "Position",
+                "position"
+            );
+
+
+        const order =
+            getField(
+                payload,
+                "Order",
+                "order"
+            );
+
 
         const orderId =
             getField(
+                order,
+                "OrderId",
+                "orderId"
+            ) ??
+            getField(
                 payload,
-                "orderId",
-                "OrderId"
+                "OrderId",
+                "orderId"
+            );
+
+
+        const positionId =
+            getField(
+                position,
+                "PositionId",
+                "positionId"
+            ) ??
+            getField(
+                order,
+                "PositionId",
+                "positionId"
+            ) ??
+            getField(
+                payload,
+                "PositionId",
+                "positionId"
             );
 
 
         if (
-            orderId !== undefined
+            pendingTrade
         ) {
 
-            log(
-                `ORDER_ACCEPTED → Order ID ${orderId}`
-            );
-
-
             if (
-                pendingTrade
+                orderId !== undefined
             ) {
 
                 pendingTrade.orderId =
                     Number(orderId);
+
+            }
+
+
+            if (
+                positionId !== undefined &&
+                Number(positionId) > 0
+            ) {
+
+                pendingTrade.positionId =
+                    Number(positionId);
+
+
+                positionIdEl.textContent =
+                    positionId;
+
+
+                log(
+                    `Position ID guardado desde ACCEPTED: ${positionId}`
+                );
 
             }
 
@@ -2560,17 +2653,16 @@ function processExecutionEvent(
     }
 
 
+
     /*
-       ORDER_FILLED = 3
+       =====================================================
+       ORDER_FILLED
+       =====================================================
     */
 
     if (
-        typeNumber ===
-        Number(
-            ServerInterfaces
-                .ProtoExecutionType
-                .ORDER_FILLED
-        )
+        executionType ===
+        "ORDER_FILLED"
     ) {
 
         log(
@@ -2589,8 +2681,7 @@ function processExecutionEvent(
 
 
         handleFilledExecution(
-            payload,
-            false
+            payload
         );
 
 
@@ -2599,17 +2690,16 @@ function processExecutionEvent(
     }
 
 
+
     /*
-       PARTIAL FILL = 11
+       =====================================================
+       ORDER_PARTIAL_FILL
+       =====================================================
     */
 
     if (
-        typeNumber ===
-        Number(
-            ServerInterfaces
-                .ProtoExecutionType
-                .ORDER_PARTIAL_FILL
-        )
+        executionType ===
+        "ORDER_PARTIAL_FILL"
     ) {
 
         log(
@@ -2618,8 +2708,7 @@ function processExecutionEvent(
 
 
         handleFilledExecution(
-            payload,
-            true
+            payload
         );
 
 
@@ -2628,22 +2717,27 @@ function processExecutionEvent(
     }
 
 
+
     /*
-       REJECTED = 7
+       =====================================================
+       ORDER_REJECTED
+       =====================================================
     */
 
     if (
-        typeNumber ===
-        Number(
-            ServerInterfaces
-                .ProtoExecutionType
-                .ORDER_REJECTED
-        )
+        executionType ===
+        "ORDER_REJECTED"
     ) {
 
         log(
             "❌ ORDER_REJECTED recibido.",
             "error"
+        );
+
+
+        logRaw(
+            "RECHAZO cTrader",
+            payload
         );
 
 
@@ -2655,56 +2749,40 @@ function processExecutionEvent(
     }
 
 
-    /*
-       REPLACED = 4
 
-       Este es especialmente importante:
-       cTrader utiliza ORDER_REPLACED como
-       respuesta satisfactoria al modificar
-       SL/TP.
+    /*
+       =====================================================
+       ORDER_REPLACED
+
+       Esta será la respuesta que buscamos
+       después de enviar SL/TP.
+       =====================================================
     */
 
     if (
-        typeNumber ===
-        Number(
-            ServerInterfaces
-                .ProtoExecutionType
-                .ORDER_REPLACED
-        )
+        executionType ===
+        "ORDER_REPLACED"
     ) {
 
         log(
-            "🛡️ ORDER_REPLACED recibido: " +
-            "cTrader ha aceptado la modificación."
+            "================================"
+        );
+
+
+        log(
+            "✅ cTrader ha aceptado la modificación SL/TP",
+            "ok"
+        );
+
+
+        log(
+            "================================"
         );
 
 
         logRaw(
             "RESPUESTA SERVIDOR SL/TP",
             payload
-        );
-
-
-        return;
-
-    }
-
-
-    /*
-       CANCELLED = 5
-    */
-
-    if (
-        typeNumber ===
-        Number(
-            ServerInterfaces
-                .ProtoExecutionType
-                .ORDER_CANCELLED
-        )
-    ) {
-
-        log(
-            "ORDER_CANCELLED recibido."
         );
 
 
@@ -2721,21 +2799,14 @@ function processExecutionEvent(
    ========================================================= */
 
 function handleFilledExecution(
-    payload,
-    partial
+    payload
 ) {
 
     if (!pendingTrade) {
 
         log(
-            "ORDER_FILLED recibido pero no existe pendingTrade.",
+            "ORDER_FILLED sin operación pendiente.",
             "error"
-        );
-
-
-        logRaw(
-            "FILL SIN PENDING TRADE",
-            payload
         );
 
 
@@ -2743,10 +2814,6 @@ function handleFilledExecution(
 
     }
 
-
-    /*
-       MOSTRAR ESTRUCTURA EXACTA
-    */
 
     logRaw(
         "PAYLOAD DEL FILL",
@@ -2757,40 +2824,38 @@ function handleFilledExecution(
     const position =
         getField(
             payload,
-            "position",
-            "Position"
-        );
-
-
-    const deal =
-        getField(
-            payload,
-            "deal",
-            "Deal"
+            "Position",
+            "position"
         );
 
 
     const order =
         getField(
             payload,
-            "order",
-            "Order"
+            "Order",
+            "order"
+        );
+
+
+    const deal =
+        getField(
+            payload,
+            "Deal",
+            "deal"
         );
 
 
     /*
+       =====================================================
        POSITION ID
-
-       La documentación oficial indica que
-       ProtoExecutionEvent lleva position
-       y ProtoPosition contiene positionId.
+       =====================================================
     */
 
     let positionId =
         getField(
             position,
-            "positionId",
-            "PositionId"
+            "PositionId",
+            "positionId"
         );
 
 
@@ -2801,9 +2866,9 @@ function handleFilledExecution(
 
         positionId =
             getField(
-                payload,
-                "positionId",
-                "PositionId"
+                order,
+                "PositionId",
+                "positionId"
             );
 
     }
@@ -2814,15 +2879,36 @@ function handleFilledExecution(
         positionId === null
     ) {
 
+        positionId =
+            getField(
+                deal,
+                "PositionId",
+                "positionId"
+            );
+
+    }
+
+
+    if (
+        positionId === undefined ||
+        positionId === null
+    ) {
+
+        positionId =
+            pendingTrade.positionId;
+
+    }
+
+
+    if (
+        positionId === undefined ||
+        positionId === null ||
+        Number(positionId) <= 0
+    ) {
+
         log(
-            "❌ ORDER_FILLED recibido pero NO hay Position ID.",
+            "❌ No se ha encontrado PositionId.",
             "error"
-        );
-
-
-        logRaw(
-            "POSITION DEL FILL",
-            position
         );
 
 
@@ -2849,22 +2935,35 @@ function handleFilledExecution(
     );
 
 
-    /*
-       PRECIO REAL
 
-       Primero ProtoPosition.price,
-       que cTrader define como VWAP/entry.
+    /*
+       =====================================================
+       PRECIO REAL
+       =====================================================
+
+       Primero Position.Price.
+
+       En TU LOG REAL:
+       "Price": 1.1537
+
+       Por tanto aquí tendremos:
+       1.1537
     */
 
     let entryPrice =
         Number(
             getField(
                 position,
-                "price",
-                "Price"
+                "Price",
+                "price"
             )
         );
 
+
+    /*
+       Si no está en Position,
+       usar Deal.ExecutionPrice.
+    */
 
     if (
         !Number.isFinite(entryPrice) ||
@@ -2875,13 +2974,18 @@ function handleFilledExecution(
             Number(
                 getField(
                     deal,
-                    "executionPrice",
-                    "ExecutionPrice"
+                    "ExecutionPrice",
+                    "executionPrice"
                 )
             );
 
     }
 
+
+    /*
+       Último recurso:
+       Order.ExecutionPrice
+    */
 
     if (
         !Number.isFinite(entryPrice) ||
@@ -2892,25 +2996,8 @@ function handleFilledExecution(
             Number(
                 getField(
                     order,
-                    "executionPrice",
-                    "ExecutionPrice"
-                )
-            );
-
-    }
-
-
-    if (
-        !Number.isFinite(entryPrice) ||
-        entryPrice <= 0
-    ) {
-
-        entryPrice =
-            Number(
-                getField(
-                    payload,
-                    "executionPrice",
-                    "ExecutionPrice"
+                    "ExecutionPrice",
+                    "executionPrice"
                 )
             );
 
@@ -2923,7 +3010,45 @@ function handleFilledExecution(
     ) {
 
         log(
-            "❌ No hemos encontrado el precio real de ejecución.",
+            "❌ No se ha podido obtener el precio real.",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    entryPriceEl.textContent =
+        formatPrice(entryPrice);
+
+
+    log(
+        `Entrada REAL cTrader: ${formatPrice(entryPrice)}`,
+        "ok"
+    );
+
+
+
+    /*
+       =====================================================
+       SL
+       =====================================================
+    */
+
+    const sl =
+        Number(
+            pendingTrade.sl
+        );
+
+
+    if (
+        !Number.isFinite(sl)
+    ) {
+
+        log(
+            "❌ SL no válido.",
             "error"
         );
 
@@ -2934,27 +3059,9 @@ function handleFilledExecution(
 
 
     /*
-       Mostrar precio real.
-    */
-
-    entryPriceEl.textContent =
-        formatPrice(entryPrice);
-
-
-    log(
-        `Entrada REAL de cTrader: ${formatPrice(entryPrice)}`,
-        "ok"
-    );
-
-
-    const sl =
-        Number(
-            pendingTrade.sl
-        );
-
-
-    /*
+       =====================================================
        VALIDACIÓN BUY
+       =====================================================
     */
 
     if (
@@ -2969,16 +3076,15 @@ function handleFilledExecution(
         );
 
 
-        cancelPendingTrade();
-
-
         return;
 
     }
 
 
     /*
+       =====================================================
        VALIDACIÓN SELL
+       =====================================================
     */
 
     if (
@@ -2993,16 +3099,15 @@ function handleFilledExecution(
         );
 
 
-        cancelPendingTrade();
-
-
         return;
 
     }
 
 
     /*
-       DISTANCIA REAL
+       =====================================================
+       DISTANCIA
+       =====================================================
     */
 
     const slDistance =
@@ -3028,8 +3133,11 @@ function handleFilledExecution(
     }
 
 
+
     /*
+       =====================================================
        TP
+       =====================================================
     */
 
     let tp;
@@ -3058,8 +3166,11 @@ function handleFilledExecution(
     }
 
 
+
     /*
-       Mostrar
+       =====================================================
+       MOSTRAR
+       =====================================================
     */
 
     lastSLEl.textContent =
@@ -3071,12 +3182,12 @@ function handleFilledExecution(
 
 
     log(
-        `SL ABSOLUTO: ${formatPrice(sl)}`
+        `SL: ${formatPrice(sl)}`
     );
 
 
     log(
-        `Distancia real: ${formatPrice(slDistance)}`
+        `Distancia SL: ${formatPrice(slDistance)}`
     );
 
 
@@ -3085,16 +3196,58 @@ function handleFilledExecution(
     );
 
 
-    /*
-       ==============================================
-       AHORA SÍ:
 
-       ENVIAMOS LA PROTECCIÓN AL SERVIDOR.
-       ==============================================
+    /*
+       =====================================================
+       ENVIAR PROTECCIÓN
+       =====================================================
     */
 
+    if (
+        pendingTrade.protectionSent
+    ) {
+
+        log(
+            "La protección ya fue enviada."
+        );
+
+
+        return;
+
+    }
+
+
+    pendingTrade.protectionSent =
+        true;
+
+
     log(
-        `Enviando SL/TP a cTrader → Position ID ${positionId}...`
+        "================================"
+    );
+
+
+    log(
+        "🛡️ ENVIANDO SL + TP A cTRADER"
+    );
+
+
+    log(
+        `Position ID: ${positionId}`
+    );
+
+
+    log(
+        `SL: ${formatPrice(sl)}`
+    );
+
+
+    log(
+        `TP: ${formatPrice(tp)}`
+    );
+
+
+    log(
+        "================================"
     );
 
 
@@ -3120,11 +3273,6 @@ function handleFilledExecution(
 
         next: response => {
 
-            /*
-               La modificación devuelve
-               ProtoExecutionEvent.
-            */
-
             logRaw(
                 "RESPUESTA modifyOrderProtection",
                 response
@@ -3136,25 +3284,29 @@ function handleFilledExecution(
 
 
             const responseType =
-                getField(
-                    responsePayload,
-                    "executionType",
-                    "ExecutionType"
+                String(
+                    getField(
+                        responsePayload,
+                        "ExecutionType",
+                        "executionType"
+                    ) ?? ""
                 );
 
 
             log(
-                `Respuesta SL/TP ExecutionType: ${responseType}`
+                `Respuesta servidor: ${responseType}`
             );
 
 
+            /*
+               =================================================
+               RESPUESTA CORRECTA
+               =================================================
+            */
+
             if (
-                Number(responseType) ===
-                Number(
-                    ServerInterfaces
-                        .ProtoExecutionType
-                        .ORDER_REPLACED
-                )
+                responseType ===
+                "ORDER_REPLACED"
             ) {
 
                 log(
@@ -3188,73 +3340,86 @@ function handleFilledExecution(
                     true
                 );
 
-            } else {
+            }
+
+
+            /*
+               =================================================
+               ERROR DEVUELTO EN PAYLOAD
+               =================================================
+            */
+
+            const errorCode =
+                getField(
+                    responsePayload,
+                    "ErrorCode",
+                    "errorCode"
+                );
+
+
+            if (
+                errorCode
+            ) {
 
                 log(
-                    "⚠️ cTrader respondió a la modificación.",
+                    `❌ Error cTrader: ${errorCode}`,
                     "error"
+                );
+
+
+                setStatus(
+                    `Error SL/TP: ${errorCode}`,
+                    false,
+                    true
                 );
 
             }
 
 
-            if (!partial) {
-
-                pendingTrade =
-                    null;
+            buyButton.disabled =
+                false;
 
 
-                buyButton.disabled =
-                    false;
+            sellButton.disabled =
+                false;
 
 
-                sellButton.disabled =
-                    false;
-
-            }
+            pendingTrade =
+                null;
 
         },
 
         error: error => {
 
-            /*
-               Si el servidor rechaza la modificación,
-               queremos ver el error COMPLETO.
-            */
-
             logRaw(
-                "❌ ERROR SERVIDOR SL/TP",
+                "❌ ERROR modifyOrderProtection",
                 error
             );
 
 
-            log(
-                "❌ cTrader NO aceptó la protección.",
-                "error"
-            );
-
-
             setStatus(
-                "Operación abierta SIN SL/TP",
+                "Error enviando SL/TP",
                 false,
                 true
             );
 
 
-            if (!partial) {
-
-                pendingTrade =
-                    null;
+            buyButton.disabled =
+                false;
 
 
-                buyButton.disabled =
-                    false;
+            sellButton.disabled =
+                false;
 
 
-                sellButton.disabled =
-                    false;
+            /*
+               No cerramos la operación aquí.
+               Solo informamos de que cTrader
+               no aceptó la protección.
+            */
 
-            }
+            pendingTrade =
+                null;
 
         }
 
@@ -3265,7 +3430,7 @@ function handleFilledExecution(
 
 
 /* =========================================================
-   CANCEL
+   CANCEL PENDING
    ========================================================= */
 
 function cancelPendingTrade() {
