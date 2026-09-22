@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V10</title>
+<title>Ayalga Quick Trade V11</title>
 <style>
     * {
         box-sizing: border-box;
@@ -162,7 +162,6 @@
         <div id="symbolDisplay" class="symbol-top">---</div>
         <div id="pilot" class="pilot" title="Estado de conexión"></div>
     </div>
-
     <!-- 1ª fila: Velas de Swing para SL -->
     <div class="section">
         <label>Velas de Swing para SL</label>
@@ -172,7 +171,6 @@
         </div>
         <input id="candleCount" type="hidden" value="10">
     </div>
-
     <div class="section">
         <label>Marco temporal</label>
         <div class="row" id="timeframeButtons">
@@ -180,7 +178,6 @@
             <button class="tf-button" data-tf="15">M15</button>
         </div>
     </div>
-
     <div class="section">
         <label>RIESGO EN DÓLARES</label>
         <div class="row">
@@ -191,7 +188,6 @@
         </div>
         <input id="riskAmount" type="hidden" value="25">
     </div>
-
     <div class="section">
         <label>RATIO RIESGO / BENEFICIO</label>
         <div class="row">
@@ -199,20 +195,17 @@
             <button id="rr2" class="rr-button">RR 1:2</button>
         </div>
     </div>
-
     <div class="section">
         <div class="row">
             <button id="buyButton" class="buy" disabled>COMPRA</button>
             <button id="sellButton" class="sell" disabled>VENTA</button>
         </div>
     </div>
-
     <div class="section">
         <div class="row">
             <button id="closePositionButton" class="close-test" disabled>CIERRE MANUAL</button>
         </div>
     </div>
-
     <div class="section info-section">
         <div class="info">
             <div class="info-item">
@@ -257,17 +250,14 @@
             </div>
         </div>
     </div>
-
     <div class="section">
         <div class="log-title">REGISTRO</div>
         <div id="log"></div>
     </div>
-
     <div class="plugin-footer">
-        Ayalga Quick Trade · V10
+        Ayalga Quick Trade · V11
     </div>
 </div>
-
 <script type="module">
 import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api";
 import {
@@ -463,7 +453,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V10 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V11 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
@@ -633,6 +623,10 @@ function getDetailedSymbol() {
                 orderVolumeDisplay.textContent = "---";
                 log(`minVolume: ${minVolume} | stepVolume: ${stepVolume}`);
                 log(`digits: ${digits} | pipPosition: ${pipPosition}`);
+                const commissionType=Number(getField(symbolInfo,"commissionType","CommissionType"));
+                const commissionRaw=Number(getField(symbolInfo,"preciseTradingCommissionRate","PreciseTradingCommissionRate"));
+                const lotSize=Number(getField(symbolInfo,"lotSize","LotSize"));
+                log(`Comisión cTrader: tipo=${commissionType} | preciseRate=${commissionRaw} | lotSize=${lotSize}`);
                 log("Información detallada recibida.", "ok");
                 subscribeQuotes(adapter, { symbolId: [symbolId] }).pipe(take(1)).subscribe({
                     next: () => log("Suscripción de precios activa.", "ok"),
@@ -756,7 +750,6 @@ function processExecutionEvent(response) {
             log("⏳ ORDER_PARTIAL_FILL recibido. Esperando al llenado completo antes de colocar SL/TP...", "warning");
             return;
         }
-
         if (executionType === "ORDER_FILLED") {
             log("================================", "ok");
             log("✅ ORDER_FILLED COMPLETO RECIBIDO", "ok");
@@ -830,17 +823,17 @@ async function handleFilledExecution(payload) {
         return;
     }
     const distanceSL = Math.abs(realEntry - finalSL);
-
     // Comprobación del riesgo con la entrada REAL.
     const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition") ?? 4);
     const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
     const realPips = distanceSL * Math.pow(10, pipPosition);
     const riskPerPipForMinVolume = (minVolume / 100000) * 0.10;
     const realRiskAfterFill = (Number(pendingTrade.volume) / minVolume) * realPips * riskPerPipForMinVolume;
-    if (Number.isFinite(realRiskAfterFill)) {
-        log(`Riesgo estimado con entrada REAL: ≈ ${realRiskAfterFill.toFixed(2)} $ | ${realPips.toFixed(2)} pips`, "ok");
-    }
-
+    const realCommissionEstimate=estimateRoundTripCommission(Number(pendingTrade.volume),realEntry);
+    const realTotalRisk=realRiskAfterFill+(Number.isFinite(realCommissionEstimate)?realCommissionEstimate:0);
+    if (Number.isFinite(realRiskAfterFill)) log(`Pérdida precio con entrada REAL: ≈ ${realRiskAfterFill.toFixed(2)} $ | ${realPips.toFixed(2)} pips`, "ok");
+    if (Number.isFinite(realCommissionEstimate)) log(`Comisión estimada apertura+cierre: ≈ ${realCommissionEstimate.toFixed(2)} $`, "ok");
+    if (Number.isFinite(realTotalRisk)) log(`RIESGO TOTAL con entrada REAL: ≈ ${realTotalRisk.toFixed(2)} $`, "ok");
     if (distanceSL <= 0) {
         log("Distancia SL inválida.", "error");
         pendingTrade = null;
@@ -969,73 +962,40 @@ function testClosePosition() {
 // ============================================================
 // VOLUMEN AUTOMÁTICO PARA TODOS LOS INSTRUMENTOS
 // ============================================================
-function calculateVolumeFromRisk(side, sl) {
-    const risk = Number(riskAmountInput.value);
-    if (!Number.isFinite(risk) || risk <= 0) {
-        throw new Error("Introduce un riesgo en dólares válido.");
-    }
-
-    const currentPrice = side === "BUY" ? lastValidAsk : lastValidBid;
-    if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
-        throw new Error("No hay precio actual válido.");
-    }
-
-    const distance = Math.abs(currentPrice - sl);
-    if (!Number.isFinite(distance) || distance <= 0) {
-        throw new Error("Distancia al SL inválida.");
-    }
-
-    const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
-    const stepVolume = Number(getField(symbolInfo, "stepVolume", "StepVolume"));
-    const maxVolume = Number(getField(symbolInfo, "maxVolume", "MaxVolume"));
-    const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition") ?? 4);
-
-    if (!Number.isFinite(minVolume) || minVolume <= 0 ||
-        !Number.isFinite(stepVolume) || stepVolume <= 0) {
-        throw new Error("Datos de volumen del símbolo no válidos.");
-    }
-
-    const pips = distance * Math.pow(10, pipPosition);
-    if (!Number.isFinite(pips) || pips <= 0) {
-        throw new Error("Distancia en pips inválida.");
-    }
-
-    // cTrader Plugin SDK expresa el volumen Proto en centésimas de unidad.
-    // En Forex: 100000 Proto = 1000 unidades = 0.01 lotes.
-    // Para EURUSD, al estar la cuenta/riesgo expresados en USD:
-    // 1000 unidades = aproximadamente 0.10 USD por pip.
-    //
-    // Conservamos la lógica que ya te funciona con 25/50 USD, pero
-    // calculamos todo de forma lineal y normalizamos SIEMPRE al step del broker.
-    const riskPerPipForMinVolume = (minVolume / 100000) * 0.10;
-
-    if (!Number.isFinite(riskPerPipForMinVolume) || riskPerPipForMinVolume <= 0) {
-        throw new Error("No se pudo calcular el valor del pip.");
-    }
-
-    const theoreticalVolume = (risk / (pips * riskPerPipForMinVolume)) * minVolume;
-
-    // Para no superar el riesgo seleccionado por culpa del redondeo,
-    // normalizamos hacia abajo. Si queda por debajo del mínimo, usamos el mínimo.
-    let volume = Math.floor((theoreticalVolume + 1e-9) / stepVolume) * stepVolume;
-    if (volume < minVolume) volume = minVolume;
-    if (Number.isFinite(maxVolume) && maxVolume > 0 && volume > maxVolume) {
-        volume = Math.floor(maxVolume / stepVolume) * stepVolume;
-    }
-
-    volume = Math.round(volume);
-
-    const realRiskApprox = (volume / minVolume) * pips * riskPerPipForMinVolume;
-
-    log(`Riesgo pedido: ${risk.toFixed(2)} $`, "ok");
-    log(`Precio cálculo: ${formatPrice(currentPrice)} | SL: ${formatPrice(sl)}`, "ok");
-    log(`Distancia SL: ${pips.toFixed(2)} pips`, "ok");
-    log(`Volumen teórico: ${theoreticalVolume.toFixed(2)} | Volumen enviado: ${volume}`, "ok");
-    log(`Riesgo estimado antes del fill: ≈ ${realRiskApprox.toFixed(2)} $`, "ok");
-
-    return volume;
+function getCommissionRate(){
+    const type=Number(getField(symbolInfo,"commissionType","CommissionType")),raw=Number(getField(symbolInfo,"preciseTradingCommissionRate","PreciseTradingCommissionRate"));
+    if(!Number.isFinite(type)||!Number.isFinite(raw)||raw<0)return null;
+    return{type,rate:type===3?raw/1e5:raw/1e8};
 }
-
+function estimateRoundTripCommission(volume,price){
+    const c=getCommissionRate(),lotSize=Number(getField(symbolInfo,"lotSize","LotSize"));
+    if(!c||!Number.isFinite(volume)||volume<=0||!Number.isFinite(price)||price<=0)return null;
+    const units=volume/100,lots=Number.isFinite(lotSize)&&lotSize>0?volume/lotSize:units/100000;
+    let oneSide=null;
+    if(c.type===2||c.type===4)oneSide=lots*c.rate; // USD/lot o quote-ccy/lot; EURUSD quote=USD.
+    else if(c.type===1)oneSide=(units*price/1e6)*c.rate; // EURUSD: notional convertido a USD.
+    else if(c.type===3)oneSide=(units*price)*(c.rate/100); // porcentaje del valor; EURUSD/USD.
+    if(!Number.isFinite(oneSide)||oneSide<0)return null;
+    return oneSide*2;
+}
+function estimateGrossRisk(volume,pips,minVolume,riskPerPipForMinVolume){return(volume/minVolume)*pips*riskPerPipForMinVolume;}
+function calculateVolumeFromRisk(side,sl){
+    const risk=Number(riskAmountInput.value);if(!Number.isFinite(risk)||risk<=0)throw new Error("Introduce un riesgo en dólares válido.");
+    const currentPrice=side==="BUY"?lastValidAsk:lastValidBid;if(!Number.isFinite(currentPrice)||currentPrice<=0)throw new Error("No hay precio actual válido.");
+    const distance=Math.abs(currentPrice-sl);if(!Number.isFinite(distance)||distance<=0)throw new Error("Distancia al SL inválida.");
+    const minVolume=Number(getField(symbolInfo,"minVolume","MinVolume")),stepVolume=Number(getField(symbolInfo,"stepVolume","StepVolume")),maxVolume=Number(getField(symbolInfo,"maxVolume","MaxVolume")),pipPosition=Number(getField(symbolInfo,"pipPosition","PipPosition")??4);
+    if(!Number.isFinite(minVolume)||minVolume<=0||!Number.isFinite(stepVolume)||stepVolume<=0)throw new Error("Datos de volumen del símbolo no válidos.");
+    const pips=distance*Math.pow(10,pipPosition);if(!Number.isFinite(pips)||pips<=0)throw new Error("Distancia en pips inválida.");
+    const riskPerPipForMinVolume=(minVolume/100000)*0.10;if(!Number.isFinite(riskPerPipForMinVolume)||riskPerPipForMinVolume<=0)throw new Error("No se pudo calcular el valor del pip.");
+    // V11: buscamos el mayor volumen normalizado cuyo riesgo BRUTO + comisión estimada ida/vuelta no supere el riesgo seleccionado.
+    const grossPerVolume=(pips*riskPerPipForMinVolume)/minVolume,commissionAtMin=estimateRoundTripCommission(minVolume,currentPrice),commissionPerVolume=Number.isFinite(commissionAtMin)?commissionAtMin/minVolume:0,totalPerVolume=grossPerVolume+commissionPerVolume;
+    if(!Number.isFinite(totalPerVolume)||totalPerVolume<=0)throw new Error("No se pudo calcular el riesgo total.");
+    const theoreticalVolume=risk/totalPerVolume;let volume=Math.floor((theoreticalVolume+1e-9)/stepVolume)*stepVolume;if(volume<minVolume)volume=minVolume;if(Number.isFinite(maxVolume)&&maxVolume>0&&volume>maxVolume)volume=Math.floor(maxVolume/stepVolume)*stepVolume;volume=Math.round(volume);
+    const grossRisk=estimateGrossRisk(volume,pips,minVolume,riskPerPipForMinVolume),commission=estimateRoundTripCommission(volume,currentPrice),commissionUsed=Number.isFinite(commission)?commission:0,totalRisk=grossRisk+commissionUsed;
+    log(`RIESGO OBJETIVO: ${risk.toFixed(2)} $`,"ok");log(`Precio cálculo: ${formatPrice(currentPrice)} | SL: ${formatPrice(sl)}`,"ok");log(`Distancia SL: ${pips.toFixed(2)} pips`,"ok");log(`Pérdida precio al SL: ≈ ${grossRisk.toFixed(2)} $`,"ok");
+    if(Number.isFinite(commission))log(`Comisión estimada apertura+cierre: ≈ ${commission.toFixed(2)} $`,"ok");else log("⚠️ cTrader no devolvió una comisión calculable; el riesgo se dimensiona sin comisión.","warning");
+    log(`RIESGO TOTAL ESTIMADO: ≈ ${totalRisk.toFixed(2)} $`,"ok");log(`Volumen teórico: ${theoreticalVolume.toFixed(2)} | Volumen enviado: ${volume}`,"ok");return volume;
+}
 // ============================================================
 // EJECUTAR OPERACIÓN
 // ============================================================
@@ -1125,4 +1085,4 @@ closePositionButton.addEventListener("click", () => {
 initialize();
 </script>
 </body>
-</html>
+</html> como ves este codigo en cuanto al calculo de lotes de entrada?
