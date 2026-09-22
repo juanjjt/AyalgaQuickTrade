@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V4</title>
+<title>Ayalga Quick Trade V5</title>
 <style>
     * {
         box-sizing: border-box;
@@ -457,7 +457,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V4 - M1/M15 + selección exacta de velas cerradas + riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V5 - M1/M15 + selección exacta de velas cerradas + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
@@ -645,33 +645,17 @@ function getDetailedSymbol() {
 // ============================================================
 function getClosedTrendbars(periodMinutes, count) {
     return new Promise((resolve, reject) => {
-        const now = Date.now();
-        const timeframeMs = periodMinutes * 60 * 1000;
-        const currentBarStart = Math.floor(now / timeframeMs) * timeframeMs;
-        const lastClosedBarEnd = currentBarStart - 1;
-        const requestCount = Math.max(count + 5, 20);
-        const fromTimestamp = currentBarStart - timeframeMs * (requestCount + 5);
-        const periodMap = {1:1, 15:7};
-        const period = periodMap[periodMinutes];
-        if (!period) { reject(new Error(`Timeframe no soportado: ${periodMinutes}`)); return; }
-        getTrendbarList(adapter, {symbolId, period, fromTimestamp, toTimestamp:lastClosedBarEnd, count:requestCount, type:0}).pipe(take(1)).subscribe({
-            next: response => {
-                try {
-                    const payload = getPayload(response);
-                    let bars = getArray(payload, "Trendbar", "trendbar");
-                    if (bars.length === 0 && Array.isArray(payload)) bars = payload;
-                    const closedBars = bars.map(bar => {
-                        const timestampMinutes = Number(getField(bar, "utcTimestampInMinutes", "UtcTimestampInMinutes"));
-                        const lowRaw = Number(getField(bar, "low", "Low"));
-                        const deltaOpen = Number(getField(bar, "deltaOpen", "DeltaOpen") ?? 0);
-                        const deltaClose = Number(getField(bar, "deltaClose", "DeltaClose") ?? 0);
-                        const deltaHigh = Number(getField(bar, "deltaHigh", "DeltaHigh") ?? 0);
-                        return {timestampMs:timestampMinutes * 60000, open:(lowRaw + deltaOpen) / 100000, high:(lowRaw + deltaHigh) / 100000, low:lowRaw / 100000, close:(lowRaw + deltaClose) / 100000};
-                    }).filter(bar => Number.isFinite(bar.timestampMs) && Number.isFinite(bar.low) && Number.isFinite(bar.high) && bar.timestampMs < currentBarStart).sort((a,b) => a.timestampMs - b.timestampMs);
-                    resolve(closedBars.slice(-count));
-                } catch (error) { reject(error); }
-            },
-            error: error => reject(error)
+        const timeframeMs=periodMinutes*60000, now=Date.now(), currentBarStart=Math.floor(now/timeframeMs)*timeframeMs, lastClosedBarEnd=currentBarStart-1;
+        const periodMap={1:1,15:7}, period=periodMap[periodMinutes];
+        if(!period){ reject(new Error(`Timeframe no soportado: ${periodMinutes}`)); return; }
+        const fromTimestamp=currentBarStart-timeframeMs*(count+10);
+        getTrendbarList(adapter,{symbolId,period,fromTimestamp,toTimestamp:lastClosedBarEnd,count,type:0}).pipe(take(1)).subscribe({
+            next:response=>{ try {
+                const payload=getPayload(response); let bars=getArray(payload,"Trendbar","trendbar"); if(bars.length===0&&Array.isArray(payload)) bars=payload;
+                const parsed=bars.map(bar=>{ const lowRaw=Number(getField(bar,"low","Low")),deltaOpen=Number(getField(bar,"deltaOpen","DeltaOpen")??0),deltaClose=Number(getField(bar,"deltaClose","DeltaClose")??0),deltaHigh=Number(getField(bar,"deltaHigh","DeltaHigh")??0); return {open:(lowRaw+deltaOpen)/100000,high:(lowRaw+deltaHigh)/100000,low:lowRaw/100000,close:(lowRaw+deltaClose)/100000}; }).filter(bar=>Number.isFinite(bar.low)&&Number.isFinite(bar.high));
+                if(parsed.length<count) throw new Error(`cTrader devolvió ${parsed.length} velas y se necesitan ${count}.`);
+                resolve({bars:parsed.slice(0,count),currentBarStart,timeframeMs});
+            } catch(error){ reject(error); } }, error:error=>reject(error)
         });
     });
 }
@@ -679,19 +663,16 @@ function getClosedTrendbars(periodMinutes, count) {
 // CALCULAR SL - V4: SOLO VELAS COMPLETAMENTE CERRADAS
 // ============================================================
 async function calculateSL(side) {
-    const count = Math.max(1, Math.min(500, Number(candleCountInput.value) || 10));
-    const periodMinutes = selectedTimeframe;
-    log(`${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`);
-    const bars = await getClosedTrendbars(periodMinutes, count);
-    if (!bars || bars.length < count) throw new Error(`No hay suficientes velas cerradas. Disponibles: ${bars ? bars.length : 0}`);
-    const first = bars[0], last = bars[bars.length - 1];
-    const fmtTime = ms => new Date(ms).toLocaleString("es-ES", {hour12:false});
-    log(`Velas usadas: ${bars.length} | Primera: ${fmtTime(first.timestampMs)} | Última: ${fmtTime(last.timestampMs)}`, "ok");
-    const rawExtreme = side === "BUY" ? Math.min(...bars.map(b => b.low)) : Math.max(...bars.map(b => b.high));
-    const extreme = normalizePrice(rawExtreme);
-    log(side === "BUY" ? `Mínimo de las ${count} velas: ${formatPrice(extreme)}` : `Máximo de las ${count} velas: ${formatPrice(extreme)}`, "ok");
-    log(`${side} SL definitivo: ${formatPrice(extreme)}`, "ok");
-    return extreme;
+    const count=Number(swingCandlesInput.value),periodMinutes=selectedTimeframe;
+    log(`${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`,`info`);
+    const result=await getClosedTrendbars(periodMinutes,count),bars=result.bars;
+    const firstExpected=result.currentBarStart-result.timeframeMs*count,lastExpected=result.currentBarStart-result.timeframeMs;
+    log(`Velas usadas: ${bars.length} | Ventana cerrada esperada: ${fmtTime(firstExpected)} → ${fmtTime(lastExpected)}`,"ok");
+    const rawExtreme=side==="BUY"?Math.min(...bars.map(b=>b.low)):Math.max(...bars.map(b=>b.high));
+    const finalSL=roundToDigits(rawExtreme);
+    log(`${side==="BUY"?"Mínimo":"Máximo"} de las ${count} velas: ${formatPrice(finalSL)}`,"ok");
+    log(`${side} SL definitivo: ${formatPrice(finalSL)}`,"ok");
+    return finalSL;
 }
 // ============================================================
 // EXTRACTORES
