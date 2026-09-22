@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V6</title>
+<title>Ayalga Quick Trade V7</title>
 <style>
     * {
         box-sizing: border-box;
@@ -264,7 +264,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V6
+        Ayalga Quick Trade · V7
     </div>
 </div>
 
@@ -385,6 +385,11 @@ function getTimeframeName(period) {
     const names = {1:"M1",5:"M5",15:"M15",30:"M30",60:"H1",240:"H4"};
     return names[period] || String(period);
 }
+function fmtTime(timestamp) {
+    const d=new Date(Number(timestamp));
+    if(!Number.isFinite(d.getTime())) return "--:--";
+    return d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",hour12:false});
+}
 function getTimeframeMinutes(period) {
     return period;
 }
@@ -457,7 +462,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V6 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V7 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
