@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V5</title>
+<title>Ayalga Quick Trade V6</title>
 <style>
     * {
         box-sizing: border-box;
@@ -264,7 +264,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V4
+        Ayalga Quick Trade · V6
     </div>
 </div>
 
@@ -457,7 +457,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V5 - M1/M15 + selección exacta de velas cerradas + riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V6 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
@@ -660,10 +660,10 @@ function getClosedTrendbars(periodMinutes, count) {
     });
 }
 // ============================================================
-// CALCULAR SL - V4: SOLO VELAS COMPLETAMENTE CERRADAS
+// CALCULAR SL - V6: SOLO VELAS COMPLETAMENTE CERRADAS
 // ============================================================
 async function calculateSL(side) {
-    const count=Number(swingCandlesInput.value),periodMinutes=selectedTimeframe;
+    const count=Number(candleCountInput.value),periodMinutes=selectedTimeframe;
     log(`${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`,`info`);
     const result=await getClosedTrendbars(periodMinutes,count),bars=result.bars;
     const firstExpected=result.currentBarStart-result.timeframeMs*count,lastExpected=result.currentBarStart-result.timeframeMs;
