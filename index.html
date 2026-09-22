@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V2</title>
+<title>Ayalga Quick Trade V3</title>
 <style>
     * {
         box-sizing: border-box;
@@ -177,10 +177,7 @@
         <label>Marco temporal</label>
         <div class="row" id="timeframeButtons">
             <button class="tf-button active" data-tf="1">M1</button>
-            <button class="tf-button" data-tf="2">M2</button>
-            <button class="tf-button" data-tf="3">M3</button>
-            <button class="tf-button" data-tf="4">M4</button>
-            <button class="tf-button" data-tf="5">M5</button>
+            <button class="tf-button" data-tf="15">M15</button>
         </div>
     </div>
 
@@ -267,7 +264,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V2
+        Ayalga Quick Trade · V3
     </div>
 </div>
 
@@ -460,7 +457,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V2 - riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V3 - M1/M15 + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
