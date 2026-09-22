@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V1</title>
+<title>Ayalga Quick Trade V2</title>
 <style>
     * {
         box-sizing: border-box;
@@ -267,7 +267,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V1
+        Ayalga Quick Trade · V2
     </div>
 </div>
 
@@ -295,7 +295,7 @@ let selectedTimeframe = 1; // M1 por defecto
 let pendingTrade = null;
 let protectionSent = false;
 let protectionRetryCount = 0;
-const protectionRetryDelays = [300, 500, 700, 1000, 1500];
+const protectionRetryDelays = [250, 500, 750, 1000, 1500, 2000, 3000];
 let lastPositionId = null;
 let lastPositionVolume = null;
 let closePositionRequest = false;
@@ -460,7 +460,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade v29", "ok");
+    log("Ayalga Quick Trade V2 - riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
@@ -795,9 +795,14 @@ function processExecutionEvent(response) {
             processOrderResponse(response);
             return;
         }
-        if (executionType === "ORDER_FILLED" || executionType === "ORDER_PARTIAL_FILL") {
+        if (executionType === "ORDER_PARTIAL_FILL") {
+            log("⏳ ORDER_PARTIAL_FILL recibido. Esperando al llenado completo antes de colocar SL/TP...", "warning");
+            return;
+        }
+
+        if (executionType === "ORDER_FILLED") {
             log("================================", "ok");
-            log("✅ ORDER_FILLED RECIBIDO", "ok");
+            log("✅ ORDER_FILLED COMPLETO RECIBIDO", "ok");
             log("================================", "ok");
             handleFilledExecution(payload);
             return;
@@ -816,6 +821,12 @@ function processExecutionEvent(response) {
             return;
         }
         if (executionType === "ORDER_REPLACED") {
+            const eventPositionId = extractPositionId(payload);
+            if (pendingTrade && pendingTrade.positionId &&
+                eventPositionId && Number(eventPositionId) !== Number(pendingTrade.positionId)) {
+                log(`ORDER_REPLACED ignorado: pertenece a otra posición (${eventPositionId}).`, "muted");
+                return;
+            }
             log("🛡️ SL + TP CONFIRMADOS POR cTRADER", "ok");
             pendingTrade = null;
             protectionSent = false;
@@ -862,6 +873,17 @@ async function handleFilledExecution(payload) {
         return;
     }
     const distanceSL = Math.abs(realEntry - finalSL);
+
+    // Comprobación del riesgo con la entrada REAL.
+    const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition") ?? 4);
+    const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
+    const realPips = distanceSL * Math.pow(10, pipPosition);
+    const riskPerPipForMinVolume = (minVolume / 100000) * 0.10;
+    const realRiskAfterFill = (Number(pendingTrade.volume) / minVolume) * realPips * riskPerPipForMinVolume;
+    if (Number.isFinite(realRiskAfterFill)) {
+        log(`Riesgo estimado con entrada REAL: ≈ ${realRiskAfterFill.toFixed(2)} $ | ${realPips.toFixed(2)} pips`, "ok");
+    }
+
     if (distanceSL <= 0) {
         log("Distancia SL inválida.", "error");
         pendingTrade = null;
@@ -902,6 +924,7 @@ function sendProtection(positionId, finalSL, finalTP) {
                 const responsePayload = getPayload(response);
                 const responseType = String(getField(responsePayload, "ExecutionType", "executionType", "PayloadType", "payloadType") ?? "");
                 const errorCode = String(getField(responsePayload, "ErrorCode", "errorCode") ?? "");
+                log("RESPUESTA modifyOrderProtection: " + JSON.stringify(response, null, 2));
                 if (responseType === "ORDER_REPLACED") {
                     protectionSent = true;
                     log("🛡️ SL + TP ACEPTADOS POR cTRADER", "ok");
@@ -994,45 +1017,68 @@ function calculateVolumeFromRisk(side, sl) {
     if (!Number.isFinite(risk) || risk <= 0) {
         throw new Error("Introduce un riesgo en dólares válido.");
     }
+
     const currentPrice = side === "BUY" ? lastValidAsk : lastValidBid;
     if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
         throw new Error("No hay precio actual válido.");
     }
+
     const distance = Math.abs(currentPrice - sl);
     if (!Number.isFinite(distance) || distance <= 0) {
         throw new Error("Distancia al SL inválida.");
     }
+
     const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
     const stepVolume = Number(getField(symbolInfo, "stepVolume", "StepVolume"));
     const maxVolume = Number(getField(symbolInfo, "maxVolume", "MaxVolume"));
     const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition") ?? 4);
-    if (!Number.isFinite(minVolume) || minVolume <= 0 || !Number.isFinite(stepVolume) || stepVolume <= 0) {
+
+    if (!Number.isFinite(minVolume) || minVolume <= 0 ||
+        !Number.isFinite(stepVolume) || stepVolume <= 0) {
         throw new Error("Datos de volumen del símbolo no válidos.");
     }
+
     const pips = distance * Math.pow(10, pipPosition);
-    let riskPerPipForMinVolume;
-    if (minVolume >= 1000) {
-        riskPerPipForMinVolume = 0.10;
-    } else if (currentPrice > 500) {
-        riskPerPipForMinVolume = 1.00;
-    } else if (currentPrice > 50) {
-        riskPerPipForMinVolume = 0.20;
-    } else {
-        riskPerPipForMinVolume = 0.15;
+    if (!Number.isFinite(pips) || pips <= 0) {
+        throw new Error("Distancia en pips inválida.");
     }
-    let volume = (risk / (pips * riskPerPipForMinVolume)) * minVolume;
-    volume = Math.round(volume / stepVolume) * stepVolume;
+
+    // cTrader Plugin SDK expresa el volumen Proto en centésimas de unidad.
+    // En Forex: 100000 Proto = 1000 unidades = 0.01 lotes.
+    // Para EURUSD, al estar la cuenta/riesgo expresados en USD:
+    // 1000 unidades = aproximadamente 0.10 USD por pip.
+    //
+    // Conservamos la lógica que ya te funciona con 25/50 USD, pero
+    // calculamos todo de forma lineal y normalizamos SIEMPRE al step del broker.
+    const riskPerPipForMinVolume = (minVolume / 100000) * 0.10;
+
+    if (!Number.isFinite(riskPerPipForMinVolume) || riskPerPipForMinVolume <= 0) {
+        throw new Error("No se pudo calcular el valor del pip.");
+    }
+
+    const theoreticalVolume = (risk / (pips * riskPerPipForMinVolume)) * minVolume;
+
+    // Para no superar el riesgo seleccionado por culpa del redondeo,
+    // normalizamos hacia abajo. Si queda por debajo del mínimo, usamos el mínimo.
+    let volume = Math.floor((theoreticalVolume + 1e-9) / stepVolume) * stepVolume;
     if (volume < minVolume) volume = minVolume;
-    if (Number.isFinite(maxVolume) && maxVolume > 0 && volume > maxVolume) volume = maxVolume;
-    volume = Number(volume.toFixed(0));
-    const realRiskApprox = (volume / minVolume) * pips * riskPerPipForMinVolume;
-    log(`Riesgo pedido: ${risk} $ | Pips: ${pips.toFixed(2)} | Volumen: ${volume}`, "ok");
-    log(`Riesgo real aproximado: ≈ ${realRiskApprox.toFixed(2)} $`, "ok");
-    if (Math.abs(realRiskApprox - risk) > risk * 0.4) {
-        log(`⚠️ El redondeo del bróker hace que el riesgo real sea ≈ ${realRiskApprox.toFixed(2)} $`, "warning");
+    if (Number.isFinite(maxVolume) && maxVolume > 0 && volume > maxVolume) {
+        volume = Math.floor(maxVolume / stepVolume) * stepVolume;
     }
+
+    volume = Math.round(volume);
+
+    const realRiskApprox = (volume / minVolume) * pips * riskPerPipForMinVolume;
+
+    log(`Riesgo pedido: ${risk.toFixed(2)} $`, "ok");
+    log(`Precio cálculo: ${formatPrice(currentPrice)} | SL: ${formatPrice(sl)}`, "ok");
+    log(`Distancia SL: ${pips.toFixed(2)} pips`, "ok");
+    log(`Volumen teórico: ${theoreticalVolume.toFixed(2)} | Volumen enviado: ${volume}`, "ok");
+    log(`Riesgo estimado antes del fill: ≈ ${realRiskApprox.toFixed(2)} $`, "ok");
+
     return volume;
 }
+
 // ============================================================
 // EJECUTAR OPERACIÓN
 // ============================================================
