@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V7</title>
+<title>Ayalga Quick Trade V8</title>
 <style>
     * {
         box-sizing: border-box;
@@ -264,7 +264,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V7
+        Ayalga Quick Trade · V8
     </div>
 </div>
 
@@ -381,6 +381,7 @@ function formatPrice(price) {
     const digits = Number(getField(symbolInfo, "digits", "Digits") ?? 5);
     return numericPrice.toFixed(digits);
 }
+function roundToDigits(value){const digits=Number(getField(symbolInfo,"digits","Digits")??5);return Number(Number(value).toFixed(Number.isFinite(digits)?digits:5));}
 function getTimeframeName(period) {
     const names = {1:"M1",5:"M5",15:"M15",30:"M30",60:"H1",240:"H4"};
     return names[period] || String(period);
@@ -462,7 +463,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V7 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V8 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
@@ -648,36 +649,25 @@ function getDetailedSymbol() {
 // ============================================================
 // VELAS CERRADAS
 // ============================================================
-function getClosedTrendbars(periodMinutes, count) {
-    return new Promise((resolve, reject) => {
-        const timeframeMs=periodMinutes*60000, now=Date.now(), currentBarStart=Math.floor(now/timeframeMs)*timeframeMs, lastClosedBarEnd=currentBarStart-1;
-        const periodMap={1:1,15:7}, period=periodMap[periodMinutes];
-        if(!period){ reject(new Error(`Timeframe no soportado: ${periodMinutes}`)); return; }
-        const fromTimestamp=currentBarStart-timeframeMs*(count+10);
-        getTrendbarList(adapter,{symbolId,period,fromTimestamp,toTimestamp:lastClosedBarEnd,count,type:0}).pipe(take(1)).subscribe({
-            next:response=>{ try {
-                const payload=getPayload(response); let bars=getArray(payload,"Trendbar","trendbar"); if(bars.length===0&&Array.isArray(payload)) bars=payload;
-                const parsed=bars.map(bar=>{ const lowRaw=Number(getField(bar,"low","Low")),deltaOpen=Number(getField(bar,"deltaOpen","DeltaOpen")??0),deltaClose=Number(getField(bar,"deltaClose","DeltaClose")??0),deltaHigh=Number(getField(bar,"deltaHigh","DeltaHigh")??0); return {open:(lowRaw+deltaOpen)/100000,high:(lowRaw+deltaHigh)/100000,low:lowRaw/100000,close:(lowRaw+deltaClose)/100000}; }).filter(bar=>Number.isFinite(bar.low)&&Number.isFinite(bar.high));
-                if(parsed.length<count) throw new Error(`cTrader devolvió ${parsed.length} velas y se necesitan ${count}.`);
-                resolve({bars:parsed.slice(0,count),currentBarStart,timeframeMs});
-            } catch(error){ reject(error); } }, error:error=>reject(error)
-        });
+function getClosedTrendbars(periodMinutes,count){
+    return new Promise((resolve,reject)=>{
+        const timeframeMs=periodMinutes*60000,now=Date.now(),currentBarStart=Math.floor(now/timeframeMs)*timeframeMs,lastClosedBarEnd=currentBarStart-1,periodMap={1:1,15:7},period=periodMap[periodMinutes],requestCount=Math.max(count+5,15);
+        if(!period){reject(new Error(`Timeframe no soportado: ${periodMinutes}`));return;}
+        const fromTimestamp=currentBarStart-timeframeMs*(requestCount+5);
+        getTrendbarList(adapter,{symbolId,period,fromTimestamp,toTimestamp:lastClosedBarEnd,count:requestCount,type:0}).pipe(take(1)).subscribe({next:response=>{try{
+            const payload=getPayload(response);let raw=getArray(payload,"Trendbar","trendbar");if(raw.length===0&&Array.isArray(payload))raw=payload;
+            const bars=raw.map(bar=>{const timestampMinutes=Number(getField(bar,"utcTimestampInMinutes","UtcTimestampInMinutes")),lowRaw=Number(getField(bar,"low","Low")),deltaOpen=Number(getField(bar,"deltaOpen","DeltaOpen")??0),deltaClose=Number(getField(bar,"deltaClose","DeltaClose")??0),deltaHigh=Number(getField(bar,"deltaHigh","DeltaHigh")??0);return{timestampMs:timestampMinutes*60000,open:roundToDigits((lowRaw+deltaOpen)/100000),high:roundToDigits((lowRaw+deltaHigh)/100000),low:roundToDigits(lowRaw/100000),close:roundToDigits((lowRaw+deltaClose)/100000)};}).filter(b=>Number.isFinite(b.timestampMs)&&Number.isFinite(b.low)&&Number.isFinite(b.high)&&b.timestampMs<currentBarStart).sort((a,b)=>a.timestampMs-b.timestampMs);
+            const aligned=bars.filter(b=>b.timestampMs%timeframeMs===0),selected=aligned.slice(-count);if(selected.length<count)throw new Error(`cTrader devolvió ${selected.length} velas cerradas válidas de ${count} necesarias para ${getTimeframeName(periodMinutes)}.`);resolve({bars:selected,currentBarStart,timeframeMs});
+        }catch(error){reject(error);}},error:error=>reject(error)});
     });
 }
 // ============================================================
 // CALCULAR SL - V6: SOLO VELAS COMPLETAMENTE CERRADAS
 // ============================================================
-async function calculateSL(side) {
-    const count=Number(candleCountInput.value),periodMinutes=selectedTimeframe;
-    log(`${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`,`info`);
-    const result=await getClosedTrendbars(periodMinutes,count),bars=result.bars;
-    const firstExpected=result.currentBarStart-result.timeframeMs*count,lastExpected=result.currentBarStart-result.timeframeMs;
-    log(`Velas usadas: ${bars.length} | Ventana cerrada esperada: ${fmtTime(firstExpected)} → ${fmtTime(lastExpected)}`,"ok");
-    const rawExtreme=side==="BUY"?Math.min(...bars.map(b=>b.low)):Math.max(...bars.map(b=>b.high));
-    const finalSL=roundToDigits(rawExtreme);
-    log(`${side==="BUY"?"Mínimo":"Máximo"} de las ${count} velas: ${formatPrice(finalSL)}`,"ok");
-    log(`${side} SL definitivo: ${formatPrice(finalSL)}`,"ok");
-    return finalSL;
+async function calculateSL(side){
+    const count=Math.max(1,Math.min(500,Number(candleCountInput.value)||10)),periodMinutes=selectedTimeframe;log(`${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`,`info`);
+    const {bars}=await getClosedTrendbars(periodMinutes,count),first=bars[0],last=bars[bars.length-1];log(`Velas usadas: ${bars.length} | Primera REAL: ${fmtTime(first.timestampMs)} | Última REAL: ${fmtTime(last.timestampMs)}`,"ok");
+    const rawExtreme=side==="BUY"?Math.min(...bars.map(b=>b.low)):Math.max(...bars.map(b=>b.high)),finalSL=roundToDigits(rawExtreme);log(`${side==="BUY"?"Mínimo":"Máximo"} de las ${count} velas: ${formatPrice(finalSL)}`,"ok");log(`${side} SL definitivo: ${formatPrice(finalSL)}`,"ok");return finalSL;
 }
 // ============================================================
 // EXTRACTORES
