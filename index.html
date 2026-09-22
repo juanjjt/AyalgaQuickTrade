@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V9</title>
+<title>Ayalga Quick Trade V10</title>
 <style>
     * {
         box-sizing: border-box;
@@ -264,7 +264,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V9
+        Ayalga Quick Trade · V10
     </div>
 </div>
 
@@ -463,7 +463,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V9 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V10 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
@@ -651,7 +651,7 @@ function getDetailedSymbol() {
 // ============================================================
 function getClosedTrendbars(periodMinutes,count){
     return new Promise((resolve,reject)=>{
-        const timeframeMs=periodMinutes*60000,now=Date.now(),currentBarStart=Math.floor(now/timeframeMs)*timeframeMs,lastClosedBarEnd=currentBarStart-1,periodMap={1:1,15:7},period=periodMap[periodMinutes];
+        const timeframeMs=periodMinutes*60000,now=Date.now(),currentBarStart=Math.floor(now/timeframeMs)*timeframeMs,lastClosedBarEnd=currentBarStart-1,periodMap={1:1,15:11},period=periodMap[periodMinutes];
         if(!period){reject(new Error(`Timeframe no soportado: ${periodMinutes}`));return;}
         const requestCount=Math.max(count,10),fromTimestamp=currentBarStart-timeframeMs*(requestCount+5);
         getTrendbarList(adapter,{symbolId,period,fromTimestamp,toTimestamp:lastClosedBarEnd,count:requestCount,type:0}).pipe(take(1)).subscribe({next:response=>{try{
@@ -662,7 +662,7 @@ function getClosedTrendbars(periodMinutes,count){
     });
 }
 // ============================================================
-// CALCULAR SL - V9: ÚLTIMAS VELAS CERRADAS DEVUELTAS POR CTRADER
+// CALCULAR SL - V10: ÚLTIMAS VELAS CERRADAS DEVUELTAS POR CTRADER
 // ============================================================
 async function calculateSL(side){
     const count=Math.max(1,Math.min(500,Number(candleCountInput.value)||10)),periodMinutes=selectedTimeframe;log(`${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`,`info`);
