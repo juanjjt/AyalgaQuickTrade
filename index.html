@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V11</title>
+<title>Ayalga Quick Trade V14</title>
 <style>
     * {
         box-sizing: border-box;
@@ -123,6 +123,11 @@
         background: #555;
         border-color: white;
     }
+    .net-tp-line { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin:-4px 2px 8px 0; color:#888; font-size:12px; }
+    .net-toggle { position:relative; width:34px; min-width:34px; height:18px; min-height:18px; padding:0; border:1px solid #555; border-radius:10px; background:#292929; }
+    .net-toggle span { position:absolute; width:12px; height:12px; left:2px; top:2px; border-radius:50%; background:#888; transition:transform .15s ease,background .15s ease; }
+    .net-toggle.active { background:#444; border-color:#888; }
+    .net-toggle.active span { transform:translateX(16px); background:#fff; }
     .info-section {
         display: none;
     }
@@ -162,6 +167,7 @@
         <div id="symbolDisplay" class="symbol-top">---</div>
         <div id="pilot" class="pilot" title="Estado de conexión"></div>
     </div>
+
     <!-- 1ª fila: Velas de Swing para SL -->
     <div class="section">
         <label>Velas de Swing para SL</label>
@@ -171,6 +177,7 @@
         </div>
         <input id="candleCount" type="hidden" value="10">
     </div>
+
     <div class="section">
         <label>Marco temporal</label>
         <div class="row" id="timeframeButtons">
@@ -178,6 +185,7 @@
             <button class="tf-button" data-tf="15">M15</button>
         </div>
     </div>
+
     <div class="section">
         <label>RIESGO EN DÓLARES</label>
         <div class="row">
@@ -188,6 +196,7 @@
         </div>
         <input id="riskAmount" type="hidden" value="25">
     </div>
+
     <div class="section">
         <label>RATIO RIESGO / BENEFICIO</label>
         <div class="row">
@@ -195,17 +204,25 @@
             <button id="rr2" class="rr-button">RR 1:2</button>
         </div>
     </div>
+
+    <div class="net-tp-line">
+        <span>TP neto</span>
+        <button id="netTpButton" class="net-toggle" type="button" aria-pressed="false"><span></span></button>
+    </div>
+
     <div class="section">
         <div class="row">
             <button id="buyButton" class="buy" disabled>COMPRA</button>
             <button id="sellButton" class="sell" disabled>VENTA</button>
         </div>
     </div>
+
     <div class="section">
         <div class="row">
             <button id="closePositionButton" class="close-test" disabled>CIERRE MANUAL</button>
         </div>
     </div>
+
     <div class="section info-section">
         <div class="info">
             <div class="info-item">
@@ -250,14 +267,17 @@
             </div>
         </div>
     </div>
+
     <div class="section">
         <div class="log-title">REGISTRO</div>
         <div id="log"></div>
     </div>
+
     <div class="plugin-footer">
-        Ayalga Quick Trade · V11
+        Ayalga Quick Trade · V14
     </div>
 </div>
+
 <script type="module">
 import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api";
 import {
@@ -278,6 +298,7 @@ let symbolInfo = null;
 let lastValidBid = null;
 let lastValidAsk = null;
 let selectedRR = 1;
+let selectedRRNet = localStorage.getItem("ayalgaTpNeto")==="1";
 let selectedTimeframe = 1; // M1 por defecto
 let pendingTrade = null;
 let protectionSent = false;
@@ -299,6 +320,7 @@ const sellButton = document.getElementById("sellButton");
 const closePositionButton = document.getElementById("closePositionButton");
 const rr1Button = document.getElementById("rr1");
 const rr2Button = document.getElementById("rr2");
+const netTpButton = document.getElementById("netTpButton");
 const candleCountInput = document.getElementById("candleCount");
 const riskAmountInput = document.getElementById("riskAmount");
 const symbolDisplay = document.getElementById("symbolDisplay");
@@ -420,20 +442,10 @@ document.querySelectorAll(".risk-button").forEach(btn => {
 // ============================================================
 // RR
 // ============================================================
-rr1Button.addEventListener("click", () => {
-    selectedRR = 1;
-    rr1Button.classList.add("active");
-    rr2Button.classList.remove("active");
-    rrDisplay.textContent = "1:1";
-    log("RR seleccionado: 1:1", "ok");
-});
-rr2Button.addEventListener("click", () => {
-    selectedRR = 2;
-    rr2Button.classList.add("active");
-    rr1Button.classList.remove("active");
-    rrDisplay.textContent = "1:2";
-    log("RR seleccionado: 1:2", "ok");
-});
+rr1Button.addEventListener("click",()=>{selectedRR=1;rr1Button.classList.add("active");rr2Button.classList.remove("active");rrDisplay.textContent="1:1";log("RR seleccionado: 1:1","ok");});
+rr2Button.addEventListener("click",()=>{selectedRR=2;rr2Button.classList.add("active");rr1Button.classList.remove("active");rrDisplay.textContent="1:2";log("RR seleccionado: 1:2","ok");});
+netTpButton.classList.toggle("active",selectedRRNet);netTpButton.setAttribute("aria-pressed",String(selectedRRNet));
+netTpButton.addEventListener("click",()=>{selectedRRNet=!selectedRRNet;localStorage.setItem("ayalgaTpNeto",selectedRRNet?"1":"0");netTpButton.classList.toggle("active",selectedRRNet);netTpButton.setAttribute("aria-pressed",String(selectedRRNet));log(selectedRRNet?"TP NETO activado":"TP NETO desactivado","ok");});
 // ============================================================
 // ACTUALIZAR BOTONES
 // ============================================================
@@ -453,7 +465,7 @@ function getSymbolFromURL() {
 // INICIO
 // ============================================================
 async function initialize() {
-    log("Ayalga Quick Trade V11 - M1/M15 + corrección selector 5/10 velas + riesgo/protección corregidos", "ok");
+    log("Ayalga Quick Trade V14 - TP NETO compacto con memoria + RR original + M1/M15 + riesgo/protección corregidos", "ok");
     log("Iniciando...");
     try {
         adapter = createClientAdapter({ logger });
@@ -750,6 +762,7 @@ function processExecutionEvent(response) {
             log("⏳ ORDER_PARTIAL_FILL recibido. Esperando al llenado completo antes de colocar SL/TP...", "warning");
             return;
         }
+
         if (executionType === "ORDER_FILLED") {
             log("================================", "ok");
             log("✅ ORDER_FILLED COMPLETO RECIBIDO", "ok");
@@ -823,6 +836,7 @@ async function handleFilledExecution(payload) {
         return;
     }
     const distanceSL = Math.abs(realEntry - finalSL);
+
     // Comprobación del riesgo con la entrada REAL.
     const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition") ?? 4);
     const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
@@ -834,15 +848,23 @@ async function handleFilledExecution(payload) {
     if (Number.isFinite(realRiskAfterFill)) log(`Pérdida precio con entrada REAL: ≈ ${realRiskAfterFill.toFixed(2)} $ | ${realPips.toFixed(2)} pips`, "ok");
     if (Number.isFinite(realCommissionEstimate)) log(`Comisión estimada apertura+cierre: ≈ ${realCommissionEstimate.toFixed(2)} $`, "ok");
     if (Number.isFinite(realTotalRisk)) log(`RIESGO TOTAL con entrada REAL: ≈ ${realTotalRisk.toFixed(2)} $`, "ok");
+
     if (distanceSL <= 0) {
         log("Distancia SL inválida.", "error");
         pendingTrade = null;
         updateButtons();
         return;
     }
-    let calculatedTP = selectedRR === 1
-        ? (side === "BUY" ? realEntry + distanceSL : realEntry - distanceSL)
-        : (side === "BUY" ? realEntry + distanceSL * 2 : realEntry - distanceSL * 2);
+    let tpDistance;
+    if(selectedRRNet){
+        const targetNet=Number(riskAmountInput.value),commissionForTP=estimateRoundTripCommission(Number(pendingTrade.volume),realEntry);
+        if(Number.isFinite(targetNet)&&targetNet>0&&Number.isFinite(commissionForTP)&&commissionForTP>=0&&Number.isFinite(realRiskAfterFill)&&realRiskAfterFill>0){
+            const grossProfitNeeded=targetNet+commissionForTP;
+            tpDistance=distanceSL*(grossProfitNeeded/realRiskAfterFill);
+            log(`RR 1:1 NETO | Beneficio neto objetivo: ${targetNet.toFixed(2)} $ | Bruto necesario: ≈ ${grossProfitNeeded.toFixed(2)} $`,"ok");
+        }else{tpDistance=distanceSL;log("⚠️ No se pudo calcular el TP neto; se usa 1:1 BRUTO como respaldo.","warning");}
+    }else tpDistance=distanceSL*selectedRR;
+    let calculatedTP=side==="BUY"?realEntry+tpDistance:realEntry-tpDistance;
     const finalTP = normalizePrice(calculatedTP);
     if (!Number.isFinite(finalTP)) {
         log("TP no válido.", "error");
@@ -996,6 +1018,7 @@ function calculateVolumeFromRisk(side,sl){
     if(Number.isFinite(commission))log(`Comisión estimada apertura+cierre: ≈ ${commission.toFixed(2)} $`,"ok");else log("⚠️ cTrader no devolvió una comisión calculable; el riesgo se dimensiona sin comisión.","warning");
     log(`RIESGO TOTAL ESTIMADO: ≈ ${totalRisk.toFixed(2)} $`,"ok");log(`Volumen teórico: ${theoreticalVolume.toFixed(2)} | Volumen enviado: ${volume}`,"ok");return volume;
 }
+
 // ============================================================
 // EJECUTAR OPERACIÓN
 // ============================================================
