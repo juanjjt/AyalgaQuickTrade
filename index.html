@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V18</title>
+<title>Ayalga Quick Trade V19</title>
 <style>
     * {
         box-sizing: border-box;
@@ -102,7 +102,7 @@
         min-height: 52px;
         font-size: 16px;
     }
-    .rr-button, .risk-button, .multiplier-button, .candle-button {
+    .rr-button, .risk-button, .step-button, .candle-button {
         flex: 1;
         background: #333;
         border: 2px solid #555;
@@ -122,10 +122,26 @@
     .rr-button.active,
     .tf-button.active,
     .risk-button.active,
-    .multiplier-button.active,
+    .step-button.active,
     .candle-button.active {
         background: #555;
         border-color: white;
+    }
+    /* Paso X5 bloqueado (conservador OFF) */
+    .step-button.step-locked {
+        opacity: 0.28;
+        background: #222;
+        border-color: #333;
+        color: #666;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    /* Modo conservador ON: silueta roja en riesgo y paso activos */
+    .conservador-on .risk-button.active,
+    .conservador-on .step-button.active {
+        background: #5a3030;
+        border-color: #ff3b30;
+        box-shadow: 0 0 10px rgba(255, 59, 48, 0.75);
     }
     .net-tp-line {
         display: flex;
@@ -199,7 +215,7 @@
 </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="appContainer">
 
     <div class="header">
         <div id="symbolDisplay" class="symbol-top">---</div>
@@ -224,21 +240,20 @@
     </div>
 
     <div class="section">
-        <label>RIESGO EN DÓLARES</label>
+        <label>PÉRDIDA ACUMULADA (d'Alembert)</label>
         <div class="row">
-            <button class="risk-button active" data-risk="25">25</button>
-            <button class="risk-button" data-risk="50">50</button>
-            <button class="risk-button" data-risk="100">100</button>
-            <button class="risk-button" data-risk="200">200</button>
+            <button class="risk-button active" data-risk="250">250</button>
+            <button class="risk-button" data-risk="500">500</button>
         </div>
-        <label>MULTIPLICADOR</label>
-        <div class="row">
-            <button class="multiplier-button active" data-multiplier="1">X1</button>
-            <button class="multiplier-button" data-multiplier="2">X2</button>
-            <button class="multiplier-button" data-multiplier="3">X3</button>
-            <button class="multiplier-button" data-multiplier="4">X4</button>
+        <label>PASO DE LA PROGRESIÓN</label>
+        <div class="row" id="stepButtons">
+            <button class="step-button active" data-step="1">X1</button>
+            <button class="step-button" data-step="2">X2</button>
+            <button class="step-button" data-step="3">X3</button>
+            <button class="step-button" data-step="4">X4</button>
+            <button class="step-button step-locked" data-step="5" id="step5Button">X5</button>
         </div>
-        <input id="riskAmount" type="hidden" value="25">
+        <input id="riskAmount" type="hidden" value="250">
     </div>
 
     <div class="section">
@@ -295,7 +310,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V18
+        Ayalga Quick Trade · V19
     </div>
 
 </div>
@@ -345,14 +360,13 @@ let lastValidAsk = null;
 
 let selectedRR = 1;
 
-// V18
-// El multiplicador SIEMPRE comienza en X1.
-let selectedRiskMultiplier = 1;
+// V19 d'Alembert
+// Paso de la progresión (1..4 o 1..5). Siempre arranca en X1.
+let selectedStep = 1;
 
 let selectedRRNet = localStorage.getItem("ayalgaTpNeto") === "1";
 
-// Modo conservador: divide el riesgo base entre 2 antes del multiplicador.
-// Memoria de posición igual que TP neto.
+// Modo conservador: 5 pasos en lugar de 4.
 let selectedConservador = localStorage.getItem("ayalgaConservador") === "1";
 
 let selectedTimeframe = 1;
@@ -387,6 +401,7 @@ let lastClickClose = 0;
 // ELEMENTOS UI
 // ============================================================
 
+const appContainer = document.getElementById("appContainer");
 const pilotElement = document.getElementById("pilot");
 const buyButton = document.getElementById("buyButton");
 const sellButton = document.getElementById("sellButton");
@@ -395,6 +410,7 @@ const rr1Button = document.getElementById("rr1");
 const rr2Button = document.getElementById("rr2");
 const netTpButton = document.getElementById("netTpButton");
 const conservadorButton = document.getElementById("conservadorButton");
+const step5Button = document.getElementById("step5Button");
 const candleCountInput = document.getElementById("candleCount");
 const riskAmountInput = document.getElementById("riskAmount");
 const symbolDisplay = document.getElementById("symbolDisplay");
@@ -524,6 +540,81 @@ function fmtTime(timestamp) {
 }
 
 // ============================================================
+// D'ALEMBERT V19
+// ============================================================
+
+function getMaxSteps() {
+    return selectedConservador ? 5 : 4;
+}
+
+function getDAlembertUnit(target, steps) {
+    const sumUnits = steps * (steps + 1) / 2;
+    return target / sumUnits;
+}
+
+function getStepRisk() {
+    const target = Number(riskAmountInput.value);
+    const steps = getMaxSteps();
+    const step = selectedStep;
+
+    if (
+        !Number.isFinite(target) ||
+        target <= 0 ||
+        !Number.isFinite(step) ||
+        step < 1 ||
+        step > steps
+    ) {
+        return null;
+    }
+
+    const unit = getDAlembertUnit(target, steps);
+    return unit * step;
+}
+
+function formatMoney(value) {
+    if (!Number.isFinite(value)) return "---";
+    // Hasta 2 decimales, sin ceros innecesarios raros
+    return (Math.round(value * 100) / 100).toFixed(2);
+}
+
+function logTheoreticalRisk(reason) {
+    const target = Number(riskAmountInput.value);
+    const steps = getMaxSteps();
+    const step = selectedStep;
+    const unit = getDAlembertUnit(target, steps);
+    const risk = getStepRisk();
+
+    log("========== RIESGO TEÓRICO d'ALEMBERT ==========", "ok");
+    if (reason) {
+        log(reason, "ok");
+    }
+    log(
+        `Objetivo pérdida acumulada: ${formatMoney(target)} $`,
+        "ok"
+    );
+    log(
+        `Pasos totales: ${steps} ${selectedConservador ? "(conservador ON)" : "(conservador OFF)"}`,
+        "ok"
+    );
+    log(
+        `Unidad base: ${formatMoney(unit)} $  (suma 1+…+${steps} = ${steps * (steps + 1) / 2} unidades)`,
+        "ok"
+    );
+    log(
+        `Paso seleccionado: X${step} → riesgo teórico esta operación: ${formatMoney(risk)} $`,
+        "ok"
+    );
+
+    // Mostrar toda la escalera teórica
+    const ladder = [];
+    for (let k = 1; k <= steps; k++) {
+        ladder.push(`X${k}=${formatMoney(unit * k)}$`);
+    }
+    log(`Escalera completa: ${ladder.join(" | ")}`, "muted");
+    log("===============================================", "ok");
+}
+
+// ============================================================
 // BOTONES TIMEFRAME
 // ============================================================
 
@@ -550,15 +641,12 @@ document.querySelectorAll(".candle-button").forEach(btn => {
 });
 
 // ============================================================
-// BOTONES RIESGO + MULTIPLICADOR V18
+// BOTONES PÉRDIDA ACUMULADA (250 / 500)
 // ============================================================
-
-// Recuperamos SOLO la cantidad base.
-// El multiplicador NO se recupera: siempre comienza en X1.
 
 const savedBaseRisk = Number(localStorage.getItem("ayalgaRiskAmount"));
 
-if ([25, 50, 100, 200].includes(savedBaseRisk)) {
+if ([250, 500].includes(savedBaseRisk)) {
     riskAmountInput.value = String(savedBaseRisk);
 }
 
@@ -572,48 +660,57 @@ document.querySelectorAll(".risk-button").forEach(btn => {
         document.querySelectorAll(".risk-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         riskAmountInput.value = btn.dataset.risk;
-
-        // Guardamos la cantidad para la próxima sesión.
         localStorage.setItem("ayalgaRiskAmount", btn.dataset.risk);
-
-        const conservativeFactor = selectedConservador ? 0.5 : 1;
-        const effectiveRisk = Number(btn.dataset.risk) * conservativeFactor * selectedRiskMultiplier;
-
-        log(
-            `Riesgo base seleccionado: ${btn.dataset.risk} $ | Conservador: ${selectedConservador ? "ON (x0.5)" : "OFF"} | X${selectedRiskMultiplier} = ${effectiveRisk.toFixed(2)} $`,
-            "ok"
-        );
+        logTheoreticalRisk(`Pérdida acumulada seleccionada: ${btn.dataset.risk} $`);
     });
 });
 
-// ------------------------------------------------------------
-// MULTIPLICADOR
-// ------------------------------------------------------------
+// ============================================================
+// BOTONES PASO (X1 … X5)
+// ============================================================
 
-// SIEMPRE X1 al arrancar.
-selectedRiskMultiplier = 1;
+selectedStep = 1;
 
-document.querySelectorAll(".multiplier-button").forEach(btn => {
-    btn.classList.toggle(
-        "active",
-        Number(btn.dataset.multiplier) === 1
-    );
+function updateStepButtonsUI() {
+    const maxSteps = getMaxSteps();
 
+    document.querySelectorAll(".step-button").forEach(btn => {
+        const step = Number(btn.dataset.step);
+
+        // X5 bloqueado si conservador OFF
+        if (step === 5) {
+            if (selectedConservador) {
+                btn.classList.remove("step-locked");
+                btn.disabled = false;
+            } else {
+                btn.classList.add("step-locked");
+                btn.disabled = true;
+                // Si estábamos en X5 y se apaga conservador, bajamos a X4
+                if (selectedStep === 5) {
+                    selectedStep = 4;
+                }
+            }
+        }
+
+        btn.classList.toggle("active", step === selectedStep);
+    });
+}
+
+document.querySelectorAll(".step-button").forEach(btn => {
     btn.addEventListener("click", () => {
-        document.querySelectorAll(".multiplier-button").forEach(b => b.classList.remove("active"));
+        const step = Number(btn.dataset.step);
+        if (step === 5 && !selectedConservador) {
+            return;
+        }
+
+        document.querySelectorAll(".step-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        selectedRiskMultiplier = Number(btn.dataset.multiplier);
-
-        const baseRisk = Number(riskAmountInput.value);
-        const conservativeFactor = selectedConservador ? 0.5 : 1;
-        const effectiveRisk = baseRisk * conservativeFactor * selectedRiskMultiplier;
-
-        log(
-            `Multiplicador seleccionado: X${selectedRiskMultiplier} | ${baseRisk.toFixed(2)} $ × ${selectedConservador ? "0.5 × " : ""}${selectedRiskMultiplier} = ${effectiveRisk.toFixed(2)} $`,
-            "ok"
-        );
+        selectedStep = step;
+        logTheoreticalRisk(`Paso seleccionado: X${step}`);
     });
 });
+
+updateStepButtonsUI();
 
 // ============================================================
 // RR
@@ -650,24 +747,27 @@ netTpButton.addEventListener("click", () => {
 // MODO CONSERVADOR
 // ============================================================
 
+function applyConservadorVisual() {
+    appContainer.classList.toggle("conservador-on", selectedConservador);
+}
+
 conservadorButton.classList.toggle("active", selectedConservador);
 conservadorButton.setAttribute("aria-pressed", String(selectedConservador));
+applyConservadorVisual();
+updateStepButtonsUI();
 
 conservadorButton.addEventListener("click", () => {
     selectedConservador = !selectedConservador;
     localStorage.setItem("ayalgaConservador", selectedConservador ? "1" : "0");
     conservadorButton.classList.toggle("active", selectedConservador);
     conservadorButton.setAttribute("aria-pressed", String(selectedConservador));
+    applyConservadorVisual();
+    updateStepButtonsUI();
 
-    const baseRisk = Number(riskAmountInput.value);
-    const conservativeFactor = selectedConservador ? 0.5 : 1;
-    const effectiveRisk = baseRisk * conservativeFactor * selectedRiskMultiplier;
-
-    log(
+    logTheoreticalRisk(
         selectedConservador
-            ? `Modo conservador ACTIVADO (riesgo base × 0.5) | ${baseRisk.toFixed(2)} $ × 0.5 × X${selectedRiskMultiplier} = ${effectiveRisk.toFixed(2)} $`
-            : `Modo conservador DESACTIVADO | ${baseRisk.toFixed(2)} $ × X${selectedRiskMultiplier} = ${effectiveRisk.toFixed(2)} $`,
-        "ok"
+            ? "Modo conservador ACTIVADO (5 pasos)"
+            : "Modo conservador DESACTIVADO (4 pasos)"
     );
 });
 
@@ -704,10 +804,13 @@ function getSymbolFromURL() {
 
 async function initialize() {
     log(
-        "Ayalga Quick Trade V18 - multiplicadores de riesgo + motor V17 de TP NETO + modo conservador",
+        "Ayalga Quick Trade V19 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador",
         "ok"
     );
     log("Iniciando...");
+
+    // Mostrar riesgo teórico inicial
+    logTheoreticalRisk("Estado inicial");
 
     try {
         adapter = createClientAdapter({ logger });
@@ -1588,22 +1691,20 @@ function normalizeVolumeDown(volume) {
 }
 
 // ============================================================
-// CÁLCULO DEL VOLUMEN V18
+// CÁLCULO DEL VOLUMEN V19 (riesgo = paso d'Alembert)
 // ============================================================
 
 function calculateVolumeFromRisk(side, sl) {
     // ========================================================
-    // V18
-    // Riesgo real solicitado =
-    // cantidad base × (modo conservador ? 0.5 : 1) × multiplicador
+    // V19
+    // Riesgo real solicitado = riesgo del paso d'Alembert
+    // (objetivo acumulado / suma unidades) × paso
     // ========================================================
 
-    const baseRisk = Number(riskAmountInput.value);
-    const conservativeFactor = selectedConservador ? 0.5 : 1;
-    const risk = baseRisk * conservativeFactor * selectedRiskMultiplier;
+    const risk = getStepRisk();
 
     if (!Number.isFinite(risk) || risk <= 0) {
-        throw new Error("Introduce un riesgo en dólares válido.");
+        throw new Error("Riesgo d'Alembert no válido. Revisa objetivo y paso.");
     }
 
     const currentPrice = side === "BUY" ? lastValidAsk : lastValidBid;
@@ -1739,12 +1840,19 @@ function calculateVolumeFromRisk(side, sl) {
         nextEvaluation = evaluateVolumeRisk(nextVolume, currentPrice, sl);
     }
 
-    log("========== CÁLCULO DE VOLUMEN V18 ==========", "ok");
+    const target = Number(riskAmountInput.value);
+    const maxSteps = getMaxSteps();
+    const unit = getDAlembertUnit(target, maxSteps);
+
+    log("========== CÁLCULO DE VOLUMEN V19 ==========", "ok");
     log(
-        `RIESGO BASE: ${baseRisk.toFixed(2)} $ | CONSERVADOR: ${selectedConservador ? "ON (x0.5)" : "OFF"} | MULTIPLICADOR: X${selectedRiskMultiplier}`,
+        `OBJETIVO ACUMULADO: ${formatMoney(target)} $ | PASOS: ${maxSteps} | CONSERVADOR: ${selectedConservador ? "ON" : "OFF"}`,
         "ok"
     );
-    log(`RIESGO OBJETIVO: ${risk.toFixed(2)} $`, "ok");
+    log(
+        `Unidad: ${formatMoney(unit)} $ | Paso X${selectedStep} → RIESGO OBJETIVO: ${formatMoney(risk)} $`,
+        "ok"
+    );
     log(
         `Precio cálculo: ${formatPrice(currentPrice)} | SL: ${formatPrice(sl)}`,
         "ok"
@@ -1868,7 +1976,7 @@ async function handleFilledExecution(payload) {
 
     const targetRisk = Number(pendingTrade.targetRisk);
 
-    log("========== VERIFICACIÓN TRAS FILL V18 ==========", "ok");
+    log("========== VERIFICACIÓN TRAS FILL V19 ==========", "ok");
     log(
         `Entrada usada antes del fill: ${formatPrice(pendingTrade.calculationPrice)}`,
         "ok"
@@ -2210,7 +2318,7 @@ function testClosePosition() {
 }
 
 // ============================================================
-// EJECUTAR OPERACIÓN V18
+// EJECUTAR OPERACIÓN V19
 // ============================================================
 
 async function executeTrade(side) {
@@ -2238,27 +2346,29 @@ async function executeTrade(side) {
     const calculationPrice = side === "BUY" ? lastValidAsk : lastValidBid;
 
     // ========================================================
-    // V18
-    // Congelamos cantidad + multiplicador + modo conservador de ESTA operación.
+    // V19
+    // Congelamos objetivo, paso, conservador y riesgo de ESTA operación.
     // ========================================================
 
-    const baseRisk = Number(riskAmountInput.value);
-    const riskMultiplier = selectedRiskMultiplier;
+    const targetAccumulated = Number(riskAmountInput.value);
+    const step = selectedStep;
     const conservador = selectedConservador;
-    const conservativeFactor = conservador ? 0.5 : 1;
-    const targetRisk = baseRisk * conservativeFactor * riskMultiplier;
+    const maxSteps = getMaxSteps();
+    const unit = getDAlembertUnit(targetAccumulated, maxSteps);
+    const targetRisk = getStepRisk();
 
     pendingTrade = {
         side,
         sl,
         volume,
-        baseRisk,
-        riskMultiplier,
+        targetAccumulated,
+        step,
+        maxSteps,
+        unit,
         conservador,
         targetRisk,
         calculationPrice,
         // V17
-        // RR y TP Neto quedan congelados en el momento de enviar.
         rr: selectedRR,
         rrNet: selectedRRNet,
         positionId: null,
@@ -2281,7 +2391,7 @@ async function executeTrade(side) {
 
     log(`Enviando MARKET | Volumen: ${volume}`, "ok");
     log(
-        `Riesgo guardado: ${baseRisk.toFixed(2)} $ × ${conservador ? "0.5 × " : ""}X${riskMultiplier} = ${targetRisk.toFixed(2)} $ | Precio de cálculo guardado: ${formatPrice(calculationPrice)}`,
+        `d'Alembert: objetivo ${formatMoney(targetAccumulated)} $ | ${maxSteps} pasos | X${step} | riesgo ${formatMoney(targetRisk)} $ | Precio cálculo: ${formatPrice(calculationPrice)}`,
         "ok"
     );
 
