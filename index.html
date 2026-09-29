@@ -526,9 +526,7 @@ function roundToDigits(value) {
     const digits = Number(getField(symbolInfo, "digits", "Digits") ?? 5);
 
     return Number(
-        Number(value).toFixed(
-            Number.isFinite(digits) ? digits : 5
-        )
+        Number(value).toFixed(Number.isFinite(digits) ? digits : 5)
     );
 }
 
@@ -596,10 +594,7 @@ document.querySelectorAll(".candle-button").forEach(btn => {
         btn.classList.add("active");
         candleCountInput.value = btn.dataset.candles;
 
-        log(
-            `Velas de Swing para SL: ${btn.dataset.candles}`,
-            "ok"
-        );
+        log(`Velas de Swing para SL: ${btn.dataset.candles}`, "ok");
     });
 });
 
@@ -608,12 +603,7 @@ document.querySelectorAll(".candle-button").forEach(btn => {
 // BOTONES RIESGO + MULTIPLICADOR V18
 // ============================================================
 
-// Se memoriza la cantidad base.
-// El multiplicador siempre comienza en X1.
-
-const savedBaseRisk = Number(
-    localStorage.getItem("ayalgaRiskAmount")
-);
+const savedBaseRisk = Number(localStorage.getItem("ayalgaRiskAmount"));
 
 if ([25, 50, 100, 200].includes(savedBaseRisk)) {
     riskAmountInput.value = String(savedBaseRisk);
@@ -634,10 +624,7 @@ document.querySelectorAll(".risk-button").forEach(btn => {
         btn.classList.add("active");
         riskAmountInput.value = btn.dataset.risk;
 
-        localStorage.setItem(
-            "ayalgaRiskAmount",
-            btn.dataset.risk
-        );
+        localStorage.setItem("ayalgaRiskAmount", btn.dataset.risk);
 
         const effectiveRisk =
             Number(btn.dataset.risk) * selectedRiskMultiplier;
@@ -650,7 +637,6 @@ document.querySelectorAll(".risk-button").forEach(btn => {
 });
 
 
-// El multiplicador NO se memoriza.
 selectedRiskMultiplier = 1;
 
 
@@ -666,15 +652,10 @@ document.querySelectorAll(".multiplier-button").forEach(btn => {
         );
 
         btn.classList.add("active");
+        selectedRiskMultiplier = Number(btn.dataset.multiplier);
 
-        selectedRiskMultiplier =
-            Number(btn.dataset.multiplier);
-
-        const baseRisk =
-            Number(riskAmountInput.value);
-
-        const effectiveRisk =
-            baseRisk * selectedRiskMultiplier;
+        const baseRisk = Number(riskAmountInput.value);
+        const effectiveRisk = baseRisk * selectedRiskMultiplier;
 
         log(
             `Multiplicador seleccionado: X${selectedRiskMultiplier} | ${baseRisk.toFixed(2)} $ × ${selectedRiskMultiplier} = ${effectiveRisk.toFixed(2)} $`,
@@ -728,10 +709,7 @@ netTpButton.addEventListener("click", () => {
         selectedRRNet ? "1" : "0"
     );
 
-    netTpButton.classList.toggle(
-        "active",
-        selectedRRNet
-    );
+    netTpButton.classList.toggle("active", selectedRRNet);
 
     netTpButton.setAttribute(
         "aria-pressed",
@@ -943,11 +921,7 @@ function processQuote(response) {
         return p;
     }
 
-    const quotes = getArray(
-        payload,
-        "quote",
-        "Quote"
-    );
+    const quotes = getArray(payload, "quote", "Quote");
 
     if (quotes.length > 0) {
         for (const q of quotes) {
@@ -1029,32 +1003,21 @@ function loadSymbols() {
             next: response => {
                 try {
                     const payload = getPayload(response);
-
-                    const symbols = getArray(
-                        payload,
-                        "Symbol",
-                        "symbol"
-                    );
+                    const symbols = getArray(payload, "Symbol", "symbol");
 
                     log(
                         "Símbolos recibidos: " +
                         symbols.length
                     );
 
-                    const requestedSymbol =
-                        getSymbolFromURL();
-
+                    const requestedSymbol = getSymbolFromURL();
                     let selectedSymbol = null;
 
                     if (requestedSymbol) {
                         selectedSymbol = symbols.find(
                             s =>
                                 String(
-                                    getField(
-                                        s,
-                                        "Name",
-                                        "name"
-                                    )
+                                    getField(s, "Name", "name")
                                 ).toUpperCase() ===
                                 requestedSymbol.toUpperCase()
                         );
@@ -1064,11 +1027,7 @@ function loadSymbols() {
                         selectedSymbol = symbols.find(
                             s =>
                                 String(
-                                    getField(
-                                        s,
-                                        "Name",
-                                        "name"
-                                    )
+                                    getField(s, "Name", "name")
                                 ).toUpperCase() ===
                                 "EURUSD"
                         );
@@ -1084,23 +1043,14 @@ function loadSymbols() {
                     }
 
                     symbolId = Number(
-                        getField(
-                            selectedSymbol,
-                            "Id",
-                            "id"
-                        )
+                        getField(selectedSymbol, "Id", "id")
                     );
 
                     symbolName = String(
-                        getField(
-                            selectedSymbol,
-                            "Name",
-                            "name"
-                        )
+                        getField(selectedSymbol, "Name", "name")
                     );
 
-                    symbolDisplay.textContent =
-                        symbolName;
+                    symbolDisplay.textContent = symbolName;
 
                     log(
                         `Símbolo detectado: ${symbolName} (ID ${symbolId})`,
@@ -1125,3 +1075,2514 @@ function loadSymbols() {
             )
         });
 }
+
+
+// ============================================================
+// INFORMACIÓN DEL SÍMBOLO
+// ============================================================
+
+function getDetailedSymbol() {
+    log("Obteniendo información detallada de cTrader...");
+
+    getSymbol(adapter, {
+        symbolId: [symbolId]
+    })
+    .pipe(take(1))
+    .subscribe({
+        next: response => {
+            try {
+                let payload = getPayload(response);
+                let detail = null;
+
+                if (
+                    payload &&
+                    (
+                        payload.Id !== undefined ||
+                        payload.Name !== undefined
+                    )
+                ) {
+                    detail = payload;
+                }
+
+                if (!detail) {
+                    const symbols = getArray(
+                        payload,
+                        "Symbol",
+                        "symbol"
+                    );
+
+                    if (symbols.length > 0) {
+                        detail = symbols[0];
+                    }
+                }
+
+                if (
+                    !detail &&
+                    response &&
+                    (
+                        response.Id !== undefined ||
+                        response.Name !== undefined
+                    )
+                ) {
+                    detail = response;
+                }
+
+                if (!detail) {
+                    log(
+                        "No se pudo extraer la información detallada.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                symbolInfo = detail;
+
+                const minVolume = Number(
+                    getField(symbolInfo, "minVolume", "MinVolume")
+                );
+
+                const stepVolume = Number(
+                    getField(symbolInfo, "stepVolume", "StepVolume")
+                );
+
+                const maxVolume = Number(
+                    getField(symbolInfo, "maxVolume", "MaxVolume")
+                );
+
+                const digits = Number(
+                    getField(symbolInfo, "digits", "Digits")
+                );
+
+                const pipPosition = Number(
+                    getField(symbolInfo, "pipPosition", "PipPosition")
+                );
+
+                const lotSize = Number(
+                    getField(symbolInfo, "lotSize", "LotSize")
+                );
+
+                const commissionType = getField(
+                    symbolInfo,
+                    "commissionType",
+                    "CommissionType"
+                );
+
+                const commissionRaw = Number(
+                    getField(
+                        symbolInfo,
+                        "preciseTradingCommissionRate",
+                        "PreciseTradingCommissionRate"
+                    )
+                );
+
+                const preciseMinCommission = Number(
+                    getField(
+                        symbolInfo,
+                        "preciseMinCommission",
+                        "PreciseMinCommission"
+                    )
+                );
+
+                const minCommissionType = getField(
+                    symbolInfo,
+                    "minCommissionType",
+                    "MinCommissionType"
+                );
+
+                minVolumeDisplay.textContent = String(minVolume);
+                orderVolumeDisplay.textContent = "---";
+
+                log(
+                    `minVolume: ${minVolume} | stepVolume: ${stepVolume} | maxVolume: ${maxVolume}`
+                );
+
+                log(
+                    `digits: ${digits} | pipPosition: ${pipPosition} | lotSize: ${lotSize}`
+                );
+
+                log(
+                    `Comisión cTrader: tipo=${String(commissionType)} | preciseRate=${commissionRaw} | preciseMinCommission=${preciseMinCommission} | minCommissionType=${String(minCommissionType)}`
+                );
+
+                const commissionInfo = getCommissionRate();
+
+                if (
+                    commissionInfo &&
+                    commissionInfo.type === "USD_PER_LOT"
+                ) {
+                    log(
+                        `Comisión interpretada: ${commissionInfo.perLotPerSide.toFixed(2)} $/lote/lado | ${(commissionInfo.perLotPerSide * 2).toFixed(2)} $/lote ida+vuelta`,
+                        "ok"
+                    );
+                } else {
+                    log(
+                        "⚠️ La comisión del símbolo no se pudo interpretar.",
+                        "warning"
+                    );
+                }
+
+                log(
+                    "Información detallada recibida.",
+                    "ok"
+                );
+
+                subscribeQuotes(adapter, {
+                    symbolId: [symbolId]
+                })
+                .pipe(take(1))
+                .subscribe({
+                    next: () => log(
+                        "Suscripción de precios activa.",
+                        "ok"
+                    ),
+
+                    error: error => log(
+                        "Error suscribiendo precios: " +
+                        JSON.stringify(error),
+                        "error"
+                    )
+                });
+
+                updateButtons();
+
+            } catch (error) {
+                log(
+                    "Error procesando detalle del símbolo: " +
+                    error.message,
+                    "error"
+                );
+            }
+        },
+
+        error: error => log(
+            "Error obteniendo detalle: " +
+            JSON.stringify(error),
+            "error"
+        )
+    });
+}
+
+
+// ============================================================
+// VELAS CERRADAS
+// ============================================================
+
+function getClosedTrendbars(periodMinutes, count) {
+    return new Promise((resolve, reject) => {
+        const timeframeMs = periodMinutes * 60000;
+        const now = Date.now();
+
+        const currentBarStart =
+            Math.floor(now / timeframeMs) * timeframeMs;
+
+        const lastClosedBarEnd =
+            currentBarStart - 1;
+
+        const periodMap = {
+            1: 1,
+            15: 11
+        };
+
+        const period = periodMap[periodMinutes];
+
+        if (!period) {
+            reject(
+                new Error(
+                    `Timeframe no soportado: ${periodMinutes}`
+                )
+            );
+
+            return;
+        }
+
+        const requestCount = Math.max(count, 10);
+
+        const fromTimestamp =
+            currentBarStart -
+            timeframeMs * (requestCount + 5);
+
+        getTrendbarList(adapter, {
+            symbolId,
+            period,
+            fromTimestamp,
+            toTimestamp: lastClosedBarEnd,
+            count: requestCount,
+            type: 0
+        })
+        .pipe(take(1))
+        .subscribe({
+            next: response => {
+                try {
+                    const payload = getPayload(response);
+
+                    let raw = getArray(
+                        payload,
+                        "Trendbar",
+                        "trendbar"
+                    );
+
+                    if (
+                        raw.length === 0 &&
+                        Array.isArray(payload)
+                    ) {
+                        raw = payload;
+                    }
+
+                    const bars = raw
+                        .map(bar => {
+                            const timestampMinutes = Number(
+                                getField(
+                                    bar,
+                                    "utcTimestampInMinutes",
+                                    "UtcTimestampInMinutes"
+                                )
+                            );
+
+                            const lowRaw = Number(
+                                getField(
+                                    bar,
+                                    "low",
+                                    "Low"
+                                )
+                            );
+
+                            const deltaOpen = Number(
+                                getField(
+                                    bar,
+                                    "deltaOpen",
+                                    "DeltaOpen"
+                                ) ?? 0
+                            );
+
+                            const deltaClose = Number(
+                                getField(
+                                    bar,
+                                    "deltaClose",
+                                    "DeltaClose"
+                                ) ?? 0
+                            );
+
+                            const deltaHigh = Number(
+                                getField(
+                                    bar,
+                                    "deltaHigh",
+                                    "DeltaHigh"
+                                ) ?? 0
+                            );
+
+                            return {
+                                timestampMs:
+                                    Number.isFinite(timestampMinutes)
+                                        ? timestampMinutes * 60000
+                                        : NaN,
+
+                                open: roundToDigits(
+                                    (lowRaw + deltaOpen) / 100000
+                                ),
+
+                                high: roundToDigits(
+                                    (lowRaw + deltaHigh) / 100000
+                                ),
+
+                                low: roundToDigits(
+                                    lowRaw / 100000
+                                ),
+
+                                close: roundToDigits(
+                                    (lowRaw + deltaClose) / 100000
+                                )
+                            };
+                        })
+                        .filter(
+                            b =>
+                                Number.isFinite(b.low) &&
+                                Number.isFinite(b.high)
+                        )
+                        .sort(
+                            (a, b) =>
+                                (
+                                    Number.isFinite(a.timestampMs)
+                                        ? a.timestampMs
+                                        : 0
+                                ) -
+                                (
+                                    Number.isFinite(b.timestampMs)
+                                        ? b.timestampMs
+                                        : 0
+                                )
+                        );
+
+                    const selected = bars.slice(-count);
+
+                    if (selected.length < count) {
+                        throw new Error(
+                            `cTrader devolvió ${selected.length} velas de ${count} necesarias para ${getTimeframeName(periodMinutes)}.`
+                        );
+                    }
+
+                    resolve({
+                        bars: selected,
+                        currentBarStart,
+                        timeframeMs
+                    });
+
+                } catch (error) {
+                    reject(error);
+                }
+            },
+
+            error: error => reject(error)
+        });
+    });
+}
+
+
+// ============================================================
+// SL
+// ============================================================
+
+async function calculateSL(side) {
+    const count = Math.max(
+        1,
+        Math.min(
+            500,
+            Number(candleCountInput.value) || 10
+        )
+    );
+
+    const periodMinutes = selectedTimeframe;
+
+    log(
+        `${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`
+    );
+
+    const { bars } =
+        await getClosedTrendbars(
+            periodMinutes,
+            count
+        );
+
+    const first = bars[0];
+    const last = bars[bars.length - 1];
+
+    log(
+        `Velas usadas: ${bars.length} | Primera: ${fmtTime(first.timestampMs)} | Última: ${fmtTime(last.timestampMs)}`,
+        "ok"
+    );
+
+    const rawExtreme =
+        side === "BUY"
+            ? Math.min(...bars.map(b => b.low))
+            : Math.max(...bars.map(b => b.high));
+
+    const finalSL = roundToDigits(rawExtreme);
+
+    log(
+        `${side === "BUY" ? "Mínimo" : "Máximo"} de las ${count} velas: ${formatPrice(finalSL)}`,
+        "ok"
+    );
+
+    log(
+        `${side} SL definitivo: ${formatPrice(finalSL)}`,
+        "ok"
+    );
+
+    return finalSL;
+}
+
+
+// ============================================================
+// EXTRACTORES
+// ============================================================
+
+function extractPositionId(payload) {
+    if (!payload) return null;
+
+    const candidates = [
+        getField(
+            getField(payload, "Position", "position"),
+            "PositionId",
+            "positionId"
+        ),
+
+        getField(
+            getField(payload, "Order", "order"),
+            "PositionId",
+            "positionId"
+        ),
+
+        getField(
+            getField(payload, "Deal", "deal"),
+            "PositionId",
+            "positionId"
+        ),
+
+        getField(
+            payload,
+            "PositionId",
+            "positionId"
+        ),
+
+        pendingTrade?.positionId
+    ];
+
+    for (const v of candidates) {
+        const id = Number(v);
+
+        if (Number.isFinite(id) && id > 0) {
+            return id;
+        }
+    }
+
+    return null;
+}
+
+
+function extractExecutionPrice(payload) {
+    if (!payload) return null;
+
+    const candidates = [
+        getField(
+            getField(payload, "Position", "position"),
+            "Price",
+            "price"
+        ),
+
+        getField(
+            getField(payload, "Deal", "deal"),
+            "ExecutionPrice",
+            "executionPrice"
+        ),
+
+        getField(
+            getField(payload, "Order", "order"),
+            "ExecutionPrice",
+            "executionPrice"
+        )
+    ];
+
+    for (const v of candidates) {
+        const p = Number(v);
+
+        if (Number.isFinite(p) && p > 0) {
+            return p;
+        }
+    }
+
+    return null;
+}
+
+
+// ============================================================
+// COMISIÓN REAL DEL FILL
+// ============================================================
+
+function extractActualOpeningCommission(payload) {
+    if (!payload) return null;
+
+    const deal = getField(
+        payload,
+        "Deal",
+        "deal"
+    );
+
+    if (!deal) return null;
+
+    const rawCommission = Number(
+        getField(
+            deal,
+            "Commission",
+            "commission"
+        )
+    );
+
+    const moneyDigits = Number(
+        getField(
+            deal,
+            "MoneyDigits",
+            "moneyDigits"
+        ) ?? 2
+    );
+
+    if (
+        !Number.isFinite(rawCommission) ||
+        !Number.isFinite(moneyDigits)
+    ) {
+        return null;
+    }
+
+    const divisor = Math.pow(10, moneyDigits);
+
+    const commission = Math.abs(
+        rawCommission / divisor
+    );
+
+    return Number.isFinite(commission)
+        ? commission
+        : null;
+}
+
+
+// ============================================================
+// RESPUESTA ORDEN
+// ============================================================
+
+function processOrderResponse(response) {
+    const payload = getPayload(response);
+
+    if (!payload) return;
+
+    const errorCode = String(
+        getField(
+            payload,
+            "ErrorCode",
+            "errorCode"
+        ) ?? ""
+    );
+
+    if (errorCode) {
+        log(
+            `❌ Error al crear orden: ${errorCode}`,
+            "error"
+        );
+
+        const desc = getField(
+            payload,
+            "Description",
+            "description"
+        );
+
+        if (desc) {
+            log(
+                `Descripción: ${desc}`,
+                "error"
+            );
+        }
+
+        pendingTrade = null;
+        protectionSent = false;
+        protectionRetryCount = 0;
+
+        updateButtons();
+        return;
+    }
+
+    const executionType = String(
+        getField(
+            payload,
+            "ExecutionType",
+            "executionType"
+        ) ?? ""
+    );
+
+    const positionId =
+        extractPositionId(payload);
+
+    const order =
+        getField(payload, "Order", "order");
+
+    const orderId = Number(
+        getField(
+            order,
+            "OrderId",
+            "orderId"
+        )
+    );
+
+    if (
+        Number.isFinite(positionId) &&
+        positionId > 0 &&
+        pendingTrade
+    ) {
+        pendingTrade.positionId = positionId;
+
+        positionDisplay.textContent =
+            String(positionId);
+
+        log(
+            `Position ID recibido: ${positionId}`,
+            "ok"
+        );
+    }
+
+    if (
+        Number.isFinite(orderId) &&
+        orderId > 0 &&
+        pendingTrade
+    ) {
+        pendingTrade.orderId = orderId;
+
+        log(`Order ID: ${orderId}`);
+    }
+
+    log(
+        `ExecutionType recibido: ${executionType}`
+    );
+
+    if (executionType === "ORDER_ACCEPTED") {
+        log(
+            "cTrader respondió a la orden.",
+            "ok"
+        );
+    }
+
+    log(
+        "RESPUESTA createNewOrder: " +
+        JSON.stringify(response, null, 2)
+    );
+}
+
+
+// ============================================================
+// EXECUTION EVENT
+// ============================================================
+
+function processExecutionEvent(response) {
+    try {
+        const payload = getPayload(response);
+
+        if (!payload) return;
+
+        const executionType = String(
+            getField(
+                payload,
+                "ExecutionType",
+                "executionType"
+            ) ?? ""
+        );
+
+        log(
+            "EXECUTION EVENT: " +
+            JSON.stringify(payload, null, 2)
+        );
+
+        if (executionType === "ORDER_ACCEPTED") {
+            const eventPositionId =
+                extractPositionId(payload);
+
+            if (
+                closePositionRequest &&
+                lastPositionId !== null &&
+                eventPositionId === Number(lastPositionId)
+            ) {
+                log(
+                    "✅ ORDER_ACCEPTED de closePosition.",
+                    "ok"
+                );
+
+                return;
+            }
+
+            if (pendingTrade) {
+                processOrderResponse(response);
+            }
+
+            return;
+        }
+
+        if (executionType === "ORDER_PARTIAL_FILL") {
+            log(
+                "⏳ ORDER_PARTIAL_FILL recibido. Esperando al llenado completo antes de colocar SL/TP...",
+                "warning"
+            );
+
+            return;
+        }
+
+        if (executionType === "ORDER_FILLED") {
+            log(
+                "================================",
+                "ok"
+            );
+
+            log(
+                "✅ ORDER_FILLED COMPLETO RECIBIDO",
+                "ok"
+            );
+
+            log(
+                "================================",
+                "ok"
+            );
+
+            handleFilledExecution(payload);
+
+            return;
+        }
+
+        if (executionType === "ORDER_REJECTED") {
+            log(
+                "❌ ORDEN RECHAZADA",
+                "error"
+            );
+
+            if (closePositionRequest) {
+                closePositionRequest = false;
+
+                updateButtons();
+                return;
+            }
+
+            pendingTrade = null;
+            protectionSent = false;
+            protectionRetryCount = 0;
+
+            updateButtons();
+            return;
+        }
+
+        if (executionType === "ORDER_REPLACED") {
+            const eventPositionId =
+                extractPositionId(payload);
+
+            if (
+                pendingTrade &&
+                pendingTrade.positionId &&
+                eventPositionId &&
+                Number(eventPositionId) !==
+                Number(pendingTrade.positionId)
+            ) {
+                log(
+                    `ORDER_REPLACED ignorado: pertenece a otra posición (${eventPositionId}).`,
+                    "muted"
+                );
+
+                return;
+            }
+
+            log(
+                "🛡️ SL + TP CONFIRMADOS POR cTRADER",
+                "ok"
+            );
+
+            pendingTrade = null;
+            protectionSent = false;
+            protectionRetryCount = 0;
+
+            updateButtons();
+        }
+
+    } catch (error) {
+        log(
+            "Error procesando executionEvent: " +
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+// ============================================================
+// MOTOR EURUSD
+// ============================================================
+
+function getPipSize() {
+    const pipPosition = Number(
+        getField(
+            symbolInfo,
+            "pipPosition",
+            "PipPosition"
+        ) ?? 4
+    );
+
+    return Math.pow(10, -pipPosition);
+}
+
+
+function priceDistanceToPips(distance) {
+    const pipSize = getPipSize();
+
+    if (
+        !Number.isFinite(distance) ||
+        distance < 0 ||
+        !Number.isFinite(pipSize) ||
+        pipSize <= 0
+    ) {
+        return null;
+    }
+
+    return distance / pipSize;
+}
+
+
+function getEURUSDPriceRisk(volume, pips) {
+    const v = Number(volume);
+    const p = Number(pips);
+
+    if (
+        !Number.isFinite(v) ||
+        v <= 0 ||
+        !Number.isFinite(p) ||
+        p < 0
+    ) {
+        return null;
+    }
+
+    const units = v / 100;
+    const pipValueUSD = units * 0.0001;
+    const risk = pipValueUSD * p;
+
+    return Number.isFinite(risk)
+        ? risk
+        : null;
+}
+
+
+// ============================================================
+// COMISIÓN
+// ============================================================
+
+function getCommissionRate() {
+    const rawType = getField(
+        symbolInfo,
+        "commissionType",
+        "CommissionType"
+    );
+
+    const rawRateValue = getField(
+        symbolInfo,
+        "preciseTradingCommissionRate",
+        "PreciseTradingCommissionRate"
+    );
+
+    if (
+        rawType === null ||
+        rawType === undefined ||
+        rawRateValue === null ||
+        rawRateValue === undefined ||
+        rawRateValue === ""
+    ) {
+        return null;
+    }
+
+    const raw = Number(rawRateValue);
+
+    if (!Number.isFinite(raw) || raw < 0) {
+        return null;
+    }
+
+    const typeText = String(rawType)
+        .trim()
+        .toUpperCase();
+
+    if (typeText === "USD_PER_LOT") {
+        const perLotPerSide = raw / 1e8;
+
+        if (
+            !Number.isFinite(perLotPerSide) ||
+            perLotPerSide < 0
+        ) {
+            return null;
+        }
+
+        return {
+            type: "USD_PER_LOT",
+            raw,
+            perLotPerSide
+        };
+    }
+
+    const numericType = Number(rawType);
+
+    if (!Number.isFinite(numericType)) {
+        return null;
+    }
+
+    return {
+        type: numericType,
+        raw,
+        rate:
+            numericType === 3
+                ? raw / 1e5
+                : raw / 1e8
+    };
+}
+
+
+function estimateRoundTripCommission(volume, price) {
+    const c = getCommissionRate();
+
+    const lotSize = Number(
+        getField(
+            symbolInfo,
+            "lotSize",
+            "LotSize"
+        )
+    );
+
+    if (
+        !c ||
+        !Number.isFinite(volume) ||
+        volume <= 0 ||
+        !Number.isFinite(price) ||
+        price <= 0 ||
+        !Number.isFinite(lotSize) ||
+        lotSize <= 0
+    ) {
+        return null;
+    }
+
+    const lots = volume / lotSize;
+
+    if (!Number.isFinite(lots) || lots <= 0) {
+        return null;
+    }
+
+    if (c.type === "USD_PER_LOT") {
+        const oneSide =
+            lots * c.perLotPerSide;
+
+        const roundTrip =
+            oneSide * 2;
+
+        if (
+            !Number.isFinite(roundTrip) ||
+            roundTrip < 0
+        ) {
+            return null;
+        }
+
+        return roundTrip;
+    }
+
+    const units = volume / 100;
+    let oneSide = null;
+
+    if (c.type === 2 || c.type === 4) {
+        oneSide = lots * c.rate;
+
+    } else if (c.type === 1) {
+        oneSide =
+            (units * price / 1e6) *
+            c.rate;
+
+    } else if (c.type === 3) {
+        oneSide =
+            (units * price) *
+            (c.rate / 100);
+    }
+
+    if (
+        !Number.isFinite(oneSide) ||
+        oneSide < 0
+    ) {
+        return null;
+    }
+
+    return oneSide * 2;
+}
+
+
+// ============================================================
+// RIESGO TOTAL DE UN VOLUMEN
+// ============================================================
+
+function evaluateVolumeRisk(volume, price, sl) {
+    const distance = Math.abs(
+        Number(price) -
+        Number(sl)
+    );
+
+    const pips =
+        priceDistanceToPips(distance);
+
+    if (
+        !Number.isFinite(pips) ||
+        pips <= 0
+    ) {
+        return null;
+    }
+
+    const priceRisk =
+        getEURUSDPriceRisk(
+            volume,
+            pips
+        );
+
+    if (!Number.isFinite(priceRisk)) {
+        return null;
+    }
+
+    const commission =
+        estimateRoundTripCommission(
+            volume,
+            price
+        );
+
+    if (
+        !Number.isFinite(commission) ||
+        commission < 0
+    ) {
+        return {
+            volume,
+            pips,
+            priceRisk,
+            commission: null,
+            commissionUsed: null,
+            totalRisk: null
+        };
+    }
+
+    const totalRisk =
+        priceRisk +
+        commission;
+
+    return {
+        volume,
+        pips,
+        priceRisk,
+        commission,
+        commissionUsed: commission,
+        totalRisk
+    };
+}
+
+
+// ============================================================
+// NORMALIZACIÓN DE VOLUMEN
+// ============================================================
+
+function normalizeVolumeDown(volume) {
+    const minVolume = Number(
+        getField(
+            symbolInfo,
+            "minVolume",
+            "MinVolume"
+        )
+    );
+
+    const stepVolume = Number(
+        getField(
+            symbolInfo,
+            "stepVolume",
+            "StepVolume"
+        )
+    );
+
+    const maxVolume = Number(
+        getField(
+            symbolInfo,
+            "maxVolume",
+            "MaxVolume"
+        )
+    );
+
+    if (
+        !Number.isFinite(minVolume) ||
+        minVolume <= 0 ||
+        !Number.isFinite(stepVolume) ||
+        stepVolume <= 0
+    ) {
+        return null;
+    }
+
+    let result =
+        Math.floor(
+            (Number(volume) + 1e-9) /
+            stepVolume
+        ) *
+        stepVolume;
+
+    if (result < minVolume) {
+        result = minVolume;
+    }
+
+    if (
+        Number.isFinite(maxVolume) &&
+        maxVolume > 0 &&
+        result > maxVolume
+    ) {
+        result =
+            Math.floor(
+                maxVolume /
+                stepVolume
+            ) *
+            stepVolume;
+    }
+
+    return Math.round(result);
+}
+
+
+// ============================================================
+// CÁLCULO DEL VOLUMEN V18
+// ============================================================
+
+function calculateVolumeFromRisk(side, sl) {
+    const baseRisk =
+        Number(riskAmountInput.value);
+
+    const risk =
+        baseRisk *
+        selectedRiskMultiplier;
+
+    if (
+        !Number.isFinite(risk) ||
+        risk <= 0
+    ) {
+        throw new Error(
+            "Introduce un riesgo en dólares válido."
+        );
+    }
+
+    const currentPrice =
+        side === "BUY"
+            ? lastValidAsk
+            : lastValidBid;
+
+    if (
+        !Number.isFinite(currentPrice) ||
+        currentPrice <= 0
+    ) {
+        throw new Error(
+            "No hay precio actual válido."
+        );
+    }
+
+    const distance =
+        Math.abs(
+            currentPrice -
+            sl
+        );
+
+    const pips =
+        priceDistanceToPips(distance);
+
+    if (
+        !Number.isFinite(pips) ||
+        pips <= 0
+    ) {
+        throw new Error(
+            "Distancia al SL inválida."
+        );
+    }
+
+    const minVolume = Number(
+        getField(
+            symbolInfo,
+            "minVolume",
+            "MinVolume"
+        )
+    );
+
+    const stepVolume = Number(
+        getField(
+            symbolInfo,
+            "stepVolume",
+            "StepVolume"
+        )
+    );
+
+    const maxVolume = Number(
+        getField(
+            symbolInfo,
+            "maxVolume",
+            "MaxVolume"
+        )
+    );
+
+    if (
+        !Number.isFinite(minVolume) ||
+        minVolume <= 0 ||
+        !Number.isFinite(stepVolume) ||
+        stepVolume <= 0
+    ) {
+        throw new Error(
+            "Datos de volumen del símbolo no válidos."
+        );
+    }
+
+    const commissionInfo =
+        getCommissionRate();
+
+    if (!commissionInfo) {
+        throw new Error(
+            "No se pudo interpretar la comisión de cTrader. Operación cancelada para no superar el riesgo seleccionado."
+        );
+    }
+
+    const stepEvaluation =
+        evaluateVolumeRisk(
+            stepVolume,
+            currentPrice,
+            sl
+        );
+
+    if (
+        !stepEvaluation ||
+        !Number.isFinite(stepEvaluation.totalRisk) ||
+        stepEvaluation.totalRisk <= 0
+    ) {
+        throw new Error(
+            "No se pudo calcular el riesgo total por escalón de volumen."
+        );
+    }
+
+    const minEvaluation =
+        evaluateVolumeRisk(
+            minVolume,
+            currentPrice,
+            sl
+        );
+
+    if (
+        !minEvaluation ||
+        !Number.isFinite(minEvaluation.totalRisk)
+    ) {
+        throw new Error(
+            "No se pudo calcular el riesgo del volumen mínimo."
+        );
+    }
+
+    if (
+        minEvaluation.totalRisk >
+        risk + 0.000001
+    ) {
+        throw new Error(
+            `El volumen mínimo de cTrader implica ≈ ${minEvaluation.totalRisk.toFixed(2)} $, superior al riesgo objetivo de ${risk.toFixed(2)} $. Operación cancelada.`
+        );
+    }
+
+    const theoreticalVolume =
+        (
+            risk /
+            stepEvaluation.totalRisk
+        ) *
+        stepVolume;
+
+    let volume =
+        normalizeVolumeDown(
+            theoreticalVolume
+        );
+
+    if (
+        !Number.isFinite(volume) ||
+        volume <= 0
+    ) {
+        throw new Error(
+            "No se pudo normalizar el volumen."
+        );
+    }
+
+    let evaluation =
+        evaluateVolumeRisk(
+            volume,
+            currentPrice,
+            sl
+        );
+
+    if (
+        !evaluation ||
+        !Number.isFinite(evaluation.totalRisk)
+    ) {
+        throw new Error(
+            "No se pudo validar el volumen inicial."
+        );
+    }
+
+    let safetyCounter = 0;
+
+    while (
+        evaluation.totalRisk >
+        risk + 0.000001 &&
+        volume > minVolume &&
+        safetyCounter < 10000
+    ) {
+        volume -= stepVolume;
+
+        volume = Math.max(
+            minVolume,
+            volume
+        );
+
+        evaluation =
+            evaluateVolumeRisk(
+                volume,
+                currentPrice,
+                sl
+            );
+
+        if (
+            !evaluation ||
+            !Number.isFinite(evaluation.totalRisk)
+        ) {
+            throw new Error(
+                "No se pudo validar el volumen al reducirlo."
+            );
+        }
+
+        safetyCounter++;
+    }
+
+    while (safetyCounter < 10000) {
+        const nextVolume =
+            volume +
+            stepVolume;
+
+        if (
+            Number.isFinite(maxVolume) &&
+            maxVolume > 0 &&
+            nextVolume > maxVolume
+        ) {
+            break;
+        }
+
+        const nextEvaluation =
+            evaluateVolumeRisk(
+                nextVolume,
+                currentPrice,
+                sl
+            );
+
+        if (
+            !nextEvaluation ||
+            !Number.isFinite(nextEvaluation.totalRisk)
+        ) {
+            break;
+        }
+
+        if (
+            nextEvaluation.totalRisk <=
+            risk + 0.000001
+        ) {
+            volume = nextVolume;
+            evaluation = nextEvaluation;
+            safetyCounter++;
+
+        } else {
+            break;
+        }
+    }
+
+    if (
+        !Number.isFinite(evaluation.totalRisk) ||
+        evaluation.totalRisk >
+        risk + 0.000001
+    ) {
+        throw new Error(
+            "El volumen calculado supera el riesgo objetivo. Operación cancelada."
+        );
+    }
+
+    const nextVolume =
+        volume +
+        stepVolume;
+
+    let nextEvaluation = null;
+
+    if (
+        !Number.isFinite(maxVolume) ||
+        maxVolume <= 0 ||
+        nextVolume <= maxVolume
+    ) {
+        nextEvaluation =
+            evaluateVolumeRisk(
+                nextVolume,
+                currentPrice,
+                sl
+            );
+    }
+
+    log(
+        "========== CÁLCULO DE VOLUMEN V18 ==========",
+        "ok"
+    );
+
+    log(
+        `RIESGO BASE: ${baseRisk.toFixed(2)} $ | MULTIPLICADOR: X${selectedRiskMultiplier}`,
+        "ok"
+    );
+
+    log(
+        `RIESGO OBJETIVO: ${risk.toFixed(2)} $`,
+        "ok"
+    );
+
+    log(
+        `Precio cálculo: ${formatPrice(currentPrice)} | SL: ${formatPrice(sl)}`,
+        "ok"
+    );
+
+    log(
+        `Distancia SL: ${pips.toFixed(2)} pips`,
+        "ok"
+    );
+
+    log(
+        `Volumen teórico: ${theoreticalVolume.toFixed(2)}`
+    );
+
+    log(
+        `Volumen definitivo: ${volume}`,
+        "ok"
+    );
+
+    const lotSize = Number(
+        getField(
+            symbolInfo,
+            "lotSize",
+            "LotSize"
+        )
+    );
+
+    if (
+        Number.isFinite(lotSize) &&
+        lotSize > 0
+    ) {
+        log(
+            `Lotes equivalentes: ${(volume / lotSize).toFixed(2)}`,
+            "ok"
+        );
+    }
+
+    log(
+        `Pérdida precio al SL: ≈ ${evaluation.priceRisk.toFixed(2)} $`,
+        "ok"
+    );
+
+    log(
+        `Comisión estimada apertura+cierre: ≈ ${evaluation.commission.toFixed(2)} $`,
+        "ok"
+    );
+
+    log(
+        `RIESGO TOTAL ESTIMADO: ≈ ${evaluation.totalRisk.toFixed(2)} $`,
+        "ok"
+    );
+
+    log(
+        `Margen hasta riesgo máximo: ≈ ${(risk - evaluation.totalRisk).toFixed(2)} $`
+    );
+
+    if (
+        nextEvaluation &&
+        Number.isFinite(nextEvaluation.totalRisk)
+    ) {
+        log(
+            `Siguiente volumen (${nextVolume}) implicaría ≈ ${nextEvaluation.totalRisk.toFixed(2)} $`
+        );
+
+        if (
+            nextEvaluation.totalRisk >
+            risk
+        ) {
+            log(
+                "✅ Volumen validado: el siguiente escalón superaría el riesgo objetivo.",
+                "ok"
+            );
+        }
+    }
+
+    log(
+        "===========================================",
+        "ok"
+    );
+
+    return volume;
+}
+
+
+// ============================================================
+// FILL + PROTECCIÓN
+// ============================================================
+
+async function handleFilledExecution(payload) {
+    if (
+        !pendingTrade ||
+        protectionSent
+    ) {
+        return;
+    }
+
+    const positionId =
+        extractPositionId(payload);
+
+    const realEntry =
+        extractExecutionPrice(payload);
+
+    if (
+        !positionId ||
+        !Number.isFinite(realEntry)
+    ) {
+        log(
+            "No se pudo obtener Position ID o entrada real.",
+            "error"
+        );
+
+        return;
+    }
+
+    pendingTrade.positionId =
+        positionId;
+
+    pendingTrade.realEntry =
+        realEntry;
+
+    lastPositionId =
+        Number(positionId);
+
+    lastPositionVolume =
+        Number(pendingTrade.volume);
+
+    closePositionRequest = false;
+
+    positionDisplay.textContent =
+        String(positionId);
+
+    entryDisplay.textContent =
+        formatPrice(realEntry);
+
+    log(
+        `Position ID REAL: ${positionId}`,
+        "ok"
+    );
+
+    log(
+        `Entrada REAL: ${formatPrice(realEntry)}`,
+        "ok"
+    );
+
+    updateButtons();
+
+    const side =
+        pendingTrade.side;
+
+    const finalSL =
+        normalizePrice(
+            pendingTrade.sl
+        );
+
+    if (!Number.isFinite(finalSL)) {
+        log(
+            "SL no válido.",
+            "error"
+        );
+
+        pendingTrade = null;
+        updateButtons();
+
+        return;
+    }
+
+    if (
+        (
+            side === "BUY" &&
+            finalSL >= realEntry
+        ) ||
+        (
+            side === "SELL" &&
+            finalSL <= realEntry
+        )
+    ) {
+        log(
+            "❌ SL inválido respecto a la entrada.",
+            "error"
+        );
+
+        pendingTrade = null;
+        updateButtons();
+
+        return;
+    }
+
+    const distanceSL =
+        Math.abs(
+            realEntry -
+            finalSL
+        );
+
+    if (
+        !Number.isFinite(distanceSL) ||
+        distanceSL <= 0
+    ) {
+        log(
+            "Distancia SL inválida.",
+            "error"
+        );
+
+        pendingTrade = null;
+        updateButtons();
+
+        return;
+    }
+
+    const realPips =
+        priceDistanceToPips(
+            distanceSL
+        );
+
+    const realRiskAfterFill =
+        getEURUSDPriceRisk(
+            Number(pendingTrade.volume),
+            realPips
+        );
+
+    const realCommissionEstimate =
+        estimateRoundTripCommission(
+            Number(pendingTrade.volume),
+            realEntry
+        );
+
+    const actualOpeningCommission =
+        extractActualOpeningCommission(
+            payload
+        );
+
+    const commissionUsed =
+        Number.isFinite(realCommissionEstimate)
+            ? realCommissionEstimate
+            : 0;
+
+    const realTotalRisk =
+        Number.isFinite(realRiskAfterFill)
+            ? realRiskAfterFill +
+              commissionUsed
+            : null;
+
+    const targetRisk =
+        Number(
+            pendingTrade.targetRisk
+        );
+
+    log(
+        "========== VERIFICACIÓN TRAS FILL V18 ==========",
+        "ok"
+    );
+
+    log(
+        `Entrada usada antes del fill: ${formatPrice(pendingTrade.calculationPrice)}`,
+        "ok"
+    );
+
+    log(
+        `Entrada REAL: ${formatPrice(realEntry)}`,
+        "ok"
+    );
+
+    log(
+        `SL definitivo: ${formatPrice(finalSL)}`,
+        "ok"
+    );
+
+    log(
+        `Distancia REAL: ${Number.isFinite(realPips) ? realPips.toFixed(2) : "NO CALCULABLE"} pips`,
+        "ok"
+    );
+
+    if (
+        Number.isFinite(realRiskAfterFill)
+    ) {
+        log(
+            `Pérdida precio con entrada REAL: ≈ ${realRiskAfterFill.toFixed(2)} $`,
+            "ok"
+        );
+    }
+
+    if (
+        Number.isFinite(realCommissionEstimate)
+    ) {
+        log(
+            `Comisión estimada apertura+cierre: ≈ ${realCommissionEstimate.toFixed(2)} $`,
+            "ok"
+        );
+
+    } else {
+        log(
+            "⚠️ Comisión tras fill NO CALCULABLE.",
+            "warning"
+        );
+    }
+
+    if (
+        Number.isFinite(actualOpeningCommission)
+    ) {
+        log(
+            `Comisión REAL cobrada apertura: ${actualOpeningCommission.toFixed(2)} $`,
+            "ok"
+        );
+
+        if (
+            Number.isFinite(realCommissionEstimate)
+        ) {
+            const estimatedOpeningCommission =
+                realCommissionEstimate / 2;
+
+            log(
+                `Comisión apertura estimada: ${estimatedOpeningCommission.toFixed(2)} $`,
+                "ok"
+            );
+
+            const commissionDifference =
+                actualOpeningCommission -
+                estimatedOpeningCommission;
+
+            log(
+                `Diferencia comisión real/estimada: ${commissionDifference >= 0 ? "+" : ""}${commissionDifference.toFixed(2)} $`,
+                Math.abs(commissionDifference) <= 0.01
+                    ? "ok"
+                    : "warning"
+            );
+        }
+
+    } else {
+        log(
+            "⚠️ No se pudo leer la comisión real de apertura del Deal.",
+            "warning"
+        );
+    }
+
+    if (
+        Number.isFinite(realTotalRisk)
+    ) {
+        log(
+            `RIESGO TOTAL REAL ESTIMADO: ≈ ${realTotalRisk.toFixed(2)} $`,
+            "ok"
+        );
+
+        if (
+            Number.isFinite(targetRisk)
+        ) {
+            const deviation =
+                realTotalRisk -
+                targetRisk;
+
+            log(
+                `Desviación respecto al objetivo: ${deviation >= 0 ? "+" : ""}${deviation.toFixed(2)} $`,
+                Math.abs(deviation) <= 1
+                    ? "ok"
+                    : "warning"
+            );
+        }
+    }
+
+    log(
+        "===============================================",
+        "ok"
+    );
+
+
+    // ========================================================
+    // TP NETO V17
+    // ========================================================
+
+    let tpDistance;
+
+    const tradeRR =
+        Number(pendingTrade.rr);
+
+    const tradeRRNet =
+        Boolean(pendingTrade.rrNet);
+
+    if (tradeRRNet) {
+        const commissionForTP =
+            estimateRoundTripCommission(
+                Number(pendingTrade.volume),
+                realEntry
+            );
+
+        const totalRiskOk =
+            Number.isFinite(realTotalRisk) &&
+            realTotalRisk > 0;
+
+        const commissionOk =
+            Number.isFinite(commissionForTP) &&
+            commissionForTP >= 0;
+
+        const rrOk =
+            Number.isFinite(tradeRR) &&
+            tradeRR > 0;
+
+        const priceRiskOk =
+            Number.isFinite(realRiskAfterFill) &&
+            realRiskAfterFill > 0;
+
+        if (
+            totalRiskOk &&
+            commissionOk &&
+            rrOk &&
+            priceRiskOk
+        ) {
+            const targetNet =
+                realTotalRisk *
+                tradeRR;
+
+            const grossProfitNeeded =
+                targetNet +
+                commissionForTP;
+
+            tpDistance =
+                distanceSL *
+                (
+                    grossProfitNeeded /
+                    realRiskAfterFill
+                );
+
+            log(
+                "========== TP NETO V17 ==========",
+                "ok"
+            );
+
+            log(
+                `RR seleccionado al enviar: 1:${tradeRR}`,
+                "ok"
+            );
+
+            log(
+                `Pérdida por precio hasta SL: ${realRiskAfterFill.toFixed(2)} $`,
+                "ok"
+            );
+
+            log(
+                `Comisión estimada ida+vuelta: ${commissionForTP.toFixed(2)} $`,
+                "ok"
+            );
+
+            log(
+                `RIESGO NETO REAL AL SL: ${realTotalRisk.toFixed(2)} $`,
+                "ok"
+            );
+
+            log(
+                `Beneficio NETO objetivo RR 1:${tradeRR}: ${targetNet.toFixed(2)} $`,
+                "ok"
+            );
+
+            log(
+                `Beneficio BRUTO necesario en TP: ${grossProfitNeeded.toFixed(2)} $`,
+                "ok"
+            );
+
+            log(
+                `Multiplicador distancia TP: ${(grossProfitNeeded / realRiskAfterFill).toFixed(6)}`,
+                "ok"
+            );
+
+            const tpPips =
+                priceDistanceToPips(
+                    tpDistance
+                );
+
+            if (
+                Number.isFinite(tpPips)
+            ) {
+                log(
+                    `Distancia TP: ${tpPips.toFixed(2)} pips`,
+                    "ok"
+                );
+            }
+
+            log(
+                "=================================",
+                "ok"
+            );
+
+        } else {
+            log(
+                "⚠️ TP NETO V17 NO CALCULABLE",
+                "warning"
+            );
+
+            tpDistance =
+                distanceSL *
+                (
+                    rrOk
+                        ? tradeRR
+                        : 1
+                );
+
+            log(
+                `→ Se usa RR 1:${rrOk ? tradeRR : 1} BRUTO como respaldo.`,
+                "warning"
+            );
+        }
+
+    } else {
+        tpDistance =
+            distanceSL *
+            (
+                Number.isFinite(tradeRR) &&
+                tradeRR > 0
+                    ? tradeRR
+                    : 1
+            );
+    }
+
+    let calculatedTP =
+        side === "BUY"
+            ? realEntry +
+              tpDistance
+            : realEntry -
+              tpDistance;
+
+    const finalTP =
+        normalizePrice(
+            calculatedTP
+        );
+
+    if (!Number.isFinite(finalTP)) {
+        log(
+            "TP no válido.",
+            "error"
+        );
+
+        pendingTrade = null;
+        updateButtons();
+
+        return;
+    }
+
+    pendingTrade.finalSL =
+        finalSL;
+
+    pendingTrade.finalTP =
+        finalTP;
+
+    slDisplay.textContent =
+        formatPrice(finalSL);
+
+    tpDisplay.textContent =
+        formatPrice(finalTP);
+
+    log(
+        "🛡️ ENVIANDO SL + TP",
+        "ok"
+    );
+
+    log(
+        `SL: ${formatPrice(finalSL)} | TP: ${formatPrice(finalTP)}`,
+        "ok"
+    );
+
+    protectionRetryCount = 0;
+    protectionSent = false;
+
+    sendProtection(
+        positionId,
+        finalSL,
+        finalTP
+    );
+}
+
+
+// ============================================================
+// PROTECCIÓN
+// ============================================================
+
+function sendProtection(positionId, finalSL, finalTP) {
+    if (
+        !pendingTrade ||
+        protectionSent
+    ) {
+        return;
+    }
+
+    const protectionPayload = {
+        positionId: Number(positionId),
+        stopLoss: finalSL,
+        takeProfit: finalTP
+    };
+
+    log(
+        `🛡️ INTENTO DE PROTECCIÓN ${protectionRetryCount + 1}/${protectionRetryDelays.length + 1}`,
+        "ok"
+    );
+
+    try {
+        modifyOrderProtection(
+            adapter,
+            protectionPayload
+        )
+        .pipe(take(1))
+        .subscribe({
+            next: response => {
+                const responsePayload =
+                    getPayload(response);
+
+                const responseType = String(
+                    getField(
+                        responsePayload,
+                        "ExecutionType",
+                        "executionType",
+                        "PayloadType",
+                        "payloadType"
+                    ) ?? ""
+                );
+
+                const errorCode = String(
+                    getField(
+                        responsePayload,
+                        "ErrorCode",
+                        "errorCode"
+                    ) ?? ""
+                );
+
+                log(
+                    "RESPUESTA modifyOrderProtection: " +
+                    JSON.stringify(response, null, 2)
+                );
+
+                if (
+                    responseType === "ORDER_REPLACED"
+                ) {
+                    protectionSent = true;
+
+                    log(
+                        "🛡️ SL + TP ACEPTADOS POR cTRADER",
+                        "ok"
+                    );
+
+                    pendingTrade = null;
+                    protectionRetryCount = 0;
+
+                    updateButtons();
+                    return;
+                }
+
+                if (
+                    errorCode === "POSITION_NOT_FOUND"
+                ) {
+                    scheduleProtectionRetry(
+                        positionId,
+                        finalSL,
+                        finalTP
+                    );
+
+                    return;
+                }
+
+                if (errorCode) {
+                    log(
+                        `❌ Error cTrader: ${errorCode}`,
+                        "error"
+                    );
+
+                    pendingTrade = null;
+                    protectionSent = false;
+                    protectionRetryCount = 0;
+
+                    updateButtons();
+                    return;
+                }
+
+                scheduleProtectionRetry(
+                    positionId,
+                    finalSL,
+                    finalTP
+                );
+            },
+
+            error: () =>
+                scheduleProtectionRetry(
+                    positionId,
+                    finalSL,
+                    finalTP
+                )
+        });
+
+    } catch (e) {
+        scheduleProtectionRetry(
+            positionId,
+            finalSL,
+            finalTP
+        );
+    }
+}
+
+
+function scheduleProtectionRetry(positionId, finalSL, finalTP) {
+    if (
+        !pendingTrade ||
+        protectionSent
+    ) {
+        return;
+    }
+
+    if (
+        protectionRetryCount >=
+        protectionRetryDelays.length
+    ) {
+        log(
+            "❌ AGOTADOS LOS REINTENTOS DE SL + TP",
+            "error"
+        );
+
+        pendingTrade = null;
+        protectionSent = false;
+        protectionRetryCount = 0;
+
+        updateButtons();
+        return;
+    }
+
+    const delay =
+        protectionRetryDelays[
+            protectionRetryCount++
+        ];
+
+    log(
+        `⏳ Reintentando en ${delay} ms...`,
+        "warning"
+    );
+
+    setTimeout(() => {
+        if (
+            pendingTrade &&
+            !protectionSent
+        ) {
+            sendProtection(
+                positionId,
+                finalSL,
+                finalTP
+            );
+        }
+    }, delay);
+}
+
+
+// ============================================================
+// CIERRE MANUAL
+// ============================================================
+
+function testClosePosition() {
+    if (
+        !connected ||
+        lastPositionId === null
+    ) {
+        log(
+            "No se puede cerrar la posición.",
+            "error"
+        );
+
+        return;
+    }
+
+    const positionId =
+        Number(lastPositionId);
+
+    const volume =
+        Number(lastPositionVolume);
+
+    if (
+        !Number.isFinite(positionId) ||
+        positionId <= 0 ||
+        !Number.isFinite(volume) ||
+        volume <= 0
+    ) {
+        log(
+            "Datos de posición inválidos.",
+            "error"
+        );
+
+        return;
+    }
+
+    closePositionRequest = true;
+
+    updateButtons();
+
+    log(
+        "CIERRE MANUAL",
+        "warning"
+    );
+
+    log(
+        `PositionId: ${positionId} | Volume: ${volume}`,
+        "ok"
+    );
+
+    try {
+        closePosition(adapter, {
+            positionId,
+            volume
+        })
+        .pipe(take(1))
+        .subscribe({
+            next: response => {
+                const errorCode = String(
+                    getField(
+                        getPayload(response),
+                        "ErrorCode",
+                        "errorCode"
+                    ) ?? ""
+                );
+
+                if (errorCode) {
+                    log(
+                        `❌ closePosition rechazado: ${errorCode}`,
+                        "error"
+                    );
+
+                    closePositionRequest = false;
+
+                    updateButtons();
+                    return;
+                }
+
+                log(
+                    "✅ closePosition aceptado.",
+                    "ok"
+                );
+            },
+
+            error: () => {
+                closePositionRequest = false;
+                updateButtons();
+            }
+        });
+
+    } catch (e) {
+        closePositionRequest = false;
+        updateButtons();
+    }
+}
+
+
+// ============================================================
+// EJECUTAR OPERACIÓN V18
+// ============================================================
+
+async function executeTrade(side) {
+    if (
+        !connected ||
+        symbolId === null ||
+        !symbolInfo ||
+        pendingTrade
+    ) {
+        log(
+            "No se puede operar ahora.",
+            "warning"
+        );
+
+        return;
+    }
+
+    let sl;
+    let volume;
+
+    try {
+        sl =
+            await calculateSL(side);
+
+        volume =
+            calculateVolumeFromRisk(
+                side,
+                sl
+            );
+
+    } catch (error) {
+        log(
+            "Error: " +
+            error.message,
+            "error"
+        );
+
+        return;
+    }
+
+    const calculationPrice =
+        side === "BUY"
+            ? lastValidAsk
+            : lastValidBid;
+
+    const baseRisk =
+        Number(
+            riskAmountInput.value
+        );
+
+    const riskMultiplier =
+        selectedRiskMultiplier;
+
+    const targetRisk =
+        baseRisk *
+        riskMultiplier;
+
+    pendingTrade = {
+        side,
+        sl,
+        volume,
+        baseRisk,
+        riskMultiplier,
+        targetRisk,
+        calculationPrice,
+
+        rr: selectedRR,
+        rrNet: selectedRRNet,
+
+        positionId: null,
+        orderId: null,
+        realEntry: null,
+        finalSL: null,
+        finalTP: null
+    };
+
+    protectionSent = false;
+    protectionRetryCount = 0;
+
+    slDisplay.textContent =
+        formatPrice(sl);
+
+    tpDisplay.textContent = "---";
+    positionDisplay.textContent = "---";
+    entryDisplay.textContent = "---";
+
+    orderVolumeDisplay.textContent =
+        String(volume);
+
+    updateButtons();
+
+    log(
+        `Enviando MARKET | Volumen: ${volume}`,
+        "ok"
+    );
+
+    log(
+        `Riesgo guardado: ${baseRisk.toFixed(2)} $ × X${riskMultiplier} = ${targetRisk.toFixed(2)} $ | Precio de cálculo guardado: ${formatPrice(calculationPrice)}`,
+        "ok"
+    );
+
+    try {
+        createNewOrder(adapter, {
+            symbolId,
+
+            orderType:
+                ServerInterfaces
+                    .ProtoOrderType
+                    .MARKET,
+
+            tradeSide:
+                side === "BUY"
+                    ? ServerInterfaces
+                        .ProtoTradeSide
+                        .BUY
+                    : ServerInterfaces
+                        .ProtoTradeSide
+                        .SELL,
+
+            volume,
+
+            clientOrderId:
+                "AQT_" +
+                Date.now()
+        })
+        .pipe(take(1))
+        .subscribe({
+            next: response => {
+                log(
+                    "RESPUESTA createNewOrder: " +
+                    JSON.stringify(response, null, 2)
+                );
+
+                processOrderResponse(response);
+            },
+
+            error: error => {
+                log(
+                    "❌ Error createNewOrder: " +
+                    JSON.stringify(error),
+                    "error"
+                );
+
+                pendingTrade = null;
+
+                updateButtons();
+            }
+        });
+
+    } catch (error) {
+        log(
+            "❌ Excepción createNewOrder: " +
+            error.message,
+            "error"
+        );
+
+        pendingTrade = null;
+
+        updateButtons();
+    }
+}
+
+
+// ============================================================
+// DOBLE PULSACIÓN
+// ============================================================
+
+buyButton.addEventListener("click", () => {
+    const now = Date.now();
+
+    if (
+        now -
+        lastClickBuy <
+        DOUBLE_CLICK_MS
+    ) {
+        lastClickBuy = 0;
+
+        executeTrade("BUY");
+
+    } else {
+        lastClickBuy = now;
+
+        log(
+            "Pulsa COMPRA de nuevo en 1.5 s para confirmar",
+            "warning"
+        );
+    }
+});
+
+
+sellButton.addEventListener("click", () => {
+    const now = Date.now();
+
+    if (
+        now -
+        lastClickSell <
+        DOUBLE_CLICK_MS
+    ) {
+        lastClickSell = 0;
+
+        executeTrade("SELL");
+
+    } else {
+        lastClickSell = now;
+
+        log(
+            "Pulsa VENTA de nuevo en 1.5 s para confirmar",
+            "warning"
+        );
+    }
+});
+
+
+closePositionButton.addEventListener("click", () => {
+    const now = Date.now();
+
+    if (
+        now -
+        lastClickClose <
+        DOUBLE_CLICK_MS
+    ) {
+        lastClickClose = 0;
+
+        testClosePosition();
+
+    } else {
+        lastClickClose = now;
+
+        log(
+            "Pulsa CIERRE MANUAL de nuevo en 1.5 s para confirmar",
+            "warning"
+        );
+    }
+});
+
+
+// ============================================================
+// INICIO
+// ============================================================
+
+initialize();
+
+</script>
+
+</body>
+</html>
