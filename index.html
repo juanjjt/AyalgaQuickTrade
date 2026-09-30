@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Último web plugin de ctrader con alembert <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -235,7 +235,8 @@
         <label>Marco temporal</label>
         <div class="row" id="timeframeButtons">
             <button class="tf-button active" data-tf="1">M1</button>
-            <button class="tf-button" data-tf="15">M15</button>
+            <button class="tf-button" data-tf="3">M3</button>
+            <button class="tf-button" data-tf="5">M5</button>
         </div>
     </div>
 
@@ -519,7 +520,7 @@ function getTimeframeName(period) {
     const names = {
         1: "M1",
         5: "M5",
-        15: "M15",
+        3: "M3",
         30: "M30",
         60: "H1",
         240: "H4"
@@ -1129,7 +1130,8 @@ function getClosedTrendbars(periodMinutes, count) {
 
         const periodMap = {
             1: 1,
-            15: 11
+            3: 3,
+            5: 5
         };
 
         const period = periodMap[periodMinutes];
