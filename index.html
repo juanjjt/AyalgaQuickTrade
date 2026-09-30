@@ -1,9 +1,9 @@
-Último web plugin de ctrader con alembert <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V19</title>
+<title>Ayalga Quick Trade V20</title>
 <style>
     * {
         box-sizing: border-box;
@@ -219,6 +219,7 @@
 
     <div class="header">
         <div id="symbolDisplay" class="symbol-top">---</div>
+        <div id="nextRiskDisplay" class="symbol-top" title="Riesgo objetivo de la próxima operación">--- $</div>
         <div id="pilot" class="pilot"></div>
     </div>
 
@@ -227,6 +228,7 @@
         <div class="row">
             <button class="candle-button" data-candles="5">5</button>
             <button class="candle-button active" data-candles="10">10</button>
+            <button class="candle-button" data-candles="15">15</button>
         </div>
         <input id="candleCount" type="hidden" value="10">
     </div>
@@ -311,7 +313,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V19
+        Ayalga Quick Trade · V20
     </div>
 
 </div>
@@ -361,7 +363,7 @@ let lastValidAsk = null;
 
 let selectedRR = 1;
 
-// V19 d'Alembert
+// V20 d'Alembert
 // Paso de la progresión (1..4 o 1..5). Siempre arranca en X1.
 let selectedStep = 1;
 
@@ -415,6 +417,7 @@ const step5Button = document.getElementById("step5Button");
 const candleCountInput = document.getElementById("candleCount");
 const riskAmountInput = document.getElementById("riskAmount");
 const symbolDisplay = document.getElementById("symbolDisplay");
+const nextRiskDisplay = document.getElementById("nextRiskDisplay");
 const rrDisplay = document.getElementById("rrDisplay");
 const bidDisplay = document.getElementById("bidDisplay");
 const askDisplay = document.getElementById("askDisplay");
@@ -541,7 +544,7 @@ function fmtTime(timestamp) {
 }
 
 // ============================================================
-// D'ALEMBERT V19
+// D'ALEMBERT V20
 // ============================================================
 
 function getMaxSteps() {
@@ -578,7 +581,15 @@ function formatMoney(value) {
     return (Math.round(value * 100) / 100).toFixed(2);
 }
 
+function updateNextRiskDisplay() {
+    const nextRisk = getStepRisk();
+    nextRiskDisplay.textContent = Number.isFinite(nextRisk) && nextRisk > 0
+        ? formatMoney(nextRisk) + " $"
+        : "--- $";
+}
+
 function logTheoreticalRisk(reason) {
+    updateNextRiskDisplay();
     const target = Number(riskAmountInput.value);
     const steps = getMaxSteps();
     const step = selectedStep;
@@ -805,7 +816,7 @@ function getSymbolFromURL() {
 
 async function initialize() {
     log(
-        "Ayalga Quick Trade V19 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador",
+        "Ayalga Quick Trade V20 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador",
         "ok"
     );
     log("Iniciando...");
@@ -1693,12 +1704,12 @@ function normalizeVolumeDown(volume) {
 }
 
 // ============================================================
-// CÁLCULO DEL VOLUMEN V19 (riesgo = paso d'Alembert)
+// CÁLCULO DEL VOLUMEN V20 (riesgo = paso d'Alembert)
 // ============================================================
 
 function calculateVolumeFromRisk(side, sl) {
     // ========================================================
-    // V19
+    // V20
     // Riesgo real solicitado = riesgo del paso d'Alembert
     // (objetivo acumulado / suma unidades) × paso
     // ========================================================
@@ -1846,7 +1857,7 @@ function calculateVolumeFromRisk(side, sl) {
     const maxSteps = getMaxSteps();
     const unit = getDAlembertUnit(target, maxSteps);
 
-    log("========== CÁLCULO DE VOLUMEN V19 ==========", "ok");
+    log("========== CÁLCULO DE VOLUMEN V20 ==========", "ok");
     log(
         `OBJETIVO ACUMULADO: ${formatMoney(target)} $ | PASOS: ${maxSteps} | CONSERVADOR: ${selectedConservador ? "ON" : "OFF"}`,
         "ok"
@@ -1978,7 +1989,7 @@ async function handleFilledExecution(payload) {
 
     const targetRisk = Number(pendingTrade.targetRisk);
 
-    log("========== VERIFICACIÓN TRAS FILL V19 ==========", "ok");
+    log("========== VERIFICACIÓN TRAS FILL V20 ==========", "ok");
     log(
         `Entrada usada antes del fill: ${formatPrice(pendingTrade.calculationPrice)}`,
         "ok"
@@ -2049,7 +2060,7 @@ async function handleFilledExecution(payload) {
     log("===============================================", "ok");
 
     // ============================================================
-    // TP NETO V17
+    // TP NETO V20
     // Se mantiene exactamente la lógica validada.
     // ============================================================
 
@@ -2079,7 +2090,7 @@ async function handleFilledExecution(payload) {
             tpDistance =
                 distanceSL * (grossProfitNeeded / realRiskAfterFill);
 
-            log("========== TP NETO V17 ==========", "ok");
+            log("========== TP NETO V20 ==========", "ok");
             log(`RR seleccionado al enviar: 1:${tradeRR}`, "ok");
             log(
                 `Pérdida por precio hasta SL: ${realRiskAfterFill.toFixed(2)} $`,
@@ -2115,7 +2126,7 @@ async function handleFilledExecution(payload) {
             log("=================================", "ok");
 
         } else {
-            log("⚠️ TP NETO V17 NO CALCULABLE", "warning");
+            log("⚠️ TP NETO V20 NO CALCULABLE", "warning");
             tpDistance = distanceSL * (rrOk ? tradeRR : 1);
             log(
                 `→ Se usa RR 1:${rrOk ? tradeRR : 1} BRUTO como respaldo.`,
@@ -2320,7 +2331,7 @@ function testClosePosition() {
 }
 
 // ============================================================
-// EJECUTAR OPERACIÓN V19
+// EJECUTAR OPERACIÓN V20
 // ============================================================
 
 async function executeTrade(side) {
@@ -2348,7 +2359,7 @@ async function executeTrade(side) {
     const calculationPrice = side === "BUY" ? lastValidAsk : lastValidBid;
 
     // ========================================================
-    // V19
+    // V20
     // Congelamos objetivo, paso, conservador y riesgo de ESTA operación.
     // ========================================================
 
@@ -2370,7 +2381,7 @@ async function executeTrade(side) {
         conservador,
         targetRisk,
         calculationPrice,
-        // V17
+        // V20
         rr: selectedRR,
         rrNet: selectedRRNet,
         positionId: null,
