@@ -1,2496 +1,2431 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V20</title>
-<style>
-    * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-    }
-    body {
-        margin: 0;
-        padding: 14px;
-        background: #111;
-        color: #fff;
-        font-family: Arial, sans-serif;
-        font-size: 15px;
-    }
-    .container {
-        width: 100%;
-        max-width: 520px;
-        margin: 0 auto;
-    }
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-        padding: 0 2px;
-    }
-    .symbol-top {
-        font-size: 20px;
-        font-weight: bold;
-        letter-spacing: 0.5px;
-    }
-    .pilot {
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #b32626;
-        box-shadow: 0 0 6px rgba(179, 38, 38, 0.7);
-        flex-shrink: 0;
-    }
-    .pilot.connected {
-        background: #168a45;
-        box-shadow: 0 0 6px rgba(22, 138, 69, 0.7);
-    }
-    .section {
-        background: #1b1b1b;
-        border-radius: 10px;
-        padding: 14px;
-        margin-bottom: 12px;
-    }
-    .row {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-    }
-    .row:last-child {
-        margin-bottom: 0;
-    }
-    #timeframeButtons {
-        flex-wrap: nowrap;
-        gap: 5px;
-    }
-    label {
-        display: block;
-        font-size: 13px;
-        color: #aaa;
-        margin-bottom: 6px;
-    }
-    button {
-        border: none;
-        border-radius: 9px;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-        min-height: 48px;
-        cursor: pointer;
-        touch-action: manipulation;
-    }
-    button:disabled {
-        opacity: 0.35;
-    }
-    .buy {
-        background: #168a45;
-        flex: 1;
-        font-size: 18px;
-        min-height: 56px;
-    }
-    .sell {
-        background: #b32626;
-        flex: 1;
-        font-size: 18px;
-        min-height: 56px;
-    }
-    .close-test {
-        background: #d17a00;
-        width: 100%;
-        min-height: 52px;
-        font-size: 16px;
-    }
-    .rr-button, .risk-button, .step-button, .candle-button {
-        flex: 1;
-        background: #333;
-        border: 2px solid #555;
-        min-height: 46px;
-        font-size: 15px;
-        min-width: 58px;
-    }
-    .tf-button {
-        flex: 1;
-        background: #333;
-        border: 2px solid #555;
-        min-height: 42px;
-        font-size: 13px;
-        min-width: 0;
-        padding: 0 2px;
-    }
-    .rr-button.active,
-    .tf-button.active,
-    .risk-button.active,
-    .step-button.active,
-    .candle-button.active {
-        background: #555;
-        border-color: white;
-    }
-    /* Paso X5 bloqueado (conservador OFF) */
-    .step-button.step-locked {
-        opacity: 0.28;
-        background: #222;
-        border-color: #333;
-        color: #666;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-    /* Modo conservador ON: silueta roja en riesgo y paso activos */
-    .conservador-on .risk-button.active,
-    .conservador-on .step-button.active {
-        background: #5a3030;
-        border-color: #ff3b30;
-        box-shadow: 0 0 10px rgba(255, 59, 48, 0.75);
-    }
-    .net-tp-line {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 8px;
-        margin: -4px 2px 8px 0;
-        color: #888;
-        font-size: 12px;
-    }
-    .net-toggle {
-        position: relative;
-        width: 34px;
-        min-width: 34px;
-        height: 18px;
-        min-height: 18px;
-        padding: 0;
-        border: 1px solid #555;
-        border-radius: 10px;
-        background: #292929;
-    }
-    .net-toggle span {
-        position: absolute;
-        width: 12px;
-        height: 12px;
-        left: 2px;
-        top: 2px;
-        border-radius: 50%;
-        background: #888;
-        transition: transform .15s ease, background .15s ease;
-    }
-    .net-toggle.active {
-        background: #444;
-        border-color: #888;
-    }
-    .net-toggle.active span {
-        transform: translateX(16px);
-        background: #fff;
-    }
-    .info-section {
-        display: none;
-    }
-    #log {
-        background: #050505;
-        border: 1px solid #333;
-        border-radius: 7px;
-        padding: 10px;
-        height: 260px;
-        overflow-y: auto;
-        font-family: monospace;
-        font-size: 12px;
-        line-height: 1.4;
-        white-space: pre-wrap;
-        word-break: break-word;
-    }
-    .log-title {
-        font-weight: bold;
-        margin-bottom: 8px;
-        font-size: 15px;
-    }
-    .plugin-footer {
-        text-align: center;
-        margin-top: 14px;
-        font-size: 13px;
-        color: #888;
-    }
-    .danger { color: #ff6666; }
-    .success { color: #4ddd82; }
-    .warning { color: #ffd35a; }
-    .muted { color: #999; }
-</style>
-</head>
-<body>
-<div class="container" id="appContainer">
-
-    <div class="header">
-        <div id="symbolDisplay" class="symbol-top">---</div>
-        <div id="nextRiskDisplay" class="symbol-top" title="Riesgo objetivo de la próxima operación">--- $</div>
-        <div id="pilot" class="pilot"></div>
-    </div>
-
-    <div class="section">
-        <label>Velas de Swing para SL</label>
-        <div class="row">
-            <button class="candle-button" data-candles="5">5</button>
-            <button class="candle-button active" data-candles="10">10</button>
-            <button class="candle-button" data-candles="15">15</button>
-        </div>
-        <input id="candleCount" type="hidden" value="10">
-    </div>
-
-    <div class="section">
-        <label>Marco temporal</label>
-        <div class="row" id="timeframeButtons">
-            <button class="tf-button active" data-tf="1">M1</button>
-            <button class="tf-button" data-tf="3">M3</button>
-            <button class="tf-button" data-tf="5">M5</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <label>PÉRDIDA ACUMULADA (d'Alembert)</label>
-        <div class="row">
-            <button class="risk-button active" data-risk="250">250</button>
-            <button class="risk-button" data-risk="500">500</button>
-        </div>
-        <label>PASO DE LA PROGRESIÓN</label>
-        <div class="row" id="stepButtons">
-            <button class="step-button active" data-step="1">X1</button>
-            <button class="step-button" data-step="2">X2</button>
-            <button class="step-button" data-step="3">X3</button>
-            <button class="step-button" data-step="4">X4</button>
-            <button class="step-button step-locked" data-step="5" id="step5Button">X5</button>
-        </div>
-        <input id="riskAmount" type="hidden" value="250">
-    </div>
-
-    <div class="section">
-        <div class="row">
-            <button id="buyButton" class="buy" disabled>COMPRA</button>
-            <button id="sellButton" class="sell" disabled>VENTA</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="row">
-            <button id="closePositionButton" class="close-test" disabled>CIERRE MANUAL</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <label>RATIO RIESGO / BENEFICIO</label>
-        <div class="row">
-            <button id="rr1" class="rr-button active">RR 1:1</button>
-            <button id="rr2" class="rr-button">RR 1:2</button>
-        </div>
-    </div>
-
-    <div class="net-tp-line">
-        <span>TP neto</span>
-        <button id="netTpButton" class="net-toggle" type="button" aria-pressed="false">
-            <span></span>
-        </button>
-    </div>
-
-    <div class="net-tp-line">
-        <span>Modo conservador</span>
-        <button id="conservadorButton" class="net-toggle" type="button" aria-pressed="false">
-            <span></span>
-        </button>
-    </div>
-
-    <div class="section info-section">
-        <div id="symbolDisplayHidden"></div>
-        <div id="rrDisplay">1:1</div>
-        <div id="bidDisplay">---</div>
-        <div id="askDisplay">---</div>
-        <div id="minVolumeDisplay">---</div>
-        <div id="orderVolumeDisplay">---</div>
-        <div id="slDisplay">---</div>
-        <div id="tpDisplay">---</div>
-        <div id="positionDisplay">---</div>
-        <div id="entryDisplay">---</div>
-    </div>
-
-    <div class="section">
-        <div class="log-title">REGISTRO</div>
-        <div id="log"></div>
-    </div>
-
-    <div class="plugin-footer">
-        Ayalga Quick Trade · V20
-    </div>
-
-</div>
-
-<script type="module">
-
-import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api";
-
-import {
-    handleConfirmEvent,
-    registerEvent,
-    getLightSymbolList,
-    getSymbol,
-    subscribeQuotes,
-    quoteEvent,
-    executionEvent,
-    createNewOrder,
-    modifyOrderProtection,
-    closePosition,
-    getTrendbarList,
-    ServerInterfaces
-} from "https://esm.sh/@spotware-web-team/sdk";
-
-import {
-    take,
-    tap,
-    catchError
-} from "https://esm.sh/rxjs";
-
-import {
-    createLogger
-} from "https://esm.sh/@veksa/logger";
-
-// ============================================================
-// VARIABLES
-// ============================================================
-
-let adapter = null;
-let connected = false;
-
-let symbolId = null;
-let symbolName = "";
-let symbolInfo = null;
-
-let lastValidBid = null;
-let lastValidAsk = null;
-
-let selectedRR = 1;
-
-// V20 d'Alembert
-// Paso de la progresión (1..4 o 1..5). Siempre arranca en X1.
-let selectedStep = 1;
-
-let selectedRRNet = localStorage.getItem("ayalgaTpNeto") === "1";
-
-// Modo conservador: 5 pasos en lugar de 4.
-let selectedConservador = localStorage.getItem("ayalgaConservador") === "1";
-
-let selectedTimeframe = 1;
-
-let pendingTrade = null;
-
-let protectionSent = false;
-let protectionRetryCount = 0;
-
-const protectionRetryDelays = [
-    250,
-    500,
-    750,
-    1000,
-    1500,
-    2000,
-    3000
-];
-
-let lastPositionId = null;
-let lastPositionVolume = null;
-
-let closePositionRequest = false;
-
-const DOUBLE_CLICK_MS = 1500;
-
-let lastClickBuy = 0;
-let lastClickSell = 0;
-let lastClickClose = 0;
-
-// ============================================================
-// ELEMENTOS UI
-// ============================================================
-
-const appContainer = document.getElementById("appContainer");
-const pilotElement = document.getElementById("pilot");
-const buyButton = document.getElementById("buyButton");
-const sellButton = document.getElementById("sellButton");
-const closePositionButton = document.getElementById("closePositionButton");
-const rr1Button = document.getElementById("rr1");
-const rr2Button = document.getElementById("rr2");
-const netTpButton = document.getElementById("netTpButton");
-const conservadorButton = document.getElementById("conservadorButton");
-const step5Button = document.getElementById("step5Button");
-const candleCountInput = document.getElementById("candleCount");
-const riskAmountInput = document.getElementById("riskAmount");
-const symbolDisplay = document.getElementById("symbolDisplay");
-const nextRiskDisplay = document.getElementById("nextRiskDisplay");
-const rrDisplay = document.getElementById("rrDisplay");
-const bidDisplay = document.getElementById("bidDisplay");
-const askDisplay = document.getElementById("askDisplay");
-const minVolumeDisplay = document.getElementById("minVolumeDisplay");
-const orderVolumeDisplay = document.getElementById("orderVolumeDisplay");
-const slDisplay = document.getElementById("slDisplay");
-const tpDisplay = document.getElementById("tpDisplay");
-const positionDisplay = document.getElementById("positionDisplay");
-const entryDisplay = document.getElementById("entryDisplay");
-const logElement = document.getElementById("log");
-
-const logger = createLogger(location.href.includes("showLogs"));
-
-// ============================================================
-// LOG
-// ============================================================
-
-function log(message, type = "") {
-    const now = new Date();
-    const time = now.toLocaleTimeString("es-ES", { hour12: false });
-    const line = `[${time}] ${message}`;
-    const div = document.createElement("div");
-    div.textContent = line;
-
-    if (type === "error") div.className = "danger";
-    if (type === "ok") div.className = "success";
-    if (type === "warning") div.className = "warning";
-    if (type === "muted") div.className = "muted";
-
-    logElement.appendChild(div);
-    logElement.scrollTop = logElement.scrollHeight;
-    console.log(line);
-}
-
-function setStatus(text) {
-    if (text === "CONECTADO") {
-        pilotElement.classList.add("connected");
-    } else {
-        pilotElement.classList.remove("connected");
-    }
-}
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-function getField(obj, ...names) {
-    if (!obj) return null;
-    for (const name of names) {
-        if (obj[name] !== undefined && obj[name] !== null) {
-            return obj[name];
-        }
-    }
-    return null;
-}
-
-function getPayload(response) {
-    if (!response) return null;
-    return response.payload || response;
-}
-
-function getArray(obj, ...names) {
-    if (!obj) return [];
-    for (const name of names) {
-        if (Array.isArray(obj[name])) {
-            return obj[name];
-        }
-    }
-    return [];
-}
-
-function normalizePrice(price) {
-    const numericPrice = Number(price);
-    if (!Number.isFinite(numericPrice)) {
-        return null;
-    }
-    const digits = Number(getField(symbolInfo, "digits", "Digits") ?? 5);
-    const factor = Math.pow(10, digits);
-    return Number(
-        (
-            Math.round((numericPrice + Number.EPSILON) * factor) / factor
-        ).toFixed(digits)
-    );
-}
-
-function formatPrice(price) {
-    const numericPrice = Number(price);
-    if (!Number.isFinite(numericPrice)) {
-        return "---";
-    }
-    const digits = Number(getField(symbolInfo, "digits", "Digits") ?? 5);
-    return numericPrice.toFixed(digits);
-}
-
-function roundToDigits(value) {
-    const digits = Number(getField(symbolInfo, "digits", "Digits") ?? 5);
-    return Number(
-        Number(value).toFixed(Number.isFinite(digits) ? digits : 5)
-    );
-}
-
-function getTimeframeName(period) {
-    const names = {
-        1: "M1",
-        5: "M5",
-        3: "M3",
-        30: "M30",
-        60: "H1",
-        240: "H4"
-    };
-    return names[period] || String(period);
-}
-
-function fmtTime(timestamp) {
-    const d = new Date(Number(timestamp));
-    if (!Number.isFinite(d.getTime())) {
-        return "--:--";
-    }
-    return d.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-    });
-}
-
-// ============================================================
-// D'ALEMBERT V20
-// ============================================================
-
-function getMaxSteps() {
-    return selectedConservador ? 5 : 4;
-}
-
-function getDAlembertUnit(target, steps) {
-    const sumUnits = steps * (steps + 1) / 2;
-    return target / sumUnits;
-}
-
-function getStepRisk() {
-    const target = Number(riskAmountInput.value);
-    const steps = getMaxSteps();
-    const step = selectedStep;
-
-    if (
-        !Number.isFinite(target) ||
-        target <= 0 ||
-        !Number.isFinite(step) ||
-        step < 1 ||
-        step > steps
-    ) {
-        return null;
-    }
-
-    const unit = getDAlembertUnit(target, steps);
-    return unit * step;
-}
-
-function formatMoney(value) {
-    if (!Number.isFinite(value)) return "---";
-    // Hasta 2 decimales, sin ceros innecesarios raros
-    return (Math.round(value * 100) / 100).toFixed(2);
-}
-
-function updateNextRiskDisplay() {
-    const nextRisk = getStepRisk();
-    nextRiskDisplay.textContent = Number.isFinite(nextRisk) && nextRisk > 0
-        ? formatMoney(nextRisk) + " $"
-        : "--- $";
-}
-
-function logTheoreticalRisk(reason) {
-    updateNextRiskDisplay();
-    const target = Number(riskAmountInput.value);
-    const steps = getMaxSteps();
-    const step = selectedStep;
-    const unit = getDAlembertUnit(target, steps);
-    const risk = getStepRisk();
-
-    log("========== RIESGO TEÓRICO d'ALEMBERT ==========", "ok");
-    if (reason) {
-        log(reason, "ok");
-    }
-    log(
-        `Objetivo pérdida acumulada: ${formatMoney(target)} $`,
-        "ok"
-    );
-    log(
-        `Pasos totales: ${steps} ${selectedConservador ? "(conservador ON)" : "(conservador OFF)"}`,
-        "ok"
-    );
-    log(
-        `Unidad base: ${formatMoney(unit)} $  (suma 1+…+${steps} = ${steps * (steps + 1) / 2} unidades)`,
-        "ok"
-    );
-    log(
-        `Paso seleccionado: X${step} → riesgo teórico esta operación: ${formatMoney(risk)} $`,
-        "ok"
-    );
-
-    // Mostrar toda la escalera teórica
-    const ladder = [];
-    for (let k = 1; k <= steps; k++) {
-        ladder.push(`X${k}=${formatMoney(unit * k)}$`);
-    }
-    log(`Escalera completa: ${ladder.join(" | ")}`, "muted");
-    log("===============================================", "ok");
-}
-
-// ============================================================
-// BOTONES TIMEFRAME
-// ============================================================
-
-document.querySelectorAll(".tf-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".tf-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedTimeframe = Number(btn.dataset.tf);
-        log(`Timeframe SL seleccionado: ${getTimeframeName(selectedTimeframe)}`, "ok");
-    });
-});
-
-// ============================================================
-// BOTONES VELAS
-// ============================================================
-
-document.querySelectorAll(".candle-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".candle-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        candleCountInput.value = btn.dataset.candles;
-        log(`Velas de Swing para SL: ${btn.dataset.candles}`, "ok");
-    });
-});
-
-// ============================================================
-// BOTONES PÉRDIDA ACUMULADA (250 / 500)
-// ============================================================
-
-const savedBaseRisk = Number(localStorage.getItem("ayalgaRiskAmount"));
-
-if ([250, 500].includes(savedBaseRisk)) {
-    riskAmountInput.value = String(savedBaseRisk);
-}
-
-document.querySelectorAll(".risk-button").forEach(btn => {
-    btn.classList.toggle(
-        "active",
-        Number(btn.dataset.risk) === Number(riskAmountInput.value)
-    );
-
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".risk-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        riskAmountInput.value = btn.dataset.risk;
-        localStorage.setItem("ayalgaRiskAmount", btn.dataset.risk);
-        logTheoreticalRisk(`Pérdida acumulada seleccionada: ${btn.dataset.risk} $`);
-    });
-});
-
-// ============================================================
-// BOTONES PASO (X1 … X5)
-// ============================================================
-
-selectedStep = 1;
-
-function updateStepButtonsUI() {
-    const maxSteps = getMaxSteps();
-
-    document.querySelectorAll(".step-button").forEach(btn => {
-        const step = Number(btn.dataset.step);
-
-        // X5 bloqueado si conservador OFF
-        if (step === 5) {
-            if (selectedConservador) {
-                btn.classList.remove("step-locked");
-                btn.disabled = false;
-            } else {
-                btn.classList.add("step-locked");
-                btn.disabled = true;
-                // Si estábamos en X5 y se apaga conservador, bajamos a X4
-                if (selectedStep === 5) {
-                    selectedStep = 4;
-                }
-            }
-        }
-
-        btn.classList.toggle("active", step === selectedStep);
-    });
-}
-
-document.querySelectorAll(".step-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const step = Number(btn.dataset.step);
-        if (step === 5 && !selectedConservador) {
-            return;
-        }
-
-        document.querySelectorAll(".step-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedStep = step;
-        logTheoreticalRisk(`Paso seleccionado: X${step}`);
-    });
-});
-
-updateStepButtonsUI();
-
-// ============================================================
-// RR
-// ============================================================
-
-rr1Button.addEventListener("click", () => {
-    selectedRR = 1;
-    rr1Button.classList.add("active");
-    rr2Button.classList.remove("active");
-    rrDisplay.textContent = "1:1";
-    log("RR seleccionado: 1:1", "ok");
-});
-
-rr2Button.addEventListener("click", () => {
-    selectedRR = 2;
-    rr2Button.classList.add("active");
-    rr1Button.classList.remove("active");
-    rrDisplay.textContent = "1:2";
-    log("RR seleccionado: 1:2", "ok");
-});
-
-netTpButton.classList.toggle("active", selectedRRNet);
-netTpButton.setAttribute("aria-pressed", String(selectedRRNet));
-
-netTpButton.addEventListener("click", () => {
-    selectedRRNet = !selectedRRNet;
-    localStorage.setItem("ayalgaTpNeto", selectedRRNet ? "1" : "0");
-    netTpButton.classList.toggle("active", selectedRRNet);
-    netTpButton.setAttribute("aria-pressed", String(selectedRRNet));
-    log(selectedRRNet ? "TP NETO activado" : "TP NETO desactivado", "ok");
-});
-
-// ============================================================
-// MODO CONSERVADOR
-// ============================================================
-
-function applyConservadorVisual() {
-    appContainer.classList.toggle("conservador-on", selectedConservador);
-}
-
-conservadorButton.classList.toggle("active", selectedConservador);
-conservadorButton.setAttribute("aria-pressed", String(selectedConservador));
-applyConservadorVisual();
-updateStepButtonsUI();
-
-conservadorButton.addEventListener("click", () => {
-    selectedConservador = !selectedConservador;
-    localStorage.setItem("ayalgaConservador", selectedConservador ? "1" : "0");
-    conservadorButton.classList.toggle("active", selectedConservador);
-    conservadorButton.setAttribute("aria-pressed", String(selectedConservador));
-    applyConservadorVisual();
-    updateStepButtonsUI();
-
-    logTheoreticalRisk(
-        selectedConservador
-            ? "Modo conservador ACTIVADO (5 pasos)"
-            : "Modo conservador DESACTIVADO (4 pasos)"
-    );
-});
-
-// ============================================================
-// BOTONES
-// ============================================================
-
-function updateButtons() {
-    const enabled =
-        connected &&
-        symbolId !== null &&
-        symbolInfo !== null &&
-        !pendingTrade;
-
-    buyButton.disabled = !enabled;
-    sellButton.disabled = !enabled;
-    closePositionButton.disabled =
-        !connected ||
-        lastPositionId === null ||
-        closePositionRequest;
-}
-
-// ============================================================
-// URL
-// ============================================================
-
-function getSymbolFromURL() {
-    return new URLSearchParams(window.location.search).get("symbol");
-}
-
-// ============================================================
-// INICIO
-// ============================================================
-
-async function initialize() {
-    log(
-        "Ayalga Quick Trade V20 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador",
-        "ok"
-    );
-    log("Iniciando...");
-
-    // Mostrar riesgo teórico inicial
-    logTheoreticalRisk("Estado inicial");
-
-    try {
-        adapter = createClientAdapter({ logger });
-
-        handleConfirmEvent(adapter, {})
-            .pipe(take(1))
-            .subscribe({
-                next: () => log("Confirmación inicial recibida.", "ok"),
-                error: err =>
-                    log("Error en confirmación: " + JSON.stringify(err), "error")
-            });
-
-        registerEvent(adapter)
-            .pipe(
-                take(1),
-                tap(() => {
-                    log("Plugin registrado correctamente.", "ok");
-
-                    handleConfirmEvent(adapter, {})
-                        .pipe(take(1))
-                        .subscribe();
-
-                    connected = true;
-                    setStatus("CONECTADO");
-                    updateButtons();
-                    subscribeExecutionEvents();
-                    subscribeQuoteEvents();
-                    loadSymbols();
-                }),
-                catchError(err => {
-                    log("Error registrando plugin: " + JSON.stringify(err), "error");
-                    return [];
-                })
-            )
-            .subscribe({
-                error: err =>
-                    log("Error general de registro: " + JSON.stringify(err), "error")
-            });
-
-    } catch (error) {
-        log("ERROR INICIANDO: " + error.message, "error");
-    }
-}
-
-// ============================================================
-// SUBSCRIPCIONES
-// ============================================================
-
-function subscribeExecutionEvents() {
-    try {
-        log("Suscribiendo executionEvent...");
-        executionEvent(adapter).subscribe({
-            next: event => processExecutionEvent(event),
-            error: error =>
-                log("Error executionEvent: " + JSON.stringify(error), "error")
-        });
-        log("executionEvent suscrito correctamente.", "ok");
-    } catch (error) {
-        log("Error suscribiendo executionEvent: " + error.message, "error");
-    }
-}
-
-function subscribeQuoteEvents() {
-    try {
-        log("Suscribiendo quoteEvent...");
-        quoteEvent(adapter).subscribe({
-            next: quote => processQuote(quote),
-            error: error =>
-                log("Error quoteEvent: " + JSON.stringify(error), "error")
-        });
-        log("quoteEvent suscrito correctamente.", "ok");
-    } catch (error) {
-        log("Error suscribiendo quoteEvent: " + error.message, "error");
-    }
-}
-
-// ============================================================
-// QUOTES
-// ============================================================
-
-function processQuote(response) {
-    const payload = getPayload(response);
-    if (!payload) return;
-
-    function normalizeQuotePrice(raw) {
-        let p = Number(raw);
-        if (!Number.isFinite(p) || p <= 0) {
-            return null;
-        }
-        if (p > 10000) {
-            p = p / 100000;
-        }
-        return p;
-    }
-
-    const quotes = getArray(payload, "quote", "Quote");
-
-    if (quotes.length > 0) {
-        for (const q of quotes) {
-            const qSymbolId = Number(getField(q, "symbolId", "SymbolId"));
-            if (symbolId !== null && qSymbolId !== symbolId) {
-                continue;
-            }
-
-            const bid = normalizeQuotePrice(getField(q, "bid", "Bid"));
-            const ask = normalizeQuotePrice(getField(q, "ask", "Ask"));
-
-            if (bid !== null) {
-                lastValidBid = bid;
-                bidDisplay.textContent = formatPrice(bid);
-            }
-            if (ask !== null) {
-                lastValidAsk = ask;
-                askDisplay.textContent = formatPrice(ask);
-            }
-        }
-        return;
-    }
-
-    const qSymbolId = Number(getField(payload, "symbolId", "SymbolId"));
-    if (
-        symbolId !== null &&
-        Number.isFinite(qSymbolId) &&
-        qSymbolId !== symbolId
-    ) {
-        return;
-    }
-
-    const bid = normalizeQuotePrice(getField(payload, "bid", "Bid"));
-    const ask = normalizeQuotePrice(getField(payload, "ask", "Ask"));
-
-    if (bid !== null) {
-        lastValidBid = bid;
-        bidDisplay.textContent = formatPrice(bid);
-    }
-    if (ask !== null) {
-        lastValidAsk = ask;
-        askDisplay.textContent = formatPrice(ask);
-    }
-}
-
-// ============================================================
-// SÍMBOLOS
-// ============================================================
-
-function loadSymbols() {
-    log("Buscando símbolos en cTrader...");
-
-    getLightSymbolList(adapter, {})
-        .pipe(take(1))
-        .subscribe({
-            next: response => {
-                try {
-                    const payload = getPayload(response);
-                    const symbols = getArray(payload, "Symbol", "symbol");
-
-                    log("Símbolos recibidos: " + symbols.length);
-
-                    const requestedSymbol = getSymbolFromURL();
-                    let selectedSymbol = null;
-
-                    if (requestedSymbol) {
-                        selectedSymbol = symbols.find(
-                            s =>
-                                String(getField(s, "Name", "name")).toUpperCase() ===
-                                requestedSymbol.toUpperCase()
-                        );
-                    }
-
-                    if (!selectedSymbol) {
-                        selectedSymbol = symbols.find(
-                            s =>
-                                String(getField(s, "Name", "name")).toUpperCase() ===
-                                "EURUSD"
-                        );
-                    }
-
-                    if (!selectedSymbol) {
-                        log("No se encontró el símbolo.", "error");
-                        return;
-                    }
-
-                    symbolId = Number(getField(selectedSymbol, "Id", "id"));
-                    symbolName = String(getField(selectedSymbol, "Name", "name"));
-                    symbolDisplay.textContent = symbolName;
-
-                    log(`Símbolo detectado: ${symbolName} (ID ${symbolId})`, "ok");
-                    getDetailedSymbol();
-
-                } catch (error) {
-                    log("Error procesando símbolos: " + error.message, "error");
-                }
-            },
-            error: error =>
-                log("Error obteniendo símbolos: " + JSON.stringify(error), "error")
-        });
-}
-
-// ============================================================
-// INFORMACIÓN DEL SÍMBOLO
-// ============================================================
-
-function getDetailedSymbol() {
-    log("Obteniendo información detallada de cTrader...");
-
-    getSymbol(adapter, { symbolId: [symbolId] })
-        .pipe(take(1))
-        .subscribe({
-            next: response => {
-                try {
-                    let payload = getPayload(response);
-                    let detail = null;
-
-                    if (
-                        payload &&
-                        (payload.Id !== undefined || payload.Name !== undefined)
-                    ) {
-                        detail = payload;
-                    }
-
-                    if (!detail) {
-                        const symbols = getArray(payload, "Symbol", "symbol");
-                        if (symbols.length > 0) {
-                            detail = symbols[0];
-                        }
-                    }
-
-                    if (
-                        !detail &&
-                        response &&
-                        (response.Id !== undefined || response.Name !== undefined)
-                    ) {
-                        detail = response;
-                    }
-
-                    if (!detail) {
-                        log("No se pudo extraer la información detallada.", "error");
-                        return;
-                    }
-
-                    symbolInfo = detail;
-
-                    const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
-                    const stepVolume = Number(getField(symbolInfo, "stepVolume", "StepVolume"));
-                    const maxVolume = Number(getField(symbolInfo, "maxVolume", "MaxVolume"));
-                    const digits = Number(getField(symbolInfo, "digits", "Digits"));
-                    const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition"));
-                    const lotSize = Number(getField(symbolInfo, "lotSize", "LotSize"));
-                    const commissionType = getField(symbolInfo, "commissionType", "CommissionType");
-                    const commissionRaw = Number(
-                        getField(symbolInfo, "preciseTradingCommissionRate", "PreciseTradingCommissionRate")
-                    );
-                    const preciseMinCommission = Number(
-                        getField(symbolInfo, "preciseMinCommission", "PreciseMinCommission")
-                    );
-                    const minCommissionType = getField(
-                        symbolInfo,
-                        "minCommissionType",
-                        "MinCommissionType"
-                    );
-
-                    minVolumeDisplay.textContent = String(minVolume);
-                    orderVolumeDisplay.textContent = "---";
-
-                    log(`minVolume: ${minVolume} | stepVolume: ${stepVolume} | maxVolume: ${maxVolume}`);
-                    log(`digits: ${digits} | pipPosition: ${pipPosition} | lotSize: ${lotSize}`);
-                    log(
-                        `Comisión cTrader: tipo=${String(commissionType)} | preciseRate=${commissionRaw} | preciseMinCommission=${preciseMinCommission} | minCommissionType=${String(minCommissionType)}`
-                    );
-
-                    const commissionInfo = getCommissionRate();
-
-                    if (commissionInfo && commissionInfo.type === "USD_PER_LOT") {
-                        log(
-                            `Comisión interpretada: ${commissionInfo.perLotPerSide.toFixed(2)} $/lote/lado | ${(commissionInfo.perLotPerSide * 2).toFixed(2)} $/lote ida+vuelta`,
-                            "ok"
-                        );
-                    } else {
-                        log("⚠️ La comisión del símbolo no se pudo interpretar.", "warning");
-                    }
-
-                    log("Información detallada recibida.", "ok");
-
-                    subscribeQuotes(adapter, { symbolId: [symbolId] })
-                        .pipe(take(1))
-                        .subscribe({
-                            next: () => log("Suscripción de precios activa.", "ok"),
-                            error: error =>
-                                log(
-                                    "Error suscribiendo precios: " + JSON.stringify(error),
-                                    "error"
-                                )
-                        });
-
-                    updateButtons();
-
-                } catch (error) {
-                    log("Error procesando detalle del símbolo: " + error.message, "error");
-                }
-            },
-            error: error =>
-                log("Error obteniendo detalle: " + JSON.stringify(error), "error")
-        });
-}
-
-// ============================================================
-// VELAS CERRADAS
-// ============================================================
-
-function getClosedTrendbars(periodMinutes, count) {
-    return new Promise((resolve, reject) => {
-        const timeframeMs = periodMinutes * 60000;
-        const now = Date.now();
-        const currentBarStart = Math.floor(now / timeframeMs) * timeframeMs;
-        const lastClosedBarEnd = currentBarStart - 1;
-
-        const periodMap = {
-            1: 1,
-            3: 3,
-            5: 5
-        };
-
-        const period = periodMap[periodMinutes];
-
-        if (!period) {
-            reject(new Error(`Timeframe no soportado: ${periodMinutes}`));
-            return;
-        }
-
-        const requestCount = Math.max(count, 10);
-        const fromTimestamp = currentBarStart - timeframeMs * (requestCount + 5);
-
-        getTrendbarList(adapter, {
-            symbolId,
-            period,
-            fromTimestamp,
-            toTimestamp: lastClosedBarEnd,
-            count: requestCount,
-            type: 0
-        })
-            .pipe(take(1))
-            .subscribe({
-                next: response => {
-                    try {
-                        const payload = getPayload(response);
-                        let raw = getArray(payload, "Trendbar", "trendbar");
-
-                        if (raw.length === 0 && Array.isArray(payload)) {
-                            raw = payload;
-                        }
-
-                        const bars = raw
-                            .map(bar => {
-                                const timestampMinutes = Number(
-                                    getField(bar, "utcTimestampInMinutes", "UtcTimestampInMinutes")
-                                );
-                                const lowRaw = Number(getField(bar, "low", "Low"));
-                                const deltaOpen = Number(getField(bar, "deltaOpen", "DeltaOpen") ?? 0);
-                                const deltaClose = Number(getField(bar, "deltaClose", "DeltaClose") ?? 0);
-                                const deltaHigh = Number(getField(bar, "deltaHigh", "DeltaHigh") ?? 0);
-
-                                return {
-                                    timestampMs: Number.isFinite(timestampMinutes)
-                                        ? timestampMinutes * 60000
-                                        : NaN,
-                                    open: roundToDigits((lowRaw + deltaOpen) / 100000),
-                                    high: roundToDigits((lowRaw + deltaHigh) / 100000),
-                                    low: roundToDigits(lowRaw / 100000),
-                                    close: roundToDigits((lowRaw + deltaClose) / 100000)
-                                };
-                            })
-                            .filter(
-                                b => Number.isFinite(b.low) && Number.isFinite(b.high)
-                            )
-                            .sort(
-                                (a, b) =>
-                                    (Number.isFinite(a.timestampMs) ? a.timestampMs : 0) -
-                                    (Number.isFinite(b.timestampMs) ? b.timestampMs : 0)
-                            );
-
-                        const selected = bars.slice(-count);
-
-                        if (selected.length < count) {
-                            throw new Error(
-                                `cTrader devolvió ${selected.length} velas de ${count} necesarias para ${getTimeframeName(periodMinutes)}.`
-                            );
-                        }
-
-                        resolve({
-                            bars: selected,
-                            currentBarStart,
-                            timeframeMs
-                        });
-
-                    } catch (error) {
-                        reject(error);
-                    }
-                },
-                error: error => reject(error)
-            });
-    });
-}
-
-// ============================================================
-// SL
-// ============================================================
-
-async function calculateSL(side) {
-    const count = Math.max(
-        1,
-        Math.min(500, Number(candleCountInput.value) || 10)
-    );
-    const periodMinutes = selectedTimeframe;
-
-    log(
-        `${side}: calculando SL con ${count} velas CERRADAS de ${getTimeframeName(periodMinutes)}...`
-    );
-
-    const { bars } = await getClosedTrendbars(periodMinutes, count);
-
-    const first = bars[0];
-    const last = bars[bars.length - 1];
-
-    log(
-        `Velas usadas: ${bars.length} | Primera: ${fmtTime(first.timestampMs)} | Última: ${fmtTime(last.timestampMs)}`,
-        "ok"
-    );
-
-    const rawExtreme =
-        side === "BUY"
-            ? Math.min(...bars.map(b => b.low))
-            : Math.max(...bars.map(b => b.high));
-
-    const finalSL = roundToDigits(rawExtreme);
-
-    log(
-        `${side === "BUY" ? "Mínimo" : "Máximo"} de las ${count} velas: ${formatPrice(finalSL)}`,
-        "ok"
-    );
-    log(`${side} SL definitivo: ${formatPrice(finalSL)}`, "ok");
-
-    return finalSL;
-}
-
-// ============================================================
-// EXTRACTORES
-// ============================================================
-
-function extractPositionId(payload) {
-    if (!payload) return null;
-
-    const candidates = [
-        getField(getField(payload, "Position", "position"), "PositionId", "positionId"),
-        getField(getField(payload, "Order", "order"), "PositionId", "positionId"),
-        getField(getField(payload, "Deal", "deal"), "PositionId", "positionId"),
-        getField(payload, "PositionId", "positionId"),
-        pendingTrade?.positionId
-    ];
-
-    for (const v of candidates) {
-        const id = Number(v);
-        if (Number.isFinite(id) && id > 0) {
-            return id;
-        }
-    }
-
-    return null;
-}
-
-function extractExecutionPrice(payload) {
-    if (!payload) return null;
-
-    const candidates = [
-        getField(getField(payload, "Position", "position"), "Price", "price"),
-        getField(getField(payload, "Deal", "deal"), "ExecutionPrice", "executionPrice"),
-        getField(getField(payload, "Order", "order"), "ExecutionPrice", "executionPrice")
-    ];
-
-    for (const v of candidates) {
-        const p = Number(v);
-        if (Number.isFinite(p) && p > 0) {
-            return p;
-        }
-    }
-
-    return null;
-}
-
-// ============================================================
-// COMISIÓN REAL DEL FILL
-// ============================================================
-
-function extractActualOpeningCommission(payload) {
-    if (!payload) return null;
-
-    const deal = getField(payload, "Deal", "deal");
-    if (!deal) return null;
-
-    const rawCommission = Number(getField(deal, "Commission", "commission"));
-    const moneyDigits = Number(getField(deal, "MoneyDigits", "moneyDigits") ?? 2);
-
-    if (!Number.isFinite(rawCommission) || !Number.isFinite(moneyDigits)) {
-        return null;
-    }
-
-    const divisor = Math.pow(10, moneyDigits);
-    const commission = Math.abs(rawCommission / divisor);
-
-    return Number.isFinite(commission) ? commission : null;
-}
-
-// ============================================================
-// RESPUESTA ORDEN
-// ============================================================
-
-function processOrderResponse(response) {
-    const payload = getPayload(response);
-    if (!payload) return;
-
-    const errorCode = String(getField(payload, "ErrorCode", "errorCode") ?? "");
-
-    if (errorCode) {
-        log(`❌ Error al crear orden: ${errorCode}`, "error");
-
-        const desc = getField(payload, "Description", "description");
-        if (desc) {
-            log(`Descripción: ${desc}`, "error");
-        }
-
-        pendingTrade = null;
-        protectionSent = false;
-        protectionRetryCount = 0;
-        updateButtons();
-        return;
-    }
-
-    const executionType = String(getField(payload, "ExecutionType", "executionType") ?? "");
-    const positionId = extractPositionId(payload);
-    const order = getField(payload, "Order", "order");
-    const orderId = Number(getField(order, "OrderId", "orderId"));
-
-    if (Number.isFinite(positionId) && positionId > 0 && pendingTrade) {
-        pendingTrade.positionId = positionId;
-        positionDisplay.textContent = String(positionId);
-        log(`Position ID recibido: ${positionId}`, "ok");
-    }
-
-    if (Number.isFinite(orderId) && orderId > 0 && pendingTrade) {
-        pendingTrade.orderId = orderId;
-        log(`Order ID: ${orderId}`);
-    }
-
-    log(`ExecutionType recibido: ${executionType}`);
-
-    if (executionType === "ORDER_ACCEPTED") {
-        log("cTrader respondió a la orden.", "ok");
-    }
-
-    log("RESPUESTA createNewOrder: " + JSON.stringify(response, null, 2));
-}
-
-// ============================================================
-// EXECUTION EVENT
-// ============================================================
-
-function processExecutionEvent(response) {
-    try {
-        const payload = getPayload(response);
-        if (!payload) return;
-
-        const executionType = String(getField(payload, "ExecutionType", "executionType") ?? "");
-
-        log("EXECUTION EVENT: " + JSON.stringify(payload, null, 2));
-
-        if (executionType === "ORDER_ACCEPTED") {
-            const eventPositionId = extractPositionId(payload);
-
-            if (
-                closePositionRequest &&
-                lastPositionId !== null &&
-                eventPositionId === Number(lastPositionId)
-            ) {
-                log("✅ ORDER_ACCEPTED de closePosition.", "ok");
-                return;
-            }
-
-            if (pendingTrade) {
-                processOrderResponse(response);
-            }
-
-            return;
-        }
-
-        if (executionType === "ORDER_PARTIAL_FILL") {
-            log(
-                "⏳ ORDER_PARTIAL_FILL recibido. Esperando al llenado completo antes de colocar SL/TP...",
-                "warning"
-            );
-            return;
-        }
-
-        if (executionType === "ORDER_FILLED") {
-            log("================================", "ok");
-            log("✅ ORDER_FILLED COMPLETO RECIBIDO", "ok");
-            log("================================", "ok");
-            handleFilledExecution(payload);
-            return;
-        }
-
-        if (executionType === "ORDER_REJECTED") {
-            log("❌ ORDEN RECHAZADA", "error");
-
-            if (closePositionRequest) {
-                closePositionRequest = false;
-                updateButtons();
-                return;
-            }
-
-            pendingTrade = null;
-            protectionSent = false;
-            protectionRetryCount = 0;
-            updateButtons();
-            return;
-        }
-
-        if (executionType === "ORDER_REPLACED") {
-            const eventPositionId = extractPositionId(payload);
-
-            if (
-                pendingTrade &&
-                pendingTrade.positionId &&
-                eventPositionId &&
-                Number(eventPositionId) !== Number(pendingTrade.positionId)
-            ) {
-                log(
-                    `ORDER_REPLACED ignorado: pertenece a otra posición (${eventPositionId}).`,
-                    "muted"
-                );
-                return;
-            }
-
-            log("🛡️ SL + TP CONFIRMADOS POR cTRADER", "ok");
-
-            pendingTrade = null;
-            protectionSent = false;
-            protectionRetryCount = 0;
-            updateButtons();
-        }
-
-    } catch (error) {
-        log("Error procesando executionEvent: " + error.message, "error");
-    }
-}
-
-// ============================================================
-// MOTOR EURUSD
-// ============================================================
-
-function getPipSize() {
-    const pipPosition = Number(getField(symbolInfo, "pipPosition", "PipPosition") ?? 4);
-    return Math.pow(10, -pipPosition);
-}
-
-function priceDistanceToPips(distance) {
-    const pipSize = getPipSize();
-
-    if (
-        !Number.isFinite(distance) ||
-        distance < 0 ||
-        !Number.isFinite(pipSize) ||
-        pipSize <= 0
-    ) {
-        return null;
-    }
-
-    return distance / pipSize;
-}
-
-function getEURUSDPriceRisk(volume, pips) {
-    const v = Number(volume);
-    const p = Number(pips);
-
-    if (
-        !Number.isFinite(v) ||
-        v <= 0 ||
-        !Number.isFinite(p) ||
-        p < 0
-    ) {
-        return null;
-    }
-
-    const units = v / 100;
-    const pipValueUSD = units * 0.0001;
-    const risk = pipValueUSD * p;
-
-    return Number.isFinite(risk) ? risk : null;
-}
-
-// ============================================================
-// COMISIÓN
-// ============================================================
-
-function getCommissionRate() {
-    const rawType = getField(symbolInfo, "commissionType", "CommissionType");
-    const rawRateValue = getField(
-        symbolInfo,
-        "preciseTradingCommissionRate",
-        "PreciseTradingCommissionRate"
-    );
-
-    if (
-        rawType === null ||
-        rawType === undefined ||
-        rawRateValue === null ||
-        rawRateValue === undefined ||
-        rawRateValue === ""
-    ) {
-        return null;
-    }
-
-    const raw = Number(rawRateValue);
-
-    if (!Number.isFinite(raw) || raw < 0) {
-        return null;
-    }
-
-    const typeText = String(rawType).trim().toUpperCase();
-
-    if (typeText === "USD_PER_LOT") {
-        const perLotPerSide = raw / 1e8;
-
-        if (!Number.isFinite(perLotPerSide) || perLotPerSide < 0) {
-            return null;
-        }
-
-        return {
-            type: "USD_PER_LOT",
-            raw,
-            perLotPerSide
-        };
-    }
-
-    const numericType = Number(rawType);
-
-    if (!Number.isFinite(numericType)) {
-        return null;
-    }
-
-    return {
-        type: numericType,
-        raw,
-        rate: numericType === 3 ? raw / 1e5 : raw / 1e8
-    };
-}
-
-function estimateRoundTripCommission(volume, price) {
-    const c = getCommissionRate();
-    const lotSize = Number(getField(symbolInfo, "lotSize", "LotSize"));
-
-    if (
-        !c ||
-        !Number.isFinite(volume) ||
-        volume <= 0 ||
-        !Number.isFinite(price) ||
-        price <= 0 ||
-        !Number.isFinite(lotSize) ||
-        lotSize <= 0
-    ) {
-        return null;
-    }
-
-    const lots = volume / lotSize;
-
-    if (!Number.isFinite(lots) || lots <= 0) {
-        return null;
-    }
-
-    if (c.type === "USD_PER_LOT") {
-        const oneSide = lots * c.perLotPerSide;
-        const roundTrip = oneSide * 2;
-
-        if (!Number.isFinite(roundTrip) || roundTrip < 0) {
-            return null;
-        }
-
-        return roundTrip;
-    }
-
-    const units = volume / 100;
-    let oneSide = null;
-
-    if (c.type === 2 || c.type === 4) {
-        oneSide = lots * c.rate;
-    } else if (c.type === 1) {
-        oneSide = (units * price / 1e6) * c.rate;
-    } else if (c.type === 3) {
-        oneSide = (units * price) * (c.rate / 100);
-    }
-
-    if (!Number.isFinite(oneSide) || oneSide < 0) {
-        return null;
-    }
-
-    return oneSide * 2;
-}
-
-// ============================================================
-// RIESGO TOTAL DE UN VOLUMEN
-// ============================================================
-
-function evaluateVolumeRisk(volume, price, sl) {
-    const distance = Math.abs(Number(price) - Number(sl));
-    const pips = priceDistanceToPips(distance);
-
-    if (!Number.isFinite(pips) || pips <= 0) {
-        return null;
-    }
-
-    const priceRisk = getEURUSDPriceRisk(volume, pips);
-
-    if (!Number.isFinite(priceRisk)) {
-        return null;
-    }
-
-    const commission = estimateRoundTripCommission(volume, price);
-
-    if (!Number.isFinite(commission) || commission < 0) {
-        return {
-            volume,
-            pips,
-            priceRisk,
-            commission: null,
-            commissionUsed: null,
-            totalRisk: null
-        };
-    }
-
-    const totalRisk = priceRisk + commission;
-
-    return {
-        volume,
-        pips,
-        priceRisk,
-        commission,
-        commissionUsed: commission,
-        totalRisk
-    };
-}
-
-// ============================================================
-// NORMALIZACIÓN DE VOLUMEN
-// ============================================================
-
-function normalizeVolumeDown(volume) {
-    const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
-    const stepVolume = Number(getField(symbolInfo, "stepVolume", "StepVolume"));
-    const maxVolume = Number(getField(symbolInfo, "maxVolume", "MaxVolume"));
-
-    if (
-        !Number.isFinite(minVolume) ||
-        minVolume <= 0 ||
-        !Number.isFinite(stepVolume) ||
-        stepVolume <= 0
-    ) {
-        return null;
-    }
-
-    let result = Math.floor((Number(volume) + 1e-9) / stepVolume) * stepVolume;
-
-    if (result < minVolume) {
-        result = minVolume;
-    }
-
-    if (Number.isFinite(maxVolume) && maxVolume > 0 && result > maxVolume) {
-        result = Math.floor(maxVolume / stepVolume) * stepVolume;
-    }
-
-    return Math.round(result);
-}
-
-// ============================================================
-// CÁLCULO DEL VOLUMEN V20 (riesgo = paso d'Alembert)
-// ============================================================
-
-function calculateVolumeFromRisk(side, sl) {
-    // ========================================================
-    // V20
-    // Riesgo real solicitado = riesgo del paso d'Alembert
-    // (objetivo acumulado / suma unidades) × paso
-    // ========================================================
-
-    const risk = getStepRisk();
-
-    if (!Number.isFinite(risk) || risk <= 0) {
-        throw new Error("Riesgo d'Alembert no válido. Revisa objetivo y paso.");
-    }
-
-    const currentPrice = side === "BUY" ? lastValidAsk : lastValidBid;
-
-    if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
-        throw new Error("No hay precio actual válido.");
-    }
-
-    const distance = Math.abs(currentPrice - sl);
-    const pips = priceDistanceToPips(distance);
-
-    if (!Number.isFinite(pips) || pips <= 0) {
-        throw new Error("Distancia al SL inválida.");
-    }
-
-    const minVolume = Number(getField(symbolInfo, "minVolume", "MinVolume"));
-    const stepVolume = Number(getField(symbolInfo, "stepVolume", "StepVolume"));
-    const maxVolume = Number(getField(symbolInfo, "maxVolume", "MaxVolume"));
-
-    if (
-        !Number.isFinite(minVolume) ||
-        minVolume <= 0 ||
-        !Number.isFinite(stepVolume) ||
-        stepVolume <= 0
-    ) {
-        throw new Error("Datos de volumen del símbolo no válidos.");
-    }
-
-    const commissionInfo = getCommissionRate();
-
-    if (!commissionInfo) {
-        throw new Error(
-            "No se pudo interpretar la comisión de cTrader. Operación cancelada para no superar el riesgo seleccionado."
-        );
-    }
-
-    const stepEvaluation = evaluateVolumeRisk(stepVolume, currentPrice, sl);
-
-    if (
-        !stepEvaluation ||
-        !Number.isFinite(stepEvaluation.totalRisk) ||
-        stepEvaluation.totalRisk <= 0
-    ) {
-        throw new Error("No se pudo calcular el riesgo total por escalón de volumen.");
-    }
-
-    const minEvaluation = evaluateVolumeRisk(minVolume, currentPrice, sl);
-
-    if (!minEvaluation || !Number.isFinite(minEvaluation.totalRisk)) {
-        throw new Error("No se pudo calcular el riesgo del volumen mínimo.");
-    }
-
-    if (minEvaluation.totalRisk > risk + 0.000001) {
-        throw new Error(
-            `El volumen mínimo de cTrader implica ≈ ${minEvaluation.totalRisk.toFixed(2)} $, superior al riesgo objetivo de ${risk.toFixed(2)} $. Operación cancelada.`
-        );
-    }
-
-    const theoreticalVolume = (risk / stepEvaluation.totalRisk) * stepVolume;
-    let volume = normalizeVolumeDown(theoreticalVolume);
-
-    if (!Number.isFinite(volume) || volume <= 0) {
-        throw new Error("No se pudo normalizar el volumen.");
-    }
-
-    let evaluation = evaluateVolumeRisk(volume, currentPrice, sl);
-
-    if (!evaluation || !Number.isFinite(evaluation.totalRisk)) {
-        throw new Error("No se pudo validar el volumen inicial.");
-    }
-
-    let safetyCounter = 0;
-
-    while (
-        evaluation.totalRisk > risk + 0.000001 &&
-        volume > minVolume &&
-        safetyCounter < 10000
-    ) {
-        volume -= stepVolume;
-        volume = Math.max(minVolume, volume);
-        evaluation = evaluateVolumeRisk(volume, currentPrice, sl);
-
-        if (!evaluation || !Number.isFinite(evaluation.totalRisk)) {
-            throw new Error("No se pudo validar el volumen al reducirlo.");
-        }
-
-        safetyCounter++;
-    }
-
-    while (safetyCounter < 10000) {
-        const nextVolume = volume + stepVolume;
-
-        if (
-            Number.isFinite(maxVolume) &&
-            maxVolume > 0 &&
-            nextVolume > maxVolume
-        ) {
-            break;
-        }
-
-        const nextEvaluation = evaluateVolumeRisk(nextVolume, currentPrice, sl);
-
-        if (!nextEvaluation || !Number.isFinite(nextEvaluation.totalRisk)) {
-            break;
-        }
-
-        if (nextEvaluation.totalRisk <= risk + 0.000001) {
-            volume = nextVolume;
-            evaluation = nextEvaluation;
-            safetyCounter++;
-        } else {
-            break;
-        }
-    }
-
-    if (
-        !Number.isFinite(evaluation.totalRisk) ||
-        evaluation.totalRisk > risk + 0.000001
-    ) {
-        throw new Error(
-            "El volumen calculado supera el riesgo objetivo. Operación cancelada."
-        );
-    }
-
-    const nextVolume = volume + stepVolume;
-    let nextEvaluation = null;
-
-    if (
-        !Number.isFinite(maxVolume) ||
-        maxVolume <= 0 ||
-        nextVolume <= maxVolume
-    ) {
-        nextEvaluation = evaluateVolumeRisk(nextVolume, currentPrice, sl);
-    }
-
-    const target = Number(riskAmountInput.value);
-    const maxSteps = getMaxSteps();
-    const unit = getDAlembertUnit(target, maxSteps);
-
-    log("========== CÁLCULO DE VOLUMEN V20 ==========", "ok");
-    log(
-        `OBJETIVO ACUMULADO: ${formatMoney(target)} $ | PASOS: ${maxSteps} | CONSERVADOR: ${selectedConservador ? "ON" : "OFF"}`,
-        "ok"
-    );
-    log(
-        `Unidad: ${formatMoney(unit)} $ | Paso X${selectedStep} → RIESGO OBJETIVO: ${formatMoney(risk)} $`,
-        "ok"
-    );
-    log(
-        `Precio cálculo: ${formatPrice(currentPrice)} | SL: ${formatPrice(sl)}`,
-        "ok"
-    );
-    log(`Distancia SL: ${pips.toFixed(2)} pips`, "ok");
-    log(`Volumen teórico: ${theoreticalVolume.toFixed(2)}`);
-    log(`Volumen definitivo: ${volume}`, "ok");
-
-    const lotSize = Number(getField(symbolInfo, "lotSize", "LotSize"));
-
-    if (Number.isFinite(lotSize) && lotSize > 0) {
-        log(`Lotes equivalentes: ${(volume / lotSize).toFixed(2)}`, "ok");
-    }
-
-    log(`Pérdida precio al SL: ≈ ${evaluation.priceRisk.toFixed(2)} $`, "ok");
-    log(
-        `Comisión estimada apertura+cierre: ≈ ${evaluation.commission.toFixed(2)} $`,
-        "ok"
-    );
-    log(`RIESGO TOTAL ESTIMADO: ≈ ${evaluation.totalRisk.toFixed(2)} $`, "ok");
-    log(
-        `Margen hasta riesgo máximo: ≈ ${(risk - evaluation.totalRisk).toFixed(2)} $`
-    );
-
-    if (nextEvaluation && Number.isFinite(nextEvaluation.totalRisk)) {
-        log(
-            `Siguiente volumen (${nextVolume}) implicaría ≈ ${nextEvaluation.totalRisk.toFixed(2)} $`
-        );
-
-        if (nextEvaluation.totalRisk > risk) {
-            log(
-                "✅ Volumen validado: el siguiente escalón superaría el riesgo objetivo.",
-                "ok"
-            );
-        }
-    }
-
-    log("===========================================", "ok");
-
-    return volume;
-}
-
-// ============================================================
-// FILL + PROTECCIÓN
-// ============================================================
-
-async function handleFilledExecution(payload) {
-    if (!pendingTrade || protectionSent) {
-        return;
-    }
-
-    const positionId = extractPositionId(payload);
-    const realEntry = extractExecutionPrice(payload);
-
-    if (!positionId || !Number.isFinite(realEntry)) {
-        log("No se pudo obtener Position ID o entrada real.", "error");
-        return;
-    }
-
-    pendingTrade.positionId = positionId;
-    pendingTrade.realEntry = realEntry;
-    lastPositionId = Number(positionId);
-    lastPositionVolume = Number(pendingTrade.volume);
-    closePositionRequest = false;
-
-    positionDisplay.textContent = String(positionId);
-    entryDisplay.textContent = formatPrice(realEntry);
-
-    log(`Position ID REAL: ${positionId}`, "ok");
-    log(`Entrada REAL: ${formatPrice(realEntry)}`, "ok");
-
-    updateButtons();
-
-    const side = pendingTrade.side;
-    const finalSL = normalizePrice(pendingTrade.sl);
-
-    if (!Number.isFinite(finalSL)) {
-        log("SL no válido.", "error");
-        pendingTrade = null;
-        updateButtons();
-        return;
-    }
-
-    if (
-        (side === "BUY" && finalSL >= realEntry) ||
-        (side === "SELL" && finalSL <= realEntry)
-    ) {
-        log("❌ SL inválido respecto a la entrada.", "error");
-        pendingTrade = null;
-        updateButtons();
-        return;
-    }
-
-    const distanceSL = Math.abs(realEntry - finalSL);
-
-    if (!Number.isFinite(distanceSL) || distanceSL <= 0) {
-        log("Distancia SL inválida.", "error");
-        pendingTrade = null;
-        updateButtons();
-        return;
-    }
-
-    const realPips = priceDistanceToPips(distanceSL);
-    const realRiskAfterFill = getEURUSDPriceRisk(
-        Number(pendingTrade.volume),
-        realPips
-    );
-    const realCommissionEstimate = estimateRoundTripCommission(
-        Number(pendingTrade.volume),
-        realEntry
-    );
-    const actualOpeningCommission = extractActualOpeningCommission(payload);
-
-    const commissionUsed = Number.isFinite(realCommissionEstimate)
-        ? realCommissionEstimate
-        : 0;
-
-    const realTotalRisk = Number.isFinite(realRiskAfterFill)
-        ? realRiskAfterFill + commissionUsed
-        : null;
-
-    const targetRisk = Number(pendingTrade.targetRisk);
-
-    log("========== VERIFICACIÓN TRAS FILL V20 ==========", "ok");
-    log(
-        `Entrada usada antes del fill: ${formatPrice(pendingTrade.calculationPrice)}`,
-        "ok"
-    );
-    log(`Entrada REAL: ${formatPrice(realEntry)}`, "ok");
-    log(`SL definitivo: ${formatPrice(finalSL)}`, "ok");
-    log(
-        `Distancia REAL: ${Number.isFinite(realPips) ? realPips.toFixed(2) : "NO CALCULABLE"} pips`,
-        "ok"
-    );
-
-    if (Number.isFinite(realRiskAfterFill)) {
-        log(
-            `Pérdida precio con entrada REAL: ≈ ${realRiskAfterFill.toFixed(2)} $`,
-            "ok"
-        );
-    }
-
-    if (Number.isFinite(realCommissionEstimate)) {
-        log(
-            `Comisión estimada apertura+cierre: ≈ ${realCommissionEstimate.toFixed(2)} $`,
-            "ok"
-        );
-    } else {
-        log("⚠️ Comisión tras fill NO CALCULABLE.", "warning");
-    }
-
-    if (Number.isFinite(actualOpeningCommission)) {
-        log(
-            `Comisión REAL cobrada apertura: ${actualOpeningCommission.toFixed(2)} $`,
-            "ok"
-        );
-
-        if (Number.isFinite(realCommissionEstimate)) {
-            const estimatedOpeningCommission = realCommissionEstimate / 2;
-            log(
-                `Comisión apertura estimada: ${estimatedOpeningCommission.toFixed(2)} $`,
-                "ok"
-            );
-
-            const commissionDifference =
-                actualOpeningCommission - estimatedOpeningCommission;
-
-            log(
-                `Diferencia comisión real/estimada: ${commissionDifference >= 0 ? "+" : ""}${commissionDifference.toFixed(2)} $`,
-                Math.abs(commissionDifference) <= 0.01 ? "ok" : "warning"
-            );
-        }
-    } else {
-        log("⚠️ No se pudo leer la comisión real de apertura del Deal.", "warning");
-    }
-
-    if (Number.isFinite(realTotalRisk)) {
-        log(
-            `RIESGO TOTAL REAL ESTIMADO: ≈ ${realTotalRisk.toFixed(2)} $`,
-            "ok"
-        );
-
-        if (Number.isFinite(targetRisk)) {
-            const deviation = realTotalRisk - targetRisk;
-            log(
-                `Desviación respecto al objetivo: ${deviation >= 0 ? "+" : ""}${deviation.toFixed(2)} $`,
-                Math.abs(deviation) <= 1 ? "ok" : "warning"
-            );
-        }
-    }
-
-    log("===============================================", "ok");
-
-    // ============================================================
-    // TP NETO V20
-    // Se mantiene exactamente la lógica validada.
-    // ============================================================
-
-    let tpDistance;
-
-    const tradeRR = Number(pendingTrade.rr);
-    const tradeRRNet = Boolean(pendingTrade.rrNet);
-
-    if (tradeRRNet) {
-        const commissionForTP = estimateRoundTripCommission(
-            Number(pendingTrade.volume),
-            realEntry
-        );
-
-        const totalRiskOk =
-            Number.isFinite(realTotalRisk) && realTotalRisk > 0;
-        const commissionOk =
-            Number.isFinite(commissionForTP) && commissionForTP >= 0;
-        const rrOk = Number.isFinite(tradeRR) && tradeRR > 0;
-        const priceRiskOk =
-            Number.isFinite(realRiskAfterFill) && realRiskAfterFill > 0;
-
-        if (totalRiskOk && commissionOk && rrOk && priceRiskOk) {
-            const targetNet = realTotalRisk * tradeRR;
-            const grossProfitNeeded = targetNet + commissionForTP;
-
-            tpDistance =
-                distanceSL * (grossProfitNeeded / realRiskAfterFill);
-
-            log("========== TP NETO V20 ==========", "ok");
-            log(`RR seleccionado al enviar: 1:${tradeRR}`, "ok");
-            log(
-                `Pérdida por precio hasta SL: ${realRiskAfterFill.toFixed(2)} $`,
-                "ok"
-            );
-            log(
-                `Comisión estimada ida+vuelta: ${commissionForTP.toFixed(2)} $`,
-                "ok"
-            );
-            log(
-                `RIESGO NETO REAL AL SL: ${realTotalRisk.toFixed(2)} $`,
-                "ok"
-            );
-            log(
-                `Beneficio NETO objetivo RR 1:${tradeRR}: ${targetNet.toFixed(2)} $`,
-                "ok"
-            );
-            log(
-                `Beneficio BRUTO necesario en TP: ${grossProfitNeeded.toFixed(2)} $`,
-                "ok"
-            );
-            log(
-                `Multiplicador distancia TP: ${(grossProfitNeeded / realRiskAfterFill).toFixed(6)}`,
-                "ok"
-            );
-
-            const tpPips = priceDistanceToPips(tpDistance);
-
-            if (Number.isFinite(tpPips)) {
-                log(`Distancia TP: ${tpPips.toFixed(2)} pips`, "ok");
-            }
-
-            log("=================================", "ok");
-
-        } else {
-            log("⚠️ TP NETO V20 NO CALCULABLE", "warning");
-            tpDistance = distanceSL * (rrOk ? tradeRR : 1);
-            log(
-                `→ Se usa RR 1:${rrOk ? tradeRR : 1} BRUTO como respaldo.`,
-                "warning"
-            );
-        }
-
-    } else {
-        tpDistance =
-            distanceSL *
-            (Number.isFinite(tradeRR) && tradeRR > 0 ? tradeRR : 1);
-    }
-
-    let calculatedTP =
-        side === "BUY"
-            ? realEntry + tpDistance
-            : realEntry - tpDistance;
-
-    const finalTP = normalizePrice(calculatedTP);
-
-    if (!Number.isFinite(finalTP)) {
-        log("TP no válido.", "error");
-        pendingTrade = null;
-        updateButtons();
-        return;
-    }
-
-    pendingTrade.finalSL = finalSL;
-    pendingTrade.finalTP = finalTP;
-
-    slDisplay.textContent = formatPrice(finalSL);
-    tpDisplay.textContent = formatPrice(finalTP);
-
-    log("🛡️ ENVIANDO SL + TP", "ok");
-    log(`SL: ${formatPrice(finalSL)} | TP: ${formatPrice(finalTP)}`, "ok");
-
-    protectionRetryCount = 0;
-    protectionSent = false;
-
-    sendProtection(positionId, finalSL, finalTP);
-}
-
-// ============================================================
-// PROTECCIÓN
-// ============================================================
-
-function sendProtection(positionId, finalSL, finalTP) {
-    if (!pendingTrade || protectionSent) {
-        return;
-    }
-
-    const protectionPayload = {
-        positionId: Number(positionId),
-        stopLoss: finalSL,
-        takeProfit: finalTP
-    };
-
-    log(
-        `🛡️ INTENTO DE PROTECCIÓN ${protectionRetryCount + 1}/${protectionRetryDelays.length + 1}`,
-        "ok"
-    );
-
-    try {
-        modifyOrderProtection(adapter, protectionPayload)
-            .pipe(take(1))
-            .subscribe({
-                next: response => {
-                    const responsePayload = getPayload(response);
-                    const responseType = String(
-                        getField(
-                            responsePayload,
-                            "ExecutionType",
-                            "executionType",
-                            "PayloadType",
-                            "payloadType"
-                        ) ?? ""
-                    );
-                    const errorCode = String(
-                        getField(responsePayload, "ErrorCode", "errorCode") ?? ""
-                    );
-
-                    log(
-                        "RESPUESTA modifyOrderProtection: " +
-                        JSON.stringify(response, null, 2)
-                    );
-
-                    if (responseType === "ORDER_REPLACED") {
-                        protectionSent = true;
-                        log("🛡️ SL + TP ACEPTADOS POR cTRADER", "ok");
-                        pendingTrade = null;
-                        protectionRetryCount = 0;
-                        updateButtons();
-                        return;
-                    }
-
-                    if (errorCode === "POSITION_NOT_FOUND") {
-                        scheduleProtectionRetry(positionId, finalSL, finalTP);
-                        return;
-                    }
-
-                    if (errorCode) {
-                        log(`❌ Error cTrader: ${errorCode}`, "error");
-                        pendingTrade = null;
-                        protectionSent = false;
-                        protectionRetryCount = 0;
-                        updateButtons();
-                        return;
-                    }
-
-                    scheduleProtectionRetry(positionId, finalSL, finalTP);
-                },
-                error: () =>
-                    scheduleProtectionRetry(positionId, finalSL, finalTP)
-            });
-
-    } catch (e) {
-        scheduleProtectionRetry(positionId, finalSL, finalTP);
-    }
-}
-
-function scheduleProtectionRetry(positionId, finalSL, finalTP) {
-    if (!pendingTrade || protectionSent) {
-        return;
-    }
-
-    if (protectionRetryCount >= protectionRetryDelays.length) {
-        log("❌ AGOTADOS LOS REINTENTOS DE SL + TP", "error");
-        pendingTrade = null;
-        protectionSent = false;
-        protectionRetryCount = 0;
-        updateButtons();
-        return;
-    }
-
-    const delay = protectionRetryDelays[protectionRetryCount++];
-    log(`⏳ Reintentando en ${delay} ms...`, "warning");
-
-    setTimeout(() => {
-        if (pendingTrade && !protectionSent) {
-            sendProtection(positionId, finalSL, finalTP);
-        }
-    }, delay);
-}
-
-// ============================================================
-// CIERRE MANUAL
-// ============================================================
-
-function testClosePosition() {
-    if (!connected || lastPositionId === null) {
-        log("No se puede cerrar la posición.", "error");
-        return;
-    }
-
-    const positionId = Number(lastPositionId);
-    const volume = Number(lastPositionVolume);
-
-    if (
-        !Number.isFinite(positionId) ||
-        positionId <= 0 ||
-        !Number.isFinite(volume) ||
-        volume <= 0
-    ) {
-        log("Datos de posición inválidos.", "error");
-        return;
-    }
-
-    closePositionRequest = true;
-    updateButtons();
-
-    log("CIERRE MANUAL", "warning");
-    log(`PositionId: ${positionId} | Volume: ${volume}`, "ok");
-
-    try {
-        closePosition(adapter, { positionId, volume })
-            .pipe(take(1))
-            .subscribe({
-                next: response => {
-                    const errorCode = String(
-                        getField(getPayload(response), "ErrorCode", "errorCode") ?? ""
-                    );
-
-                    if (errorCode) {
-                        log(`❌ closePosition rechazado: ${errorCode}`, "error");
-                        closePositionRequest = false;
-                        updateButtons();
-                        return;
-                    }
-
-                    log("✅ closePosition aceptado.", "ok");
-                },
-                error: () => {
-                    closePositionRequest = false;
-                    updateButtons();
-                }
-            });
-
-    } catch (e) {
-        closePositionRequest = false;
-        updateButtons();
-    }
-}
-
-// ============================================================
-// EJECUTAR OPERACIÓN V20
-// ============================================================
-
-async function executeTrade(side) {
-    if (
-        !connected ||
-        symbolId === null ||
-        !symbolInfo ||
-        pendingTrade
-    ) {
-        log("No se puede operar ahora.", "warning");
-        return;
-    }
-
-    let sl;
-    let volume;
-
-    try {
-        sl = await calculateSL(side);
-        volume = calculateVolumeFromRisk(side, sl);
-    } catch (error) {
-        log("Error: " + error.message, "error");
-        return;
-    }
-
-    const calculationPrice = side === "BUY" ? lastValidAsk : lastValidBid;
-
-    // ========================================================
-    // V20
-    // Congelamos objetivo, paso, conservador y riesgo de ESTA operación.
-    // ========================================================
-
-    const targetAccumulated = Number(riskAmountInput.value);
-    const step = selectedStep;
-    const conservador = selectedConservador;
-    const maxSteps = getMaxSteps();
-    const unit = getDAlembertUnit(targetAccumulated, maxSteps);
-    const targetRisk = getStepRisk();
-
-    pendingTrade = {
-        side,
-        sl,
-        volume,
-        targetAccumulated,
-        step,
-        maxSteps,
-        unit,
-        conservador,
-        targetRisk,
-        calculationPrice,
-        // V20
-        rr: selectedRR,
-        rrNet: selectedRRNet,
-        positionId: null,
-        orderId: null,
-        realEntry: null,
-        finalSL: null,
-        finalTP: null
-    };
-
-    protectionSent = false;
-    protectionRetryCount = 0;
-
-    slDisplay.textContent = formatPrice(sl);
-    tpDisplay.textContent = "---";
-    positionDisplay.textContent = "---";
-    entryDisplay.textContent = "---";
-    orderVolumeDisplay.textContent = String(volume);
-
-    updateButtons();
-
-    log(`Enviando MARKET | Volumen: ${volume}`, "ok");
-    log(
-        `d'Alembert: objetivo ${formatMoney(targetAccumulated)} $ | ${maxSteps} pasos | X${step} | riesgo ${formatMoney(targetRisk)} $ | Precio cálculo: ${formatPrice(calculationPrice)}`,
-        "ok"
-    );
-
-    try {
-        createNewOrder(adapter, {
-            symbolId,
-            orderType: ServerInterfaces.ProtoOrderType.MARKET,
-            tradeSide:
-                side === "BUY"
-                    ? ServerInterfaces.ProtoTradeSide.BUY
-                    : ServerInterfaces.ProtoTradeSide.SELL,
-            volume,
-            clientOrderId: "AQT_" + Date.now()
-        })
-            .pipe(take(1))
-            .subscribe({
-                next: response => {
-                    log(
-                        "RESPUESTA createNewOrder: " +
-                        JSON.stringify(response, null, 2)
-                    );
-                    processOrderResponse(response);
-                },
-                error: error => {
-                    log(
-                        "❌ Error createNewOrder: " + JSON.stringify(error),
-                        "error"
-                    );
-                    pendingTrade = null;
-                    updateButtons();
-                }
-            });
-
-    } catch (error) {
-        log("❌ Excepción createNewOrder: " + error.message, "error");
-        pendingTrade = null;
-        updateButtons();
-    }
-}
-
-// ============================================================
-// DOBLE PULSACIÓN
-// ============================================================
-
-buyButton.addEventListener("click", () => {
-    const now = Date.now();
-
-    if (now - lastClickBuy < DOUBLE_CLICK_MS) {
-        lastClickBuy = 0;
-        executeTrade("BUY");
-    } else {
-        lastClickBuy = now;
-        log("Pulsa COMPRA de nuevo en 1.5 s para confirmar", "warning");
-    }
-});
-
-sellButton.addEventListener("click", () => {
-    const now = Date.now();
-
-    if (now - lastClickSell < DOUBLE_CLICK_MS) {
-        lastClickSell = 0;
-        executeTrade("SELL");
-    } else {
-        lastClickSell = now;
-        log("Pulsa VENTA de nuevo en 1.5 s para confirmar", "warning");
-    }
-});
-
-closePositionButton.addEventListener("click", () => {
-    const now = Date.now();
-
-    if (now - lastClickClose < DOUBLE_CLICK_MS) {
-        lastClickClose = 0;
-        testClosePosition();
-    } else {
-        lastClickClose = now;
-        log("Pulsa CIERRE MANUAL de nuevo en 1.5 s para confirmar", "warning");
-    }
-});
-
-// ============================================================
-// INICIO
-// ============================================================
-
-initialize();
-
-</script>
-</body>
-</html>
+//This source code is subject to the terms of the Mozilla Public License 2.0
+// © Juanjjt
+//@version=6
+strategy("Ayalga Con Confirmacion de Entradas con nuevo motor", overlay=true, pyramiding=0, process_orders_on_close=true, calc_on_every_tick=true, initial_capital=5000000, default_qty_type=strategy.fixed, default_qty_value=1, commission_type=strategy.commission.cash_per_contract, commission_value=0.000025, slippage=0, max_lines_count=500, max_labels_count=500)
+
+//══════════════════════════════════════════════════════════════════════════════
+// GRUPOS
+//══════════════════════════════════════════════════════════════════════════════
+GRUPO_H1 = "Pivots H1"
+GRUPO_H4 = "Pivots H4"
+GRUPO_DP = "Pivots Diarios"
+GRUPO_DAY = "Máximo / Mínimo Diario"
+GRUPO_HORARIO = "Horario de Trading"
+GRUPO_PIVOT = "Configuración Pivots"
+GRUPO_CHOCH = "CHoCH / Entradas"
+GRUPO_FVG = "FVG"
+GRUPO_OP = "Operativa"
+GRUPO_RISK = "Gestión de Riesgo"
+GRUPO_VIS = "Visualización"
+GRUPO_ALERT = "Alertas"
+
+//══════════════════════════════════════════════════════════════════════════════
+// H1
+//══════════════════════════════════════════════════════════════════════════════
+h1Length = input.int(5, "Longitud Pivot H1", minval=1, group=GRUPO_H1)
+h1Show = input.bool(true, "Mostrar niveles H1", group=GRUPO_H1)
+h1Trading = input.bool(true, "H1 activa señales de trading", group=GRUPO_H1)
+h1Color = input.color(color.aqua, "Color H1", group=GRUPO_H1)
+
+//══════════════════════════════════════════════════════════════════════════════
+// H4
+//══════════════════════════════════════════════════════════════════════════════
+h4Length = input.int(5, "Longitud Pivot H4", minval=1, group=GRUPO_H4)
+h4Show = input.bool(true, "Mostrar niveles H4", group=GRUPO_H4)
+h4Trading = input.bool(true, "H4 activa señales de trading", group=GRUPO_H4)
+h4Color = input.color(color.orange, "Color H4", group=GRUPO_H4)
+
+h4ExtendedHours = input.bool(true, "Activar horario extendido H4", group=GRUPO_H4)
+h4ExtendedHoursSession = input.session("0800-1900", "Horario extendido H4 (Madrid)", group=GRUPO_H4)
+string TZ_MADRID = "Europe/Madrid"
+bool h4ExtendedSessionNow = not na(time(timeframe.period, h4ExtendedHoursSession, TZ_MADRID))
+bool h4ExtendedTradingNow = h4ExtendedHours and h4ExtendedSessionNow
+
+//══════════════════════════════════════════════════════════════════════════════
+// PIVOTS DIARIOS + NIVELES MANUALES
+//══════════════════════════════════════════════════════════════════════════════
+dpLength = input.int(5, "Longitud Pivot Diario", minval=1, group=GRUPO_DP)
+dpShow = input.bool(true, "Mostrar niveles Diarios (pivots)", group=GRUPO_DP)
+dpTrading = input.bool(true, "Diarios pivots activan señales de trading", group=GRUPO_DP)
+dpColor = input.color(color.green, "Color Pivots Diarios", group=GRUPO_DP)
+
+dpExtendedHours = input.bool(true, "Activar horario extendido Pivots Diarios", group=GRUPO_DP)
+dpExtendedHoursSession = input.session("0800-1900", "Horario extendido Pivots Diarios (Madrid)", group=GRUPO_DP)
+bool dpExtendedSessionNow = not na(time(timeframe.period, dpExtendedHoursSession, TZ_MADRID))
+bool dpExtendedTradingNow = dpExtendedHours and dpExtendedSessionNow
+
+//──────────────────────────────────────────────────────────────────────────────
+// MANUALES
+//
+// IMPORTANTE:
+// El precio identifica el nivel.
+// "Activar desde" fija históricamente cuándo empezó a existir.
+// Así TradingView puede reconstruir su ruptura después de cualquier recálculo.
+//──────────────────────────────────────────────────────────────────────────────
+manual1Price = input.float(
+     0.0,
+     "Manual 1 - Precio",
+     group=GRUPO_DP,
+     tooltip="0 = desactivado.")
+
+manual1Time = input.time(
+     0,
+     "Manual 1 - Activar desde",
+     group=GRUPO_DP,
+     tooltip="Selecciona la fecha/hora de la vela desde la que este nivel debe empezar a existir.")
+
+manual2Price = input.float(
+     0.0,
+     "Manual 2 - Precio",
+     group=GRUPO_DP,
+     tooltip="0 = desactivado.")
+
+manual2Time = input.time(
+     0,
+     "Manual 2 - Activar desde",
+     group=GRUPO_DP,
+     tooltip="Selecciona la fecha/hora de la vela desde la que este nivel debe empezar a existir.")
+
+//══════════════════════════════════════════════════════════════════════════════
+// MÁXIMO / MÍNIMO DIARIO
+//══════════════════════════════════════════════════════════════════════════════
+dailyShow = input.bool(true, "Mostrar niveles diarios", group=GRUPO_DAY)
+dailyTrading = input.bool(true, "Diarios activan señales de trading", group=GRUPO_DAY)
+dailyLifeDays = input.int(2, "Días de vigencia", minval=1, maxval=30, group=GRUPO_DAY)
+dailyBullColor = input.color(color.green, "Color día alcista", group=GRUPO_DAY)
+dailyBearColor = input.color(color.red, "Color día bajista", group=GRUPO_DAY)
+tradeByDayClose = input.bool(true, "Operar según cierre del día", group=GRUPO_DAY)
+
+//══════════════════════════════════════════════════════════════════════════════
+// HORARIO
+//══════════════════════════════════════════════════════════════════════════════
+useTradingHours = input.bool(true, "Activar horario de trading", group=GRUPO_HORARIO)
+showSessionBackground = input.bool(true, "Mostrar sombreado", group=GRUPO_HORARIO)
+allowFirstEntryOutsideSession = input.bool(true, "Permitir entrada 1 fuera de horario", group=GRUPO_HORARIO)
+
+tradeLondon = input.bool(true, "Operar Londres", group=GRUPO_HORARIO)
+londonHours = input.session("0800-1300", "Horario Londres (hora local)", group=GRUPO_HORARIO)
+londonBgColor = input.color(color.new(color.gray, 70), "Color Londres", group=GRUPO_HORARIO)
+
+tradeNewYork = input.bool(true, "Operar Nueva York", group=GRUPO_HORARIO)
+newYorkHours = input.session("0800-1030", "Horario Nueva York (hora local)", group=GRUPO_HORARIO)
+newYorkBgColor = input.color(color.new(color.orange, 85), "Color Nueva York", group=GRUPO_HORARIO)
+
+string TZ_LONDON = "Europe/London"
+string TZ_NEWYORK = "America/New_York"
+
+bool londonSession = not na(time(timeframe.period, londonHours, TZ_LONDON))
+bool newYorkSession = not na(time(timeframe.period, newYorkHours, TZ_NEWYORK))
+
+bool londonTradingNow = tradeLondon and londonSession
+bool newYorkTradingNow = tradeNewYork and newYorkSession
+
+bool tradingSessionAllowed = not useTradingHours or londonTradingNow or newYorkTradingNow
+bool validBreakSession = not useTradingHours or londonTradingNow or newYorkTradingNow
+
+int activeSessionId = londonTradingNow ? 1 : newYorkTradingNow ? 2 : 0
+
+bgcolor(useTradingHours and showSessionBackground and londonTradingNow ? londonBgColor : na)
+bgcolor(useTradingHours and showSessionBackground and newYorkTradingNow ? newYorkBgColor : na)
+
+//══════════════════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN GENERAL
+//══════════════════════════════════════════════════════════════════════════════
+pivotBreakMode = input.string("Mecha", "Confirmación ruptura nivel", options=["Mecha", "Cierre"], group=GRUPO_PIVOT)
+lineWidth = input.int(2, "Grosor líneas", minval=1, maxval=4, group=GRUPO_PIVOT)
+brokenTransparency = input.int(50, "Transparencia cazado / caducado", minval=0, maxval=100, group=GRUPO_PIVOT)
+
+//══════════════════════════════════════════════════════════════════════════════
+// FVG
+//══════════════════════════════════════════════════════════════════════════════
+showImbalanceCandles = input.bool(true, "Colorear velas con FVG", group=GRUPO_FVG)
+bullishImbalanceColor = input.color(color.rgb(76,175,80), "Color FVG Alcista", group=GRUPO_FVG)
+bearishImbalanceColor = input.color(color.red, "Color FVG Bajista", group=GRUPO_FVG)
+
+//══════════════════════════════════════════════════════════════════════════════
+// OPERATIVA
+//══════════════════════════════════════════════════════════════════════════════
+// Estructura independiente de la confirmación de los niveles Ayalga.
+chochLeftBars = input.int(3, "Velas izquierda", minval=1, maxval=100, group=GRUPO_CHOCH)
+chochRightBars = input.int(3, "Velas derecha", minval=1, maxval=100, group=GRUPO_CHOCH)
+chochBreakMode = input.string("Mecha", "Confirmación ruptura estructura", options=["Mecha", "Cierre"], group=GRUPO_CHOCH)
+showChochRaw = input.bool(true, "Mostrar pivots raw", group=GRUPO_CHOCH)
+showChochEvents = input.bool(true, "Mostrar CHoCH", group=GRUPO_CHOCH)
+showChochImpulse = input.bool(true, "Mostrar Origen/50%/Extremo", group=GRUPO_CHOCH)
+chochPivotHighColor = input.color(color.red, "Color Pivot High", group=GRUPO_CHOCH)
+chochPivotLowColor = input.color(color.lime, "Color Pivot Low", group=GRUPO_CHOCH)
+chochEventColor = input.color(color.orange, "Color CHoCH", group=GRUPO_CHOCH)
+chochOriginColor = input.color(color.gray, "Color Origen impulso", group=GRUPO_CHOCH)
+chochMidColor = input.color(color.yellow, "Color 50%", group=GRUPO_CHOCH)
+chochExtremeColor = input.color(color.fuchsia, "Color Extremo impulso", group=GRUPO_CHOCH)
+
+chochTPMode = input.string("TP2", "TP", options=["TP1", "TP2"], group=GRUPO_CHOCH, tooltip="TP1 = extremo. TP2 = proyección 1:1 desde el 50%. TP neto conserva la compensación de comisión existente.")
+
+direction = input.string("Las 2", "Dirección", options=["Las 2","Solo Alcistas","Solo Bajistas"], group=GRUPO_OP)
+maxEntriesPerCycle = input.int(4, "Máximo entradas por ciclo", minval=1, maxval=10, group=GRUPO_OP)
+nextEntryMode = input.string("Al tocar SL", "Modo activación siguiente operación", options=["Al tocar SL","Cierre más allá del SL"], group=GRUPO_OP)
+
+allowLong = direction == "Las 2" or direction == "Solo Alcistas"
+allowShort = direction == "Las 2" or direction == "Solo Bajistas"
+
+//══════════════════════════════════════════════════════════════════════════════
+// RIESGO
+//══════════════════════════════════════════════════════════════════════════════
+riskUSD = input.float(100.0, "Riesgo total por operación (USD)", minval=1.0, group=GRUPO_RISK)
+includeCommissionInRisk = input.bool(true, "Incluir comisión FTMO en el riesgo", group=GRUPO_RISK)
+ftmoCommissionPerLotSide = input.float(2.50, "Comisión FTMO por lote y lado (USD)", minval=0, step=0.10, group=GRUPO_RISK)
+forexUnitsPerLot = input.float(100000, "Unidades por lote Forex", group=GRUPO_RISK)
+netTP = input.bool(true, "TP neto: compensar comisión", group=GRUPO_RISK)
+entryDeviationPips = input.float(0.3, "Desviación entrada TV (pips)", minval=0, step=0.1, group=GRUPO_RISK)
+
+riskMode = input.string("D'Alembert", "Gestión de riesgo", options=["Normal","D'Alembert","Doblar 2ª entrada"], group=GRUPO_RISK)
+dAlembertLimitMode = input.string("Unidades", "Límite D'Alembert", options=["Unidades","USD"], group=GRUPO_RISK)
+dAlembertMaxUnits = input.int(4, "Máximo de unidades", minval=1, group=GRUPO_RISK)
+dAlembertMaxUSD = input.float(500, "Máximo riesgo D'Alembert (USD)", group=GRUPO_RISK)
+resetDAlembertPerCycle = input.bool(true, "Reiniciar D'Alembert al terminar ciclo de nivel", group=GRUPO_RISK)
+
+bool effectiveUseDAlembert = riskMode == "D'Alembert"
+bool effectiveDoubleSecond = riskMode == "Doblar 2ª entrada"
+
+var int dAlembertUnits = 1
+
+if not effectiveUseDAlembert
+    dAlembertUnits := 1
+
+//══════════════════════════════════════════════════════════════════════════════
+// VISUAL
+//══════════════════════════════════════════════════════════════════════════════
+showBrokenPivots = input.bool(false, "Mostrar rupturas", group=GRUPO_VIS)
+showCompletedTrades = input.bool(true, "Conservar operaciones terminadas", group=GRUPO_VIS)
+completedTradesLimit = input.int(30, "Operaciones terminadas a conservar", minval=1, maxval=50, group=GRUPO_VIS)
+
+
+showLevelIds = input.bool(true, "Mostrar ID de niveles", group=GRUPO_VIS)
+showLevelsByProximity = input.bool(true, "Mostrar niveles según proximidad", group=GRUPO_VIS)
+visibleDistancePips = input.float(200, "Distancia visible (pips)", group=GRUPO_VIS)
+separatePivotLabels = input.bool(true, "Separar etiquetas superpuestas", group=GRUPO_VIS)
+labelCollisionPips = input.float(3, "Proximidad etiquetas (pips)", group=GRUPO_VIS)
+labelVerticalPips = input.float(1, "Separación vertical (pips)", group=GRUPO_VIS)
+
+float pipSize = syminfo.type == "forex" ? syminfo.mintick * (syminfo.mintick == 0.00001 or syminfo.mintick == 0.001 ? 10 : 1) : syminfo.mintick
+float visibleDistancePrice = visibleDistancePips * pipSize
+float labelCollisionPrice = labelCollisionPips * pipSize
+float labelVerticalPrice = labelVerticalPips * pipSize
+float entryDeviationPrice = entryDeviationPips * pipSize
+
+//══════════════════════════════════════════════════════════════════════════════
+// ALERTAS
+//══════════════════════════════════════════════════════════════════════════════
+enableLevelBreakAlerts = input.bool(true, "Alertas de ruptura de nivel", group=GRUPO_ALERT)
+enableChochAlerts = input.bool(true, "Alertas de CHoCH asociado al nivel", group=GRUPO_ALERT)
+enableEntryAlerts = input.bool(true, "Alertas de entrada", group=GRUPO_ALERT)
+enableExitAlerts = input.bool(true, "Alertas SL / TP", group=GRUPO_ALERT)
+
+//══════════════════════════════════════════════════════════════════════════════
+// FUNCIONES
+//══════════════════════════════════════════════════════════════════════════════
+f_breakUp(float level) =>
+    pivotBreakMode == "Mecha" ?
+         high > level and high[1] <= level :
+         close > level and close[1] <= level and barstate.isconfirmed
+
+f_breakDown(float level) =>
+    pivotBreakMode == "Mecha" ?
+         low < level and low[1] >= level :
+         close < level and close[1] >= level and barstate.isconfirmed
+
+f_dayText(int dow) =>
+    dow == dayofweek.monday ? "LUN" :
+     dow == dayofweek.tuesday ? "MAR" :
+     dow == dayofweek.wednesday ? "MIE" :
+     dow == dayofweek.thursday ? "JUE" :
+     dow == dayofweek.friday ? "VIE" :
+     dow == dayofweek.saturday ? "SAB" : "DOM"
+
+//══════════════════════════════════════════════════════════════════════════════
+// CAMBIOS TF
+//══════════════════════════════════════════════════════════════════════════════
+bool newH1 = timeframe.change("60")
+bool newH4 = timeframe.change("240")
+
+string DAILY_TZ = "Europe/Madrid"
+
+int dailyShiftedTime = time + 60 * 60 * 1000
+int forexDayKey = year(dailyShiftedTime, DAILY_TZ)*10000 + month(dailyShiftedTime, DAILY_TZ)*100 + dayofmonth(dailyShiftedTime, DAILY_TZ)
+bool forexNewDay = not na(forexDayKey[1]) and forexDayKey != forexDayKey[1]
+int forexLogicalDow = dayofweek(dailyShiftedTime, DAILY_TZ)
+
+//══════════════════════════════════════════════════════════════════════════════
+// CONSTRUIR H1
+//══════════════════════════════════════════════════════════════════════════════
+var h1Highs = array.new_float()
+var h1Lows = array.new_float()
+var h1HighBars = array.new_int()
+var h1LowBars = array.new_int()
+
+var float buildingH1High = na
+var float buildingH1Low = na
+var int buildingH1HighBar = na
+var int buildingH1LowBar = na
+
+bool h1CandleClosed = false
+
+if barstate.isfirst
+    buildingH1High := high
+    buildingH1Low := low
+    buildingH1HighBar := bar_index
+    buildingH1LowBar := bar_index
+else
+    if newH1
+        if not na(buildingH1High)
+            array.push(h1Highs,buildingH1High)
+            array.push(h1Lows,buildingH1Low)
+            array.push(h1HighBars,buildingH1HighBar)
+            array.push(h1LowBars,buildingH1LowBar)
+            h1CandleClosed := true
+
+        buildingH1High := high
+        buildingH1Low := low
+        buildingH1HighBar := bar_index
+        buildingH1LowBar := bar_index
+    else
+        if high > buildingH1High
+            buildingH1High := high
+            buildingH1HighBar := bar_index
+
+        if low < buildingH1Low
+            buildingH1Low := low
+            buildingH1LowBar := bar_index
+
+//══════════════════════════════════════════════════════════════════════════════
+// CONSTRUIR H4
+//══════════════════════════════════════════════════════════════════════════════
+var h4Highs = array.new_float()
+var h4Lows = array.new_float()
+var h4HighBars = array.new_int()
+var h4LowBars = array.new_int()
+
+var float buildingH4High = na
+var float buildingH4Low = na
+var int buildingH4HighBar = na
+var int buildingH4LowBar = na
+
+bool h4CandleClosed = false
+
+if barstate.isfirst
+    buildingH4High := high
+    buildingH4Low := low
+    buildingH4HighBar := bar_index
+    buildingH4LowBar := bar_index
+else
+    if newH4
+        if not na(buildingH4High)
+            array.push(h4Highs,buildingH4High)
+            array.push(h4Lows,buildingH4Low)
+            array.push(h4HighBars,buildingH4HighBar)
+            array.push(h4LowBars,buildingH4LowBar)
+            h4CandleClosed := true
+
+        buildingH4High := high
+        buildingH4Low := low
+        buildingH4HighBar := bar_index
+        buildingH4LowBar := bar_index
+    else
+        if high > buildingH4High
+            buildingH4High := high
+            buildingH4HighBar := bar_index
+
+        if low < buildingH4Low
+            buildingH4Low := low
+            buildingH4LowBar := bar_index
+
+//══════════════════════════════════════════════════════════════════════════════
+// DÍA AYALGA
+//══════════════════════════════════════════════════════════════════════════════
+var float buildingDayHigh = na
+var float buildingDayLow = na
+var float buildingDayOpen = na
+var int buildingDayHighBar = na
+var int buildingDayLowBar = na
+var int buildingDayDow = na
+
+bool completedDay = false
+float completedDayHigh = na
+float completedDayLow = na
+float completedDayOpen = na
+float completedDayClose = na
+int completedDayHighBar = na
+int completedDayLowBar = na
+int completedDayDow = na
+
+var dpHighs = array.new_float()
+var dpLows = array.new_float()
+var dpHighBars = array.new_int()
+var dpLowBars = array.new_int()
+
+bool dailyCandleClosed = false
+
+if na(buildingDayHigh)
+    buildingDayHigh := high
+    buildingDayLow := low
+    buildingDayOpen := open
+    buildingDayHighBar := bar_index
+    buildingDayLowBar := bar_index
+    buildingDayDow := forexLogicalDow
+
+if forexNewDay
+    if buildingDayDow != dayofweek.sunday
+        completedDay := true
+        completedDayHigh := buildingDayHigh
+        completedDayLow := buildingDayLow
+        completedDayOpen := buildingDayOpen
+        completedDayClose := close[1]
+        completedDayHighBar := buildingDayHighBar
+        completedDayLowBar := buildingDayLowBar
+        completedDayDow := buildingDayDow
+
+        array.push(dpHighs,buildingDayHigh)
+        array.push(dpLows,buildingDayLow)
+        array.push(dpHighBars,buildingDayHighBar)
+        array.push(dpLowBars,buildingDayLowBar)
+
+        dailyCandleClosed := true
+
+    buildingDayHigh := high
+    buildingDayLow := low
+    buildingDayOpen := open
+    buildingDayHighBar := bar_index
+    buildingDayLowBar := bar_index
+    buildingDayDow := forexLogicalDow
+else
+    if high > buildingDayHigh
+        buildingDayHigh := high
+        buildingDayHighBar := bar_index
+
+    if low < buildingDayLow
+        buildingDayLow := low
+        buildingDayLowBar := bar_index
+
+//══════════════════════════════════════════════════════════════════════════════
+// DETECTAR PIVOTS
+//══════════════════════════════════════════════════════════════════════════════
+bool newH1PivotHigh=false
+bool newH1PivotLow=false
+float newH1PivotHighPrice=na
+float newH1PivotLowPrice=na
+int newH1PivotHighBar=na
+int newH1PivotLowBar=na
+
+if h1CandleClosed and array.size(h1Highs)>=h1Length*2
+    int c=array.size(h1Highs)-h1Length
+    float ch=array.get(h1Highs,c)
+    float cl=array.get(h1Lows,c)
+    bool ih=true
+    bool il=true
+
+    for o=1 to h1Length
+        if ch<=array.get(h1Highs,c-o)
+            ih:=false
+
+        if cl>=array.get(h1Lows,c-o)
+            il:=false
+
+        if c+o<array.size(h1Highs)
+            if ch<=array.get(h1Highs,c+o)
+                ih:=false
+
+            if cl>=array.get(h1Lows,c+o)
+                il:=false
+
+    if ih
+        newH1PivotHigh:=true
+        newH1PivotHighPrice:=ch
+        newH1PivotHighBar:=array.get(h1HighBars,c)
+
+    if il
+        newH1PivotLow:=true
+        newH1PivotLowPrice:=cl
+        newH1PivotLowBar:=array.get(h1LowBars,c)
+
+bool newH4PivotHigh=false
+bool newH4PivotLow=false
+float newH4PivotHighPrice=na
+float newH4PivotLowPrice=na
+int newH4PivotHighBar=na
+int newH4PivotLowBar=na
+
+if h4CandleClosed and array.size(h4Highs)>=h4Length*2
+    int c=array.size(h4Highs)-h4Length
+    float ch=array.get(h4Highs,c)
+    float cl=array.get(h4Lows,c)
+    bool ih=true
+    bool il=true
+
+    for o=1 to h4Length
+        if ch<=array.get(h4Highs,c-o)
+            ih:=false
+
+        if cl>=array.get(h4Lows,c-o)
+            il:=false
+
+        if c+o<array.size(h4Highs)
+            if ch<=array.get(h4Highs,c+o)
+                ih:=false
+
+            if cl>=array.get(h4Lows,c+o)
+                il:=false
+
+    if ih
+        newH4PivotHigh:=true
+        newH4PivotHighPrice:=ch
+        newH4PivotHighBar:=array.get(h4HighBars,c)
+
+    if il
+        newH4PivotLow:=true
+        newH4PivotLowPrice:=cl
+        newH4PivotLowBar:=array.get(h4LowBars,c)
+
+bool newDpPivotHigh=false
+bool newDpPivotLow=false
+float newDpPivotHighPrice=na
+float newDpPivotLowPrice=na
+int newDpPivotHighBar=na
+int newDpPivotLowBar=na
+
+if dailyCandleClosed and array.size(dpHighs)>=dpLength*2
+    int c=array.size(dpHighs)-dpLength
+    float ch=array.get(dpHighs,c)
+    float cl=array.get(dpLows,c)
+    bool ih=true
+    bool il=true
+
+    for o=1 to dpLength
+        if ch<=array.get(dpHighs,c-o)
+            ih:=false
+
+        if cl>=array.get(dpLows,c-o)
+            il:=false
+
+        if c+o<array.size(dpHighs)
+            if ch<=array.get(dpHighs,c+o)
+                ih:=false
+
+            if cl>=array.get(dpLows,c+o)
+                il:=false
+
+    if ih
+        newDpPivotHigh:=true
+        newDpPivotHighPrice:=ch
+        newDpPivotHighBar:=array.get(dpHighBars,c)
+
+    if il
+        newDpPivotLow:=true
+        newDpPivotLowPrice:=cl
+        newDpPivotLowBar:=array.get(dpLowBars,c)
+
+//══════════════════════════════════════════════════════════════════════════════
+// SWINGS — NUEVO MOTOR ESTRUCTURAL
+//══════════════════════════════════════════════════════════════════════════════
+var h1SwingTypes=array.new_int()
+var h1SwingPrices=array.new_float()
+var h1SwingBars=array.new_int()
+var h1SwingStructural=array.new_bool()
+var h1SwingBrokenBars=array.new_int()
+var h1PendingHighIndices=array.new_int()
+var h1PendingLowIndices=array.new_int()
+
+var h4SwingTypes=array.new_int()
+var h4SwingPrices=array.new_float()
+var h4SwingBars=array.new_int()
+var h4SwingStructural=array.new_bool()
+var h4SwingBrokenBars=array.new_int()
+var h4PendingHighIndices=array.new_int()
+var h4PendingLowIndices=array.new_int()
+
+var dpSwingTypes=array.new_int()
+var dpSwingPrices=array.new_float()
+var dpSwingBars=array.new_int()
+var dpSwingStructural=array.new_bool()
+var dpSwingBrokenBars=array.new_int()
+var dpPendingHighIndices=array.new_int()
+var dpPendingLowIndices=array.new_int()
+
+f_addSwing(array<int> types,array<float> prices,array<int> bars,array<bool> structural,array<int> brokenBars,array<int> pendingHighs,array<int> pendingLows,int t,float p,int b)=>
+    array<int> pending=t==1?pendingHighs:pendingLows
+    if array.size(types)==0
+        array.push(types,t)
+        array.push(prices,p)
+        array.push(bars,b)
+        array.push(structural,false)
+        array.push(brokenBars,-1)
+        array.push(pending,array.size(types)-1)
+    else
+        int last=array.size(types)-1
+        if array.get(types,last)==t
+            bool better=t==1?p>array.get(prices,last):p<array.get(prices,last)
+            if better
+                if array.get(brokenBars,last)!=-1
+                    array.push(pending,last)
+                array.set(prices,last,p)
+                array.set(bars,last,b)
+                array.set(structural,last,false)
+                array.set(brokenBars,last,-1)
+        else
+            array.push(types,t)
+            array.push(prices,p)
+            array.push(bars,b)
+            array.push(structural,false)
+            array.push(brokenBars,-1)
+            array.push(pending,array.size(types)-1)
+
+// Registrar la PRIMERA ruptura de cada swing pendiente H1.
+int h1PendingHighPos=array.size(h1PendingHighIndices)-1
+while h1PendingHighPos>=0
+    int i=array.get(h1PendingHighIndices,h1PendingHighPos)
+    float p=array.get(h1SwingPrices,i)
+    int b=array.get(h1SwingBars,i)
+    if bar_index>b
+        bool broken=pivotBreakMode=="Mecha"?high>p:close>p and barstate.isconfirmed
+        if broken
+            array.set(h1SwingBrokenBars,i,bar_index)
+            array.remove(h1PendingHighIndices,h1PendingHighPos)
+    h1PendingHighPos-=1
+
+int h1PendingLowPos=array.size(h1PendingLowIndices)-1
+while h1PendingLowPos>=0
+    int i=array.get(h1PendingLowIndices,h1PendingLowPos)
+    float p=array.get(h1SwingPrices,i)
+    int b=array.get(h1SwingBars,i)
+    if bar_index>b
+        bool broken=pivotBreakMode=="Mecha"?low<p:close<p and barstate.isconfirmed
+        if broken
+            array.set(h1SwingBrokenBars,i,bar_index)
+            array.remove(h1PendingLowIndices,h1PendingLowPos)
+    h1PendingLowPos-=1
+
+// Registrar la PRIMERA ruptura de cada swing pendiente H4.
+int h4PendingHighPos=array.size(h4PendingHighIndices)-1
+while h4PendingHighPos>=0
+    int i=array.get(h4PendingHighIndices,h4PendingHighPos)
+    float p=array.get(h4SwingPrices,i)
+    int b=array.get(h4SwingBars,i)
+    if bar_index>b
+        bool broken=pivotBreakMode=="Mecha"?high>p:close>p and barstate.isconfirmed
+        if broken
+            array.set(h4SwingBrokenBars,i,bar_index)
+            array.remove(h4PendingHighIndices,h4PendingHighPos)
+    h4PendingHighPos-=1
+
+int h4PendingLowPos=array.size(h4PendingLowIndices)-1
+while h4PendingLowPos>=0
+    int i=array.get(h4PendingLowIndices,h4PendingLowPos)
+    float p=array.get(h4SwingPrices,i)
+    int b=array.get(h4SwingBars,i)
+    if bar_index>b
+        bool broken=pivotBreakMode=="Mecha"?low<p:close<p and barstate.isconfirmed
+        if broken
+            array.set(h4SwingBrokenBars,i,bar_index)
+            array.remove(h4PendingLowIndices,h4PendingLowPos)
+    h4PendingLowPos-=1
+
+// Registrar la PRIMERA ruptura de cada swing pendiente Diario.
+int dpPendingHighPos=array.size(dpPendingHighIndices)-1
+while dpPendingHighPos>=0
+    int i=array.get(dpPendingHighIndices,dpPendingHighPos)
+    float p=array.get(dpSwingPrices,i)
+    int b=array.get(dpSwingBars,i)
+    if bar_index>b
+        bool broken=pivotBreakMode=="Mecha"?high>p:close>p and barstate.isconfirmed
+        if broken
+            array.set(dpSwingBrokenBars,i,bar_index)
+            array.remove(dpPendingHighIndices,dpPendingHighPos)
+    dpPendingHighPos-=1
+
+int dpPendingLowPos=array.size(dpPendingLowIndices)-1
+while dpPendingLowPos>=0
+    int i=array.get(dpPendingLowIndices,dpPendingLowPos)
+    float p=array.get(dpSwingPrices,i)
+    int b=array.get(dpSwingBars,i)
+    if bar_index>b
+        bool broken=pivotBreakMode=="Mecha"?low<p:close<p and barstate.isconfirmed
+        if broken
+            array.set(dpSwingBrokenBars,i,bar_index)
+            array.remove(dpPendingLowIndices,dpPendingLowPos)
+    dpPendingLowPos-=1
+
+if newH1PivotHigh
+    f_addSwing(h1SwingTypes,h1SwingPrices,h1SwingBars,h1SwingStructural,h1SwingBrokenBars,h1PendingHighIndices,h1PendingLowIndices,1,newH1PivotHighPrice,newH1PivotHighBar)
+
+if newH1PivotLow
+    f_addSwing(h1SwingTypes,h1SwingPrices,h1SwingBars,h1SwingStructural,h1SwingBrokenBars,h1PendingHighIndices,h1PendingLowIndices,-1,newH1PivotLowPrice,newH1PivotLowBar)
+
+if newH4PivotHigh
+    f_addSwing(h4SwingTypes,h4SwingPrices,h4SwingBars,h4SwingStructural,h4SwingBrokenBars,h4PendingHighIndices,h4PendingLowIndices,1,newH4PivotHighPrice,newH4PivotHighBar)
+
+if newH4PivotLow
+    f_addSwing(h4SwingTypes,h4SwingPrices,h4SwingBars,h4SwingStructural,h4SwingBrokenBars,h4PendingHighIndices,h4PendingLowIndices,-1,newH4PivotLowPrice,newH4PivotLowBar)
+
+if newDpPivotHigh
+    f_addSwing(dpSwingTypes,dpSwingPrices,dpSwingBars,dpSwingStructural,dpSwingBrokenBars,dpPendingHighIndices,dpPendingLowIndices,1,newDpPivotHighPrice,newDpPivotHighBar)
+
+if newDpPivotLow
+    f_addSwing(dpSwingTypes,dpSwingPrices,dpSwingBars,dpSwingStructural,dpSwingBrokenBars,dpPendingHighIndices,dpPendingLowIndices,-1,newDpPivotLowPrice,newDpPivotLowBar)
+
+//══════════════════════════════════════════════════════════════════════════════
+// NIVELES
+//══════════════════════════════════════════════════════════════════════════════
+var levelPrices=array.new_float()
+var levelBars=array.new_int()
+var levelActiveBars=array.new_int()
+var levelTypes=array.new_int()
+var levelFamilies=array.new_int()
+var levelIds=array.new_int()
+var levelIdTexts=array.new_string()
+var levelBroken=array.new_bool()
+var levelExpired=array.new_bool()
+var levelTrading=array.new_bool()
+var levelLifeRemaining=array.new_int()
+var levelColors=array.new_color()
+var levelLines=array.new_line()
+var levelLabels=array.new_label()
+
+var int nextLevelId=1
+
+f_createLevel(float price,int visualBar,int activeBar,int levelType,int family,int levelId,string idText,bool showLevel,bool tradingEnabled,color levelColor,int lifeDays)=>
+    line ln=na
+    label lb=na
+
+    if showLevel
+        ln:=line.new(
+             visualBar,
+             price,
+             bar_index,
+             price,
+             xloc=xloc.bar_index,
+             extend=extend.right,
+             color=levelColor,
+             width=lineWidth)
+
+        if showLevelIds
+            int stackSlot=0
+
+            if separatePivotLabels and array.size(levelPrices)>0
+                for j=0 to array.size(levelPrices)-1
+                    float op=array.get(levelPrices,j)
+                    int ob=array.get(levelBars,j)
+                    int ot=array.get(levelTypes,j)
+                    bool obr=array.get(levelBroken,j)
+                    bool oe=array.get(levelExpired,j)
+                    label ol=array.get(levelLabels,j)
+
+                    if not obr and not oe and ot==levelType and not na(ol) and math.abs(visualBar-ob)<=1 and math.abs(price-op)<=labelCollisionPrice
+                        stackSlot+=1
+
+            float labelY=separatePivotLabels ?
+                 (levelType==1 ?
+                 price+labelVerticalPrice*(stackSlot+1) :
+                 price-labelVerticalPrice*(stackSlot+1)) :
+                 price
+
+            lb:=label.new(
+                 visualBar,
+                 labelY,
+                 idText,
+                 xloc=xloc.bar_index,
+                 yloc=yloc.price,
+                 style=levelType==1?label.style_label_down:label.style_label_up,
+                 color=color.new(levelColor,70),
+                 textcolor=levelColor,
+                 size=size.tiny)
+
+    array.push(levelPrices,price)
+    array.push(levelBars,visualBar)
+    array.push(levelActiveBars,activeBar)
+    array.push(levelTypes,levelType)
+    array.push(levelFamilies,family)
+    array.push(levelIds,levelId)
+    array.push(levelIdTexts,idText)
+    array.push(levelBroken,false)
+    array.push(levelExpired,false)
+    array.push(levelTrading,tradingEnabled)
+    array.push(levelLifeRemaining,lifeDays)
+    array.push(levelColors,levelColor)
+    array.push(levelLines,ln)
+    array.push(levelLabels,lb)
+
+//══════════════════════════════════════════════════════════════════════════════
+// MANUALES — NACIMIENTO HISTÓRICO REPRODUCIBLE
+//
+// Ya NO usamos barstate.islast.
+//
+// El MAN se crea cuando el histórico alcanza manualXTime.
+// Por tanto, cada recálculo lo vuelve a crear EN LA MISMA VELA.
+//══════════════════════════════════════════════════════════════════════════════
+var bool manual1Created=false
+var bool manual2Created=false
+
+bool manual1Enabled=manual1Price>0 and manual1Time>0
+bool manual2Enabled=manual2Price>0 and manual2Time>0
+
+bool manual1Birth=
+     manual1Enabled and
+     not manual1Created and
+     time>=manual1Time
+
+bool manual2Birth=
+     manual2Enabled and
+     not manual2Created and
+     time>=manual2Time
+
+if manual1Birth
+    int visualBar=math.max(0,bar_index-4999)
+    int operationalBar=bar_index
+    int mt=manual1Price>close?1:-1
+    string txt="#"+str.tostring(nextLevelId)+" MAN"
+
+    f_createLevel(
+         manual1Price,
+         visualBar,
+         operationalBar,
+         mt,
+         24,
+         nextLevelId,
+         txt,
+         dpShow,
+         dpTrading,
+         dpColor,
+         -1)
+
+    nextLevelId+=1
+    manual1Created:=true
+
+if manual2Birth
+    int visualBar=math.max(0,bar_index-4999)
+    int operationalBar=bar_index
+    int mt=manual2Price>close?1:-1
+    string txt="#"+str.tostring(nextLevelId)+" MAN"
+
+    f_createLevel(
+         manual2Price,
+         visualBar,
+         operationalBar,
+         mt,
+         24,
+         nextLevelId,
+         txt,
+         dpShow,
+         dpTrading,
+         dpColor,
+         -1)
+
+    nextLevelId+=1
+    manual2Created:=true
+
+//══════════════════════════════════════════════════════════════════════════════
+// VALIDACIÓN ESTRUCTURAL — NUEVO MOTOR
+// Busca hacia atrás el pivot contrario más próximo que seguía intacto cuando
+// nació el nuevo pivot y exige que su ruptura ocurra después de ese nacimiento.
+//══════════════════════════════════════════════════════════════════════════════
+if array.size(h1SwingTypes)>=2
+    int last=array.size(h1SwingTypes)-1
+    int lt=array.get(h1SwingTypes,last)
+    int lb=array.get(h1SwingBars,last)
+
+    if not array.get(h1SwingStructural,last)
+        int validPrev=-1
+
+        for n=1 to array.size(h1SwingTypes)-1
+            int i=last-n
+            if i>=0 and validPrev==-1
+                int candidateType=array.get(h1SwingTypes,i)
+                if candidateType==-lt
+                    int candidateBrokenBar=array.get(h1SwingBrokenBars,i)
+                    bool intactWhenLastBorn=candidateBrokenBar==-1 or candidateBrokenBar>lb
+                    if intactWhenLastBorn
+                        validPrev:=i
+                        break
+
+        if validPrev>=0
+            int breakBar=array.get(h1SwingBrokenBars,validPrev)
+            bool br=breakBar!=-1 and breakBar>lb
+
+            if br
+                array.set(h1SwingStructural,last,true)
+                float p=array.get(h1SwingPrices,last)
+                int b=array.get(h1SwingBars,last)
+                string txt="#"+str.tostring(nextLevelId)+" H1"
+                f_createLevel(p,b,b,lt,1,nextLevelId,txt,h1Show,h1Trading,h1Color,-1)
+                nextLevelId+=1
+
+if array.size(h4SwingTypes)>=2
+    int last=array.size(h4SwingTypes)-1
+    int lt=array.get(h4SwingTypes,last)
+    int lb=array.get(h4SwingBars,last)
+
+    if not array.get(h4SwingStructural,last)
+        int validPrev=-1
+
+        for n=1 to array.size(h4SwingTypes)-1
+            int i=last-n
+            if i>=0 and validPrev==-1
+                int candidateType=array.get(h4SwingTypes,i)
+                if candidateType==-lt
+                    int candidateBrokenBar=array.get(h4SwingBrokenBars,i)
+                    bool intactWhenLastBorn=candidateBrokenBar==-1 or candidateBrokenBar>lb
+                    if intactWhenLastBorn
+                        validPrev:=i
+                        break
+
+        if validPrev>=0
+            int breakBar=array.get(h4SwingBrokenBars,validPrev)
+            bool br=breakBar!=-1 and breakBar>lb
+
+            if br
+                array.set(h4SwingStructural,last,true)
+                float p=array.get(h4SwingPrices,last)
+                int b=array.get(h4SwingBars,last)
+                string txt="#"+str.tostring(nextLevelId)+" H4"
+                f_createLevel(p,b,b,lt,4,nextLevelId,txt,h4Show,h4Trading,h4Color,-1)
+                nextLevelId+=1
+
+if array.size(dpSwingTypes)>=2
+    int last=array.size(dpSwingTypes)-1
+    int lt=array.get(dpSwingTypes,last)
+    int lb=array.get(dpSwingBars,last)
+
+    if not array.get(dpSwingStructural,last)
+        int validPrev=-1
+
+        for n=1 to array.size(dpSwingTypes)-1
+            int i=last-n
+            if i>=0 and validPrev==-1
+                int candidateType=array.get(dpSwingTypes,i)
+                if candidateType==-lt
+                    int candidateBrokenBar=array.get(dpSwingBrokenBars,i)
+                    bool intactWhenLastBorn=candidateBrokenBar==-1 or candidateBrokenBar>lb
+                    if intactWhenLastBorn
+                        validPrev:=i
+                        break
+
+        if validPrev>=0
+            int breakBar=array.get(dpSwingBrokenBars,validPrev)
+            bool br=breakBar!=-1 and breakBar>lb
+
+            if br
+                array.set(dpSwingStructural,last,true)
+                float p=array.get(dpSwingPrices,last)
+                int b=array.get(dpSwingBars,last)
+                string txt="#"+str.tostring(nextLevelId)+" D"
+                f_createLevel(p,b,b,lt,24,nextLevelId,txt,dpShow,dpTrading,dpColor,-1)
+                nextLevelId+=1
+
+//══════════════════════════════════════════════════════════════════════════════
+// MÁXIMO/MÍNIMO DIARIO
+//══════════════════════════════════════════════════════════════════════════════
+if completedDay
+    string dayTxt=f_dayText(completedDayDow)
+    bool bullish=completedDayClose>completedDayOpen
+    color dc=bullish?dailyBullColor:dailyBearColor
+
+    bool tradeHigh=dailyTrading
+    bool tradeLow=dailyTrading
+
+    if tradeByDayClose
+        tradeHigh:=dailyTrading and not bullish
+        tradeLow:=dailyTrading and bullish
+
+    string hi="#"+str.tostring(nextLevelId)+" "+dayTxt+" MAX"
+
+    f_createLevel(
+         completedDayHigh,
+         completedDayHighBar,
+         completedDayHighBar,
+         1,
+         5,
+         nextLevelId,
+         hi,
+         dailyShow,
+         tradeHigh,
+         dc,
+         dailyLifeDays)
+
+    nextLevelId+=1
+
+    string lo="#"+str.tostring(nextLevelId)+" "+dayTxt+" MIN"
+
+    f_createLevel(
+         completedDayLow,
+         completedDayLowBar,
+         completedDayLowBar,
+         -1,
+         5,
+         nextLevelId,
+         lo,
+         dailyShow,
+         tradeLow,
+         dc,
+         dailyLifeDays)
+
+    nextLevelId+=1
+
+//══════════════════════════════════════════════════════════════════════════════
+// CADUCIDAD
+//══════════════════════════════════════════════════════════════════════════════
+if forexNewDay and array.size(levelPrices)>0
+    for i=0 to array.size(levelPrices)-1
+
+        if array.get(levelFamilies,i)==5 and not array.get(levelBroken,i) and not array.get(levelExpired,i)
+
+            int remaining=array.get(levelLifeRemaining,i)
+
+            bool justCreated=
+                 completedDay and
+                 (array.get(levelIds,i)==nextLevelId-1 or
+                 array.get(levelIds,i)==nextLevelId-2)
+
+            if not justCreated
+                remaining-=1
+                array.set(levelLifeRemaining,i,remaining)
+
+                if remaining<=0
+                    array.set(levelExpired,i,true)
+
+                    line ln=array.get(levelLines,i)
+
+                    if not na(ln)
+                        line.set_x2(ln,bar_index-1)
+                        line.set_extend(ln,extend.none)
+                        line.set_color(ln,color.new(array.get(levelColors,i),brokenTransparency))
+
+//══════════════════════════════════════════════════════════════════════════════
+// VISIBILIDAD
+//══════════════════════════════════════════════════════════════════════════════
+if array.size(levelPrices)>0
+    for i=0 to array.size(levelPrices)-1
+
+        if not array.get(levelBroken,i) and not array.get(levelExpired,i)
+
+            float lp=array.get(levelPrices,i)
+            int fam=array.get(levelFamilies,i)
+            color lc=array.get(levelColors,i)
+
+            bool shown=
+                 fam==1?h1Show:
+                 fam==4?h4Show:
+                 fam==24?dpShow:
+                 dailyShow
+
+            bool near=
+                 not showLevelsByProximity or
+                 math.abs(lp-close)<=visibleDistancePrice
+
+            bool vis=shown and near
+
+            line ln=array.get(levelLines,i)
+            label lb=array.get(levelLabels,i)
+
+            if not na(ln)
+                line.set_color(
+                     ln,
+                     vis?lc:color.new(lc,100))
+
+            if not na(lb)
+                label.set_textcolor(
+                     lb,
+                     vis and showLevelIds?
+                     lc:
+                     color.new(lc,100))
+
+                label.set_color(
+                     lb,
+                     vis and showLevelIds?
+                     color.new(lc,70):
+                     color.new(lc,100))
+
+//══════════════════════════════════════════════════════════════════════════════
+// CAZA DE NIVELES
+//
+// TODOS los niveles:
+// MAN / H1 / H4 / D / diarios
+//
+// La ruptura histórica queda reproducible gracias al nacimiento histórico
+// del MAN.
+//
+// VARIP solamente sirve como puente durante la vela realtime actual.
+// Además de recordar que rompió, recuerda:
+//   - dirección
+//   - sesión de origen
+//   - si la ruptura era operable
+//
+// De esta forma:
+// ruptura → alerta → activación ciclo → FVG posterior → operación
+//══════════════════════════════════════════════════════════════════════════════
+
+//──────────────────────────────────────────────────────────────────────────────
+// MEMORIA INTRABAR
+//──────────────────────────────────────────────────────────────────────────────
+varip array<int> intrabarBrokenIds = array.new_int()
+varip array<int> intrabarBrokenBars = array.new_int()
+varip array<int> intrabarBrokenDirections = array.new_int()
+varip array<int> intrabarBrokenSessions = array.new_int()
+varip array<bool> intrabarBrokenTradeEligible = array.new_bool()
+
+varip int intrabarMemoryBar = na
+
+// Alertas ya enviadas durante esta vela.
+varip array<int> breakAlertsSent = array.new_int()
+varip int alertMemoryBar = na
+
+//──────────────────────────────────────────────────────────────────────────────
+// NUEVA VELA → LIMPIAR SOLO MEMORIA INTRABAR
+//──────────────────────────────────────────────────────────────────────────────
+if na(intrabarMemoryBar) or intrabarMemoryBar != bar_index
+    array.clear(intrabarBrokenIds)
+    array.clear(intrabarBrokenBars)
+    array.clear(intrabarBrokenDirections)
+    array.clear(intrabarBrokenSessions)
+    array.clear(intrabarBrokenTradeEligible)
+
+    intrabarMemoryBar := bar_index
+
+if na(alertMemoryBar) or alertMemoryBar != bar_index
+    array.clear(breakAlertsSent)
+    alertMemoryBar := bar_index
+
+//──────────────────────────────────────────────────────────────────────────────
+// EVENTOS DE ESTA VELA
+//──────────────────────────────────────────────────────────────────────────────
+bool highBreakEvent = false
+bool lowBreakEvent = false
+
+string highBreakIds = ""
+string lowBreakIds = ""
+
+int highBreakOriginSession = 0
+int lowBreakOriginSession = 0
+
+//══════════════════════════════════════════════════════════════════════════════
+// 1. RESTAURAR RUPTURA REALTIME DESPUÉS DE ROLLBACK
+//══════════════════════════════════════════════════════════════════════════════
+if array.size(intrabarBrokenIds) > 0 and array.size(levelIds) > 0
+
+    for k = 0 to array.size(intrabarBrokenIds) - 1
+
+        int rememberedId = array.get(intrabarBrokenIds, k)
+        int rememberedBar = array.get(intrabarBrokenBars, k)
+        int rememberedDirection = array.get(intrabarBrokenDirections, k)
+        int rememberedSession = array.get(intrabarBrokenSessions, k)
+        bool rememberedTradeEligible = array.get(intrabarBrokenTradeEligible, k)
+
+        // La memoria VARIP solamente actúa en la propia vela de ruptura.
+        if rememberedBar == bar_index
+
+            for j = 0 to array.size(levelIds) - 1
+
+                if array.get(levelIds, j) == rememberedId
+
+                    //──────────────────────────────────────────────────────
+                    // RESTAURAR ESTADO VISUAL
+                    //──────────────────────────────────────────────────────
+                    array.set(levelBroken, j, true)
+
+                    line rememberedLine = array.get(levelLines, j)
+
+                    if not na(rememberedLine)
+                        line.set_x2(
+                             rememberedLine,
+                             rememberedBar)
+
+                        line.set_extend(
+                             rememberedLine,
+                             extend.none)
+
+                        line.set_color(
+                             rememberedLine,
+                             color.new(
+                             array.get(levelColors, j),
+                             brokenTransparency))
+
+                    //──────────────────────────────────────────────────────
+                    // RESTAURAR EVENTO DE TRADING
+                    //
+                    // ESTA ES LA PARTE QUE FALTABA.
+                    //──────────────────────────────────────────────────────
+                    if rememberedTradeEligible
+
+                        string rememberedText =
+                             array.get(levelIdTexts, j)
+
+                        // RESISTENCIA ROTA → SHORT
+                        if rememberedDirection == 1
+
+                            highBreakEvent := true
+
+                            if not str.contains(
+                                 highBreakIds,
+                                 rememberedText)
+
+                                highBreakIds :=
+                                     highBreakIds == "" ?
+                                     rememberedText :
+                                     highBreakIds + " + " + rememberedText
+
+                            if highBreakOriginSession == 0
+                                highBreakOriginSession :=
+                                     rememberedSession
+
+                        // SOPORTE ROTO → LONG
+                        if rememberedDirection == -1
+
+                            lowBreakEvent := true
+
+                            if not str.contains(
+                                 lowBreakIds,
+                                 rememberedText)
+
+                                lowBreakIds :=
+                                     lowBreakIds == "" ?
+                                     rememberedText :
+                                     lowBreakIds + " + " + rememberedText
+
+                            if lowBreakOriginSession == 0
+                                lowBreakOriginSession :=
+                                     rememberedSession
+
+                    break
+
+//══════════════════════════════════════════════════════════════════════════════
+// 2. BUSCAR NUEVAS RUPTURAS
+//══════════════════════════════════════════════════════════════════════════════
+if array.size(levelPrices) > 0
+
+    for i = 0 to array.size(levelPrices) - 1
+
+        bool broken = array.get(levelBroken, i)
+        bool expired = array.get(levelExpired, i)
+
+        if not broken and not expired
+
+            float level = array.get(levelPrices, i)
+            int levelType = array.get(levelTypes, i)
+            int family = array.get(levelFamilies, i)
+            int activeFromBar = array.get(levelActiveBars, i)
+            int currentId = array.get(levelIds, i)
+
+            bool tradingEnabled =
+                 array.get(levelTrading, i)
+
+            string idText =
+                 array.get(levelIdTexts, i)
+
+            color lc =
+                 array.get(levelColors, i)
+
+            //──────────────────────────────────────────────────────────────
+            // Un nivel nunca puede romperse en su propia vela de creación.
+            //
+            // Para MAN:
+            // la primera vela válida es la siguiente a "Activar desde".
+            //──────────────────────────────────────────────────────────────
+            bool afterOrigin =
+                 bar_index > activeFromBar
+
+            //──────────────────────────────────────────────────────────────
+            // HORARIO SEGÚN FAMILIA
+            //──────────────────────────────────────────────────────────────
+            bool h4Ext =
+                 family == 4 and
+                 h4ExtendedTradingNow
+
+            bool dpExt =
+                 family == 24 and
+                 dpExtendedTradingNow
+
+            bool sessionOK =
+                 validBreakSession or
+                 h4Ext or
+                 dpExt
+
+            int originSession =
+                 validBreakSession ?
+                 activeSessionId :
+                 h4Ext ?
+                 3 :
+                 dpExt ?
+                 4 :
+                 0
+
+            // Una ruptura puede existir visualmente aunque no sea operable.
+            bool tradeEligible =
+                 tradingEnabled and
+                 sessionOK
+
+            //══════════════════════════════════════════════════════════════
+            // RESISTENCIA / MÁXIMO ROTO → SHORT
+            //══════════════════════════════════════════════════════════════
+            if levelType == 1 and afterOrigin and f_breakUp(level)
+
+                //──────────────────────────────────────────────────────────
+                // GUARDAR TODO EL EVENTO EN VARIP
+                //──────────────────────────────────────────────────────────
+                if not array.includes(
+                     intrabarBrokenIds,
+                     currentId)
+
+                    array.push(
+                         intrabarBrokenIds,
+                         currentId)
+
+                    array.push(
+                         intrabarBrokenBars,
+                         bar_index)
+
+                    array.push(
+                         intrabarBrokenDirections,
+                         1)
+
+                    array.push(
+                         intrabarBrokenSessions,
+                         originSession)
+
+                    array.push(
+                         intrabarBrokenTradeEligible,
+                         tradeEligible)
+
+                //──────────────────────────────────────────────────────────
+                // ESTADO DEL NIVEL
+                //──────────────────────────────────────────────────────────
+                array.set(
+                     levelBroken,
+                     i,
+                     true)
+
+                line ln =
+                     array.get(levelLines, i)
+
+                if not na(ln)
+
+                    line.set_x2(
+                         ln,
+                         bar_index)
+
+                    line.set_extend(
+                         ln,
+                         extend.none)
+
+                    line.set_color(
+                         ln,
+                         color.new(
+                         lc,
+                         brokenTransparency))
+
+                //──────────────────────────────────────────────────────────
+                // ETIQUETA
+                //──────────────────────────────────────────────────────────
+                if showBrokenPivots
+
+                    label.new(
+                         bar_index,
+                         level,
+                         "Ruptura ↑ " + idText,
+                         xloc=xloc.bar_index,
+                         yloc=yloc.price,
+                         style=label.style_label_down,
+                         color=color.new(lc, 70),
+                         textcolor=lc,
+                         size=size.tiny)
+
+                //──────────────────────────────────────────────────────────
+                // ALERTA
+                //──────────────────────────────────────────────────────────
+                if enableLevelBreakAlerts and tradeEligible
+
+                    if not array.includes(
+                         breakAlertsSent,
+                         currentId)
+
+                        alert(
+                             "Nivel Roto " +
+                             idText +
+                             " SHORT",
+                             alert.freq_all)
+
+                        array.push(
+                             breakAlertsSent,
+                             currentId)
+
+                //──────────────────────────────────────────────────────────
+                // ACTIVACIÓN SHORT
+                //──────────────────────────────────────────────────────────
+                if tradeEligible
+
+                    highBreakEvent := true
+
+                    if not str.contains(
+                         highBreakIds,
+                         idText)
+
+                        highBreakIds :=
+                             highBreakIds == "" ?
+                             idText :
+                             highBreakIds +
+                             " + " +
+                             idText
+
+                    if highBreakOriginSession == 0
+                        highBreakOriginSession :=
+                             originSession
+
+            //══════════════════════════════════════════════════════════════
+            // SOPORTE / MÍNIMO ROTO → LONG
+            //══════════════════════════════════════════════════════════════
+            if levelType == -1 and afterOrigin and f_breakDown(level)
+
+                //──────────────────────────────────────────────────────────
+                // GUARDAR TODO EL EVENTO EN VARIP
+                //──────────────────────────────────────────────────────────
+                if not array.includes(
+                     intrabarBrokenIds,
+                     currentId)
+
+                    array.push(
+                         intrabarBrokenIds,
+                         currentId)
+
+                    array.push(
+                         intrabarBrokenBars,
+                         bar_index)
+
+                    array.push(
+                         intrabarBrokenDirections,
+                         -1)
+
+                    array.push(
+                         intrabarBrokenSessions,
+                         originSession)
+
+                    array.push(
+                         intrabarBrokenTradeEligible,
+                         tradeEligible)
+
+                //──────────────────────────────────────────────────────────
+                // ESTADO DEL NIVEL
+                //──────────────────────────────────────────────────────────
+                array.set(
+                     levelBroken,
+                     i,
+                     true)
+
+                line ln =
+                     array.get(levelLines, i)
+
+                if not na(ln)
+
+                    line.set_x2(
+                         ln,
+                         bar_index)
+
+                    line.set_extend(
+                         ln,
+                         extend.none)
+
+                    line.set_color(
+                         ln,
+                         color.new(
+                         lc,
+                         brokenTransparency))
+
+                //──────────────────────────────────────────────────────────
+                // ETIQUETA
+                //──────────────────────────────────────────────────────────
+                if showBrokenPivots
+
+                    label.new(
+                         bar_index,
+                         level,
+                         "Ruptura ↓ " + idText,
+                         xloc=xloc.bar_index,
+                         yloc=yloc.price,
+                         style=label.style_label_up,
+                         color=color.new(lc, 70),
+                         textcolor=lc,
+                         size=size.tiny)
+
+                //──────────────────────────────────────────────────────────
+                // ALERTA
+                //──────────────────────────────────────────────────────────
+                if enableLevelBreakAlerts and tradeEligible
+
+                    if not array.includes(
+                         breakAlertsSent,
+                         currentId)
+
+                        alert(
+                             "Nivel Roto " +
+                             idText +
+                             " LONG",
+                             alert.freq_all)
+
+                        array.push(
+                             breakAlertsSent,
+                             currentId)
+
+                //──────────────────────────────────────────────────────────
+                // ACTIVACIÓN LONG
+                //──────────────────────────────────────────────────────────
+                if tradeEligible
+
+                    lowBreakEvent := true
+
+                    if not str.contains(
+                         lowBreakIds,
+                         idText)
+
+                        lowBreakIds :=
+                             lowBreakIds == "" ?
+                             idText :
+                             lowBreakIds +
+                             " + " +
+                             idText
+
+                    if lowBreakOriginSession == 0
+                        lowBreakOriginSession :=
+                             originSession
+
+//══════════════════════════════════════════════════════════════════════════════
+// FVG VISUAL
+//══════════════════════════════════════════════════════════════════════════════
+bullishImbalance = high[2] < low
+bearishImbalance = low[2] > high
+
+imbalanceColor = bullishImbalance ? bullishImbalanceColor : bearishImbalance ? bearishImbalanceColor : na
+barcolor(showImbalanceCandles ? imbalanceColor : na, offset=-1)
+
+//══════════════════════════════════════════════════════════════════════════════
+var string entryStatus = "Esperando ruptura de nivel Ayalga"
+var string entryStatusIds = ""
+var int shortState = 0
+var int longState = 0
+var int shortTradeNum = 0
+var int longTradeNum = 0
+var int shortActivationBar = na
+var int longActivationBar = na
+var string shortCycleIds = ""
+var string longCycleIds = ""
+var int shortOriginSession = 0
+var int longOriginSession = 0
+
+var float shortSetupEntry = na
+var float shortSetupSL = na
+var float shortSetupTPRaw = na
+var float shortSetupExtreme = na
+var int shortSetupBreakBar = na
+var int shortSetupOriginBar = na
+var int shortSetupBar = na
+var bool shortRetraceStarted = false
+
+var float longSetupEntry = na
+var float longSetupSL = na
+var float longSetupTPRaw = na
+var float longSetupExtreme = na
+var int longSetupBreakBar = na
+var int longSetupOriginBar = na
+var int longSetupBar = na
+var bool longRetraceStarted = false
+
+var bool pendingNextShort = false
+var bool pendingNextLong = false
+var float pendingNextSL = na
+var string pendingNextIds = ""
+var int pendingNextTradeNum = 0
+
+var float activeEntry = na
+var float activeSL = na
+var float activeTP = na
+var float activeQty = na
+var float activeRiskUSD = na
+var float activeEstimatedCommission = na
+var int activeTradeNumber = 0
+var int activeDirection = 0
+var string activeLevelIds = ""
+var bool orderSubmitted = false
+var int processedClosedTrades = 0
+var bool exitAlertSent = false
+var bool entryAlertSent = false
+
+// Instantánea del setup exclusivamente cuando se envía una operación.
+// Las marcas definitivas se crean solo tras confirmar el cierre en closedtrades.
+var tradeHistoryTimes = array.new_int()
+var completedTradeLines = array.new_line()
+var completedTradeLabels = array.new_label()
+var int submittedOriginTime = na
+var float submittedMid = na
+var float submittedExtreme = na
+var string submittedTPMode = ""
+if barstate.isconfirmed
+    array.push(tradeHistoryTimes, time)
+
+var cycleStructureLabels = array.new_label()
+
+// MOTOR CHoCH / BOS DEL TIMEFRAME DEL GRÁFICO
+// Misma lógica del indicador Ayalga - Validación + CHoCH/BOS + 50% Impulso
+//══════════════════════════════════════════════════════════════════════════════
+// Parámetros configurables en CHoCH / Entradas.
+
+var chochHighs = array.new_float()
+var chochLows = array.new_float()
+var chochHighBars = array.new_int()
+var chochLowBars = array.new_int()
+
+bool chochNewPivotHigh = false
+bool chochNewPivotLow = false
+float chochNewPivotHighPrice = na
+float chochNewPivotLowPrice = na
+int chochNewPivotHighBar = na
+int chochNewPivotLowBar = na
+
+// Pivots raw: permite máximos/mínimos iguales, exactamente como el indicador probado.
+if barstate.isconfirmed
+    array.push(chochHighs, high)
+    array.push(chochLows, low)
+    array.push(chochHighBars, bar_index)
+    array.push(chochLowBars, bar_index)
+
+    int c = array.size(chochHighs) - 1 - chochRightBars
+
+    if c >= chochLeftBars
+        float ch = array.get(chochHighs, c)
+        float cl = array.get(chochLows, c)
+        bool ih = true
+        bool il = true
+
+        for o = 1 to chochLeftBars
+            if ch < array.get(chochHighs, c - o)
+                ih := false
+            if cl > array.get(chochLows, c - o)
+                il := false
+
+        for o = 1 to chochRightBars
+            if ch < array.get(chochHighs, c + o)
+                ih := false
+            if cl > array.get(chochLows, c + o)
+                il := false
+
+        if ih
+            chochNewPivotHigh := true
+            chochNewPivotHighPrice := ch
+            chochNewPivotHighBar := array.get(chochHighBars, c)
+
+        if il
+            chochNewPivotLow := true
+            chochNewPivotLowPrice := cl
+            chochNewPivotLowBar := array.get(chochLowBars, c)
+
+// Pivots raw de todo el gráfico, independientes del ciclo operativo.
+// plotshape evita que la limpieza del ciclo borre estos puntos.
+if showChochRaw and chochNewPivotHigh
+    label.new(chochNewPivotHighBar, chochNewPivotHighPrice - syminfo.mintick * 0, ".", yloc=yloc.price, style=label.style_label_down, color=color.new(chochPivotHighColor, 100), textcolor=chochPivotHighColor, size=size.small)
+
+if showChochRaw and chochNewPivotLow
+    label.new(chochNewPivotLowBar, chochNewPivotLowPrice + syminfo.mintick * 0, ".", yloc=yloc.price, style=label.style_label_up, color=color.new(chochPivotLowColor, 100), textcolor=chochPivotLowColor, size=size.small)
+
+var chochSwingTypes = array.new_int()
+var chochSwingPrices = array.new_float()
+var chochSwingBars = array.new_int()
+var chochSwingStructural = array.new_bool()
+var chochSwingBrokenBars = array.new_int()
+var chochPendingHighIndices = array.new_int()
+var chochPendingLowIndices = array.new_int()
+var int chochStructureBias = 0
+
+f_addChochSwing(array<int> types, array<float> prices, array<int> bars, array<bool> structural, array<int> brokenBars, array<int> pendingHighs, array<int> pendingLows, int t, float p, int b) =>
+    array<int> pending = t == 1 ? pendingHighs : pendingLows
+    if array.size(types) == 0
+        array.push(types, t)
+        array.push(prices, p)
+        array.push(bars, b)
+        array.push(structural, false)
+        array.push(brokenBars, -1)
+        array.push(pending, array.size(types) - 1)
+    else
+        int last = array.size(types) - 1
+        if array.get(types, last) == t
+            bool better = t == 1 ? p > array.get(prices, last) : p < array.get(prices, last)
+            if better
+                if array.get(brokenBars, last) != -1
+                    array.push(pending, last)
+                array.set(prices, last, p)
+                array.set(bars, last, b)
+                array.set(structural, last, false)
+                array.set(brokenBars, last, -1)
+        else
+            array.push(types, t)
+            array.push(prices, p)
+            array.push(bars, b)
+            array.push(structural, false)
+            array.push(brokenBars, -1)
+            array.push(pending, array.size(types) - 1)
+
+// Registrar la PRIMERA ruptura de cada swing pendiente.
+int chochPendingHighPos = array.size(chochPendingHighIndices) - 1
+while chochPendingHighPos >= 0
+    int i = array.get(chochPendingHighIndices, chochPendingHighPos)
+    float p = array.get(chochSwingPrices, i)
+    int b = array.get(chochSwingBars, i)
+    if bar_index > b
+        bool broken = chochBreakMode == "Mecha" ? high > p : close > p and barstate.isconfirmed
+        if broken
+            array.set(chochSwingBrokenBars, i, bar_index)
+            array.remove(chochPendingHighIndices, chochPendingHighPos)
+    chochPendingHighPos -= 1
+
+int chochPendingLowPos = array.size(chochPendingLowIndices) - 1
+while chochPendingLowPos >= 0
+    int i = array.get(chochPendingLowIndices, chochPendingLowPos)
+    float p = array.get(chochSwingPrices, i)
+    int b = array.get(chochSwingBars, i)
+    if bar_index > b
+        bool broken = chochBreakMode == "Mecha" ? low < p : close < p and barstate.isconfirmed
+        if broken
+            array.set(chochSwingBrokenBars, i, bar_index)
+            array.remove(chochPendingLowIndices, chochPendingLowPos)
+    chochPendingLowPos -= 1
+
+
+if chochNewPivotHigh
+    f_addChochSwing(chochSwingTypes, chochSwingPrices, chochSwingBars, chochSwingStructural, chochSwingBrokenBars, chochPendingHighIndices, chochPendingLowIndices, 1, chochNewPivotHighPrice, chochNewPivotHighBar)
+
+if chochNewPivotLow
+    f_addChochSwing(chochSwingTypes, chochSwingPrices, chochSwingBars, chochSwingStructural, chochSwingBrokenBars, chochPendingHighIndices, chochPendingLowIndices, -1, chochNewPivotLowPrice, chochNewPivotLowBar)
+
+// Eventos generados EN ESTA VELA.
+bool bullishChochEvent = false
+bool bearishChochEvent = false
+bool bullishBosEvent = false
+bool bearishBosEvent = false
+float structureEventOrigin = na
+float structureEventExtreme = na
+float structureEventMid = na
+int structureEventOriginBar = na
+int structureEventBreakBar = na
+bool structureEventHasFVG = false
+
+// Comprueba que exista al menos un FVG dentro del impulso [fromBar..toBar].
+f_chochHighAt(int b) =>
+    b == bar_index ? high : array.get(chochHighs, b)
+
+f_chochLowAt(int b) =>
+    b == bar_index ? low : array.get(chochLows, b)
+
+f_hasImpulseFVG(int fromBar, int toBar, bool bullish) =>
+    bool found = false
+    int span = toBar - fromBar
+    if span >= 2
+        for j = 0 to span - 2
+            int b0 = fromBar + j
+            int b2 = b0 + 2
+            int off0 = bar_index - b0
+            int off2 = bar_index - b2
+            if off0 >= 0 and off2 >= 0
+                bool gap = bullish ? f_chochLowAt(b2) > f_chochHighAt(b0) : f_chochHighAt(b2) < f_chochLowAt(b0)
+                if gap
+                    found := true
+    found
+
+// Validación estructural: busca hacia atrás el pivot contrario más próximo que
+// seguía intacto cuando nació el nuevo pivot. Esta es la lógica del indicador probado.
+if array.size(chochSwingTypes) >= 2
+    int last = array.size(chochSwingTypes) - 1
+    int lt = array.get(chochSwingTypes, last)
+    float lp = array.get(chochSwingPrices, last)
+    int lb = array.get(chochSwingBars, last)
+
+    if not array.get(chochSwingStructural, last)
+        int validPrev = -1
+
+        for n = 1 to array.size(chochSwingTypes) - 1
+            int i = last - n
+            if i >= 0 and validPrev == -1
+                int candidateType = array.get(chochSwingTypes, i)
+                if candidateType == -lt
+                    int candidateBrokenBar = array.get(chochSwingBrokenBars, i)
+                    bool intactWhenLastBorn = candidateBrokenBar == -1 or candidateBrokenBar > lb
+                    if intactWhenLastBorn
+                        validPrev := i
+                        break
+
+        if validPrev >= 0
+            int pt = array.get(chochSwingTypes, validPrev)
+            int breakBar = array.get(chochSwingBrokenBars, validPrev)
+            bool br = breakBar != -1 and breakBar > lb
+
+            if br
+                array.set(chochSwingStructural, last, true)
+
+
+                bool isBullishEvent = lt == -1 and pt == 1
+                bool isBearishEvent = lt == 1 and pt == -1
+                bool isChoch = false
+
+                if isBullishEvent
+                    isChoch := chochStructureBias == -1 or chochStructureBias == 0
+                    bullishChochEvent := isChoch
+                    bullishBosEvent := not isChoch
+                    chochStructureBias := 1
+
+                if isBearishEvent
+                    isChoch := chochStructureBias == 1 or chochStructureBias == 0
+                    bearishChochEvent := isChoch
+                    bearishBosEvent := not isChoch
+                    chochStructureBias := -1
+
+                if isBullishEvent or isBearishEvent
+                    float extremePrice = isBullishEvent ? -1e10 : 1e10
+                    int impulseSpan = breakBar - lb
+
+                    if impulseSpan >= 0
+                        for k = 0 to impulseSpan
+                            int offset = bar_index - (lb + k)
+                            if offset >= 0
+                                if isBullishEvent
+                                    extremePrice := math.max(extremePrice, f_chochHighAt(lb + k))
+                                else
+                                    extremePrice := math.min(extremePrice, f_chochLowAt(lb + k))
+
+                    structureEventOrigin := lp
+                    structureEventExtreme := extremePrice
+                    structureEventMid := (lp + extremePrice) / 2.0
+                    structureEventOriginBar := lb
+                    structureEventBreakBar := breakBar
+                    structureEventHasFVG := f_hasImpulseFVG(lb, breakBar, isBullishEvent)
+
+//══════════════════════════════════════════════════════════════════════════════
+// ESTADOS DE CICLO CHoCH
+// 0 = inactivo
+// 1 = esperando primer CHoCH relevante
+// 2 = setup CHoCH+FVG pendiente de retroceso al 50%
+// 4 = impulso CHoCH en formación, FVG todavía pendiente
+// 3 = orden/operación activa
+//══════════════════════════════════════════════════════════════════════════════
+f_dAlembertRisk() =>
+    float unitsRisk = riskUSD * dAlembertUnits
+    dAlembertLimitMode == "Unidades" ? riskUSD * math.min(dAlembertUnits, dAlembertMaxUnits) : math.min(unitsRisk, math.max(riskUSD, dAlembertMaxUSD))
+
+// Los resets de setup se realizan explícitamente en los bloques de estado.
+
+//══════════════════════════════════════════════════════════════════════════════
+// ACTIVACIÓN POR RUPTURA DE NIVEL AYALGA
+//══════════════════════════════════════════════════════════════════════════════
+bool conflictingBreak = highBreakEvent and lowBreakEvent
+
+if highBreakEvent and not conflictingBreak and allowShort and shortState == 0 and longState == 0 and strategy.position_size == 0 and not orderSubmitted and not pendingNextShort and not pendingNextLong
+    shortState := 1
+    shortTradeNum := 1
+    shortActivationBar := bar_index
+    shortCycleIds := highBreakIds
+    entryStatusIds := highBreakIds
+    entryStatus := "Nivel máximo roto: esperando CHoCH bajista"
+    shortOriginSession := highBreakOriginSession
+    shortSetupEntry := na
+    shortSetupSL := na
+    shortSetupTPRaw := na
+    shortSetupExtreme := na
+    shortSetupBar := na
+    shortRetraceStarted := false
+
+if lowBreakEvent and not conflictingBreak and allowLong and shortState == 0 and longState == 0 and strategy.position_size == 0 and not orderSubmitted and not pendingNextShort and not pendingNextLong
+    longState := 1
+    longTradeNum := 1
+    longActivationBar := bar_index
+    longCycleIds := lowBreakIds
+    entryStatusIds := lowBreakIds
+    entryStatus := "Nivel mínimo roto: esperando CHoCH alcista"
+    longOriginSession := lowBreakOriginSession
+    longSetupEntry := na
+    longSetupSL := na
+    longSetupTPRaw := na
+    longSetupExtreme := na
+    longSetupBar := na
+    longRetraceStarted := false
+
+bool shortOriginSessionStillOpen = shortOriginSession == 1 ? londonTradingNow : shortOriginSession == 2 ? newYorkTradingNow : shortOriginSession == 3 ? h4ExtendedTradingNow : shortOriginSession == 4 ? dpExtendedTradingNow : tradingSessionAllowed
+bool longOriginSessionStillOpen = longOriginSession == 1 ? londonTradingNow : longOriginSession == 2 ? newYorkTradingNow : longOriginSession == 3 ? h4ExtendedTradingNow : longOriginSession == 4 ? dpExtendedTradingNow : tradingSessionAllowed
+
+if shortState == 1 and shortTradeNum == 1 and not allowFirstEntryOutsideSession and not shortOriginSessionStillOpen
+    shortState := 0
+    shortTradeNum := 0
+    shortActivationBar := na
+    shortCycleIds := ""
+    shortOriginSession := 0
+
+if longState == 1 and longTradeNum == 1 and not allowFirstEntryOutsideSession and not longOriginSessionStillOpen
+    longState := 0
+    longTradeNum := 0
+    longActivationBar := na
+    longCycleIds := ""
+    longOriginSession := 0
+
+//══════════════════════════════════════════════════════════════════════════════
+// REARME TRAS SL CUANDO SE EXIGE CIERRE MÁS ALLÁ DEL SL
+// Después del rearme se vuelve a esperar un CHoCH nuevo.
+//══════════════════════════════════════════════════════════════════════════════
+if pendingNextShort and barstate.isconfirmed and not na(pendingNextSL)
+    if close > pendingNextSL
+        shortState := 1
+        shortTradeNum := pendingNextTradeNum
+        shortActivationBar := bar_index
+        shortCycleIds := pendingNextIds
+        pendingNextShort := false
+        pendingNextSL := na
+        pendingNextIds := ""
+        pendingNextTradeNum := 0
+
+if pendingNextLong and barstate.isconfirmed and not na(pendingNextSL)
+    if close < pendingNextSL
+        longState := 1
+        longTradeNum := pendingNextTradeNum
+        longActivationBar := bar_index
+        longCycleIds := pendingNextIds
+        pendingNextLong := false
+        pendingNextSL := na
+        pendingNextIds := ""
+        pendingNextTradeNum := 0
+
+//══════════════════════════════════════════════════════════════════════════════
+// PRIMER CHoCH RELEVANTE: mantener el impulso en formación.
+// 4 = CHoCH asociado, esperando FVG durante la continuación del impulso.
+// 2 = FVG confirmado, entrada preparada; extremo móvil hasta el retroceso.
+// El retroceso comienza en una vela confirmada sin nuevo extremo que avanza
+// contra el impulso: high > high[1] en SHORT, low < low[1] en LONG.
+// La vela que confirma el FVG puede ser posterior a la ruptura del CHoCH.
+//══════════════════════════════════════════════════════════════════════════════
+bool capturedShortChoch = false
+bool capturedLongChoch = false
+bool preparedShortNow = false
+bool preparedLongNow = false
+if shortState == 1 and bearishChochEvent and bar_index > shortActivationBar
+    capturedShortChoch := true
+    shortSetupEntry := structureEventMid
+    shortSetupSL := structureEventOrigin
+    shortSetupExtreme := structureEventExtreme
+    shortSetupTPRaw := chochTPMode == "TP1" ? structureEventExtreme : structureEventExtreme - (structureEventMid - structureEventExtreme)
+    shortSetupBreakBar := structureEventBreakBar
+    shortSetupOriginBar := structureEventOriginBar
+    shortSetupBar := bar_index
+    shortRetraceStarted := false
+    shortState := 4
+    entryStatus := "CHoCH bajista asociado: buscando FVG durante el impulso"
+
+if longState == 1 and bullishChochEvent and bar_index > longActivationBar
+    capturedLongChoch := true
+    longSetupEntry := structureEventMid
+    longSetupSL := structureEventOrigin
+    longSetupExtreme := structureEventExtreme
+    longSetupTPRaw := chochTPMode == "TP1" ? structureEventExtreme : structureEventExtreme + (structureEventExtreme - structureEventMid)
+    longSetupBreakBar := structureEventBreakBar
+    longSetupOriginBar := structureEventOriginBar
+    longSetupBar := bar_index
+    longRetraceStarted := false
+    longState := 4
+    entryStatus := "CHoCH alcista asociado: buscando FVG durante el impulso"
+
+// Avisar del CHoCH asociado al nivel; una vez por dirección y vela.
+// Memoria intrabar independiente de los estados y de las otras alertas.
+varip int lastShortChochAlertBar = na
+varip int lastLongChochAlertBar = na
+if enableChochAlerts
+    if capturedShortChoch and shortCycleIds != "" and (na(lastShortChochAlertBar) or lastShortChochAlertBar != bar_index)
+        alert("CHoCH SHORT " + shortCycleIds + " | TF " + (timeframe.isminutes ? timeframe.period + "m" : timeframe.period), alert.freq_all)
+        lastShortChochAlertBar := bar_index
+    if capturedLongChoch and longCycleIds != "" and (na(lastLongChochAlertBar) or lastLongChochAlertBar != bar_index)
+        alert("CHoCH LONG " + longCycleIds + " | TF " + (timeframe.isminutes ? timeframe.period + "m" : timeframe.period), alert.freq_all)
+        lastLongChochAlertBar := bar_index
+
+// Extender hasta el giro, sin reiniciar el CHoCH decisivo ni esperar otro CHoCH.
+if (shortState == 4 or shortState == 2) and not shortRetraceStarted and barstate.isconfirmed
+    float previousExtreme = shortSetupExtreme
+    bool retraceNow = bar_index > shortSetupBar and low >= previousExtreme and high > high[1]
+    // En detecciones tardías, incluir las velas entre ruptura y detección.
+    if bar_index == shortSetupBar
+        for b = shortSetupBreakBar to bar_index
+            shortSetupExtreme := math.min(shortSetupExtreme, f_chochLowAt(b))
+    else
+        shortSetupExtreme := math.min(shortSetupExtreme, low)
+    shortSetupEntry := (shortSetupSL + shortSetupExtreme) / 2.0
+    shortSetupTPRaw := chochTPMode == "TP1" ? shortSetupExtreme : shortSetupExtreme - (shortSetupEntry - shortSetupExtreme)
+    bool impulseHasFVG = f_hasImpulseFVG(shortSetupOriginBar, bar_index, false)
+    if shortState == 4 and impulseHasFVG
+        preparedShortNow := true
+        shortState := 2
+        shortSetupBar := bar_index
+        entryStatus := "SHORT preparado: FVG confirmado en el impulso, esperando 50%"
+    if retraceNow
+        shortRetraceStarted := true
+        if shortState == 4
+            entryStatus := "Ciclo terminado: impulso bajista completo sin FVG"
+            shortState := 0
+            shortTradeNum := 0
+            shortActivationBar := na
+            shortCycleIds := ""
+            shortOriginSession := 0
+            if effectiveUseDAlembert and resetDAlembertPerCycle
+                dAlembertUnits := 1
+
+if (longState == 4 or longState == 2) and not longRetraceStarted and barstate.isconfirmed
+    float previousExtreme = longSetupExtreme
+    bool retraceNow = bar_index > longSetupBar and high <= previousExtreme and low < low[1]
+    if bar_index == longSetupBar
+        for b = longSetupBreakBar to bar_index
+            longSetupExtreme := math.max(longSetupExtreme, f_chochHighAt(b))
+    else
+        longSetupExtreme := math.max(longSetupExtreme, high)
+    longSetupEntry := (longSetupSL + longSetupExtreme) / 2.0
+    longSetupTPRaw := chochTPMode == "TP1" ? longSetupExtreme : longSetupExtreme + (longSetupExtreme - longSetupEntry)
+    bool impulseHasFVG = f_hasImpulseFVG(longSetupOriginBar, bar_index, true)
+    if longState == 4 and impulseHasFVG
+        preparedLongNow := true
+        longState := 2
+        longSetupBar := bar_index
+        entryStatus := "LONG preparado: FVG confirmado en el impulso, esperando 50%"
+    if retraceNow
+        longRetraceStarted := true
+        if longState == 4
+            entryStatus := "Ciclo terminado: impulso alcista completo sin FVG"
+            longState := 0
+            longTradeNum := 0
+            longActivationBar := na
+            longCycleIds := ""
+            longOriginSession := 0
+            if effectiveUseDAlembert and resetDAlembertPerCycle
+                dAlembertUnits := 1
+
+//══════════════════════════════════════════════════════════════════════════════
+// Solo el CHoCH decisivo asociado al nivel roto; sin etiquetas adicionales.
+if showChochEvents and (capturedShortChoch or capturedLongChoch)
+    bool visualBullish = capturedLongChoch
+    string visualIds = visualBullish ? longCycleIds : shortCycleIds
+    if visualIds != ""
+        array.push(cycleStructureLabels, label.new(structureEventOriginBar, structureEventOrigin + (visualBullish ? -1 : 1) * syminfo.mintick * 2, visualBullish ? "▴" : "▾", xloc=xloc.bar_index, yloc=yloc.price, style=label.style_none, color=color.new(chochEventColor, 100), textcolor=chochEventColor, size=size.huge, tooltip="Nivel roto: " + visualIds))
+
+// INVALIDACIÓN DEL SETUP ANTES DE ENTRAR
+// 1) Cualquier BOS detectado antes de la entrada cancela el ciclo.
+// 2) Hubo retroceso hacia el 50%, no lo tocó, y después cierra más allá del extremo.
+//══════════════════════════════════════════════════════════════════════════════
+if (shortState == 2 or shortState == 4) and strategy.position_size == 0 and not orderSubmitted
+    if bar_index > shortSetupBar or (not capturedShortChoch and (bullishBosEvent or bearishBosEvent))
+        bool wasRetracingShort = shortRetraceStarted
+
+        bool cancelByBos = bearishBosEvent or bullishBosEvent
+        bool cancelByContinuation = wasRetracingShort and high < shortSetupEntry and barstate.isconfirmed and close < shortSetupExtreme
+
+        if cancelByBos or cancelByContinuation
+            entryStatus := cancelByBos ? "Ciclo cancelado: BOS antes de entrada" : "Ciclo cancelado: continuación tras retroceso sin tocar 50%"
+            shortState := 0
+            shortTradeNum := 0
+            shortActivationBar := na
+            shortCycleIds := ""
+            shortOriginSession := 0
+            shortSetupEntry := na
+            shortSetupSL := na
+            shortSetupTPRaw := na
+            shortSetupExtreme := na
+            shortSetupBar := na
+            shortRetraceStarted := false
+            if effectiveUseDAlembert and resetDAlembertPerCycle
+                dAlembertUnits := 1
+
+if (longState == 2 or longState == 4) and strategy.position_size == 0 and not orderSubmitted
+    if bar_index > longSetupBar or (not capturedLongChoch and (bullishBosEvent or bearishBosEvent))
+        bool wasRetracingLong = longRetraceStarted
+
+        bool cancelByBos = bullishBosEvent or bearishBosEvent
+        bool cancelByContinuation = wasRetracingLong and low > longSetupEntry and barstate.isconfirmed and close > longSetupExtreme
+
+        if cancelByBos or cancelByContinuation
+            entryStatus := cancelByBos ? "Ciclo cancelado: BOS antes de entrada" : "Ciclo cancelado: continuación tras retroceso sin tocar 50%"
+            longState := 0
+            longTradeNum := 0
+            longActivationBar := na
+            longCycleIds := ""
+            longOriginSession := 0
+            longSetupEntry := na
+            longSetupSL := na
+            longSetupTPRaw := na
+            longSetupExtreme := na
+            longSetupBar := na
+            longRetraceStarted := false
+            if effectiveUseDAlembert and resetDAlembertPerCycle
+                dAlembertUnits := 1
+
+//══════════════════════════════════════════════════════════════════════════════
+// ENTRADA AL TOCAR EL 50%
+// Se ejecuta al primer toque posterior a la creación del setup.
+//══════════════════════════════════════════════════════════════════════════════
+bool shortOriginWindowOpen = shortOriginSession == 3 ? h4ExtendedTradingNow : shortOriginSession == 4 ? dpExtendedTradingNow : tradingSessionAllowed
+bool longOriginWindowOpen = longOriginSession == 3 ? h4ExtendedTradingNow : longOriginSession == 4 ? dpExtendedTradingNow : tradingSessionAllowed
+
+bool shortTimeAllowed = shortTradeNum > 1 or shortOriginWindowOpen or allowFirstEntryOutsideSession
+bool longTimeAllowed = longTradeNum > 1 or longOriginWindowOpen or allowFirstEntryOutsideSession
+
+bool shortTouch50 = shortState == 2 and bar_index > shortSetupBar and not na(shortSetupEntry) and high >= shortSetupEntry
+bool longTouch50 = longState == 2 and bar_index > longSetupBar and not na(longSetupEntry) and low <= longSetupEntry
+
+if shortTouch50 and shortTimeAllowed and strategy.position_size == 0 and not orderSubmitted
+    float entryPrice = shortSetupEntry - entryDeviationPrice
+    float stopPrice = shortSetupSL
+    float stopDistance = stopPrice - entryPrice
+
+    if stopDistance > syminfo.mintick
+        int tradeNumber = shortTradeNum
+        float baseRisk = effectiveUseDAlembert ? f_dAlembertRisk() : riskUSD
+        float currentRiskUSD = tradeNumber == 2 and effectiveDoubleSecond ? baseRisk * 2 : baseRisk
+        float commissionPerUnit = includeCommissionInRisk and syminfo.type == "forex" ? (ftmoCommissionPerLotSide * 2) / forexUnitsPerLot : 0
+        float riskPerUnit = stopDistance * syminfo.pointvalue + commissionPerUnit
+        float qty = riskPerUnit > 0 ? currentRiskUSD / riskPerUnit : na
+
+        if not na(qty) and qty > 0
+            activeEntry := entryPrice
+            activeSL := stopPrice
+            activeQty := qty
+            activeRiskUSD := currentRiskUSD
+            activeTradeNumber := tradeNumber
+            activeDirection := -1
+            activeLevelIds := shortCycleIds
+            activeEstimatedCommission := syminfo.type == "forex" ? qty * ((ftmoCommissionPerLotSide * 2) / forexUnitsPerLot) : 0
+
+            float rawTP = shortSetupTPRaw
+            if netTP and syminfo.type == "forex" and syminfo.pointvalue > 0 and qty > 0
+                float commissionDistance = activeEstimatedCommission / (qty * syminfo.pointvalue)
+                activeTP := rawTP - commissionDistance
+            else
+                activeTP := rawTP
+
+            exitAlertSent := false
+            entryAlertSent := true
+            orderSubmitted := true
+            shortState := 3
+            submittedOriginTime := array.get(tradeHistoryTimes, shortSetupOriginBar)
+            submittedMid := shortSetupEntry
+            submittedExtreme := shortSetupExtreme
+            submittedTPMode := chochTPMode
+            entryStatus := "Entrada SHORT enviada al detectar el toque del 50%"
+
+            strategy.entry("SHORT", strategy.short, qty=qty, comment="S" + str.tostring(tradeNumber) + " " + activeLevelIds)
+            strategy.exit("SHORT EXIT", from_entry="SHORT", stop=activeSL, limit=activeTP)
+
+            if enableEntryAlerts
+                alert("SHORT " + str.tostring(tradeNumber) + " " + activeLevelIds + " | TF " + (timeframe.isminutes ? timeframe.period + "m" : timeframe.period), alert.freq_once_per_bar)
+
+
+if longTouch50 and longTimeAllowed and strategy.position_size == 0 and not orderSubmitted
+    float entryPrice = longSetupEntry + entryDeviationPrice
+    float stopPrice = longSetupSL
+    float stopDistance = entryPrice - stopPrice
+
+    if stopDistance > syminfo.mintick
+        int tradeNumber = longTradeNum
+        float baseRisk = effectiveUseDAlembert ? f_dAlembertRisk() : riskUSD
+        float currentRiskUSD = tradeNumber == 2 and effectiveDoubleSecond ? baseRisk * 2 : baseRisk
+        float commissionPerUnit = includeCommissionInRisk and syminfo.type == "forex" ? (ftmoCommissionPerLotSide * 2) / forexUnitsPerLot : 0
+        float riskPerUnit = stopDistance * syminfo.pointvalue + commissionPerUnit
+        float qty = riskPerUnit > 0 ? currentRiskUSD / riskPerUnit : na
+
+        if not na(qty) and qty > 0
+            activeEntry := entryPrice
+            activeSL := stopPrice
+            activeQty := qty
+            activeRiskUSD := currentRiskUSD
+            activeTradeNumber := tradeNumber
+            activeDirection := 1
+            activeLevelIds := longCycleIds
+            activeEstimatedCommission := syminfo.type == "forex" ? qty * ((ftmoCommissionPerLotSide * 2) / forexUnitsPerLot) : 0
+
+            float rawTP = longSetupTPRaw
+            if netTP and syminfo.type == "forex" and syminfo.pointvalue > 0 and qty > 0
+                float commissionDistance = activeEstimatedCommission / (qty * syminfo.pointvalue)
+                activeTP := rawTP + commissionDistance
+            else
+                activeTP := rawTP
+
+            exitAlertSent := false
+            entryAlertSent := true
+            orderSubmitted := true
+            longState := 3
+            submittedOriginTime := array.get(tradeHistoryTimes, longSetupOriginBar)
+            submittedMid := longSetupEntry
+            submittedExtreme := longSetupExtreme
+            submittedTPMode := chochTPMode
+            entryStatus := "Entrada LONG enviada al detectar el toque del 50%"
+
+            strategy.entry("LONG", strategy.long, qty=qty, comment="L" + str.tostring(tradeNumber) + " " + activeLevelIds)
+            strategy.exit("LONG EXIT", from_entry="LONG", stop=activeSL, limit=activeTP)
+
+            if enableEntryAlerts
+                alert("LONG " + str.tostring(tradeNumber) + " " + activeLevelIds + " | TF " + (timeframe.isminutes ? timeframe.period + "m" : timeframe.period), alert.freq_once_per_bar)
+
+
+//══════════════════════════════════════════════════════════════════════════════
+// SL / TP EN VIVO
+//══════════════════════════════════════════════════════════════════════════════
+if activeDirection == -1 and shortState == 3
+    strategy.exit("SHORT EXIT", from_entry="SHORT", stop=activeSL, limit=activeTP)
+
+if activeDirection == 1 and longState == 3
+    strategy.exit("LONG EXIT", from_entry="LONG", stop=activeSL, limit=activeTP)
+
+if orderSubmitted and strategy.position_size != 0
+    orderSubmitted := false
+
+//══════════════════════════════════════════════════════════════════════════════
+// CIERRE DE OPERACIÓN
+//══════════════════════════════════════════════════════════════════════════════
+bool newClosedTrade = strategy.closedtrades > processedClosedTrades
+
+if newClosedTrade
+    int lastTrade = strategy.closedtrades - 1
+    float exitPrice = strategy.closedtrades.exit_price(lastTrade)
+    int closedDirection = activeDirection
+    int closedTradeNumber = activeTradeNumber
+    float closedSL = activeSL
+    float closedTP = activeTP
+    string closedIds = activeLevelIds
+
+    bool stopped = false
+    bool targetHit = false
+
+    if closedDirection == -1
+        stopped := not na(closedSL) and exitPrice >= closedSL - syminfo.mintick
+        targetHit := not na(closedTP) and exitPrice <= closedTP + syminfo.mintick
+
+    if closedDirection == 1
+        stopped := not na(closedSL) and exitPrice <= closedSL + syminfo.mintick
+        targetHit := not na(closedTP) and exitPrice >= closedTP - syminfo.mintick
+
+    // Archivo visual de la operación ejecutada: independiente del siguiente ciclo.
+    if showCompletedTrades and not na(submittedOriginTime) and closedDirection != 0
+        int filledTime = strategy.closedtrades.entry_time(lastTrade)
+        int finishedTime = strategy.closedtrades.exit_time(lastTrade)
+        int historyRightTime = math.max(finishedTime, filledTime + int(timeframe.in_seconds() * 1000))
+        float filledPrice = strategy.closedtrades.entry_price(lastTrade)
+        float tradeProfit = strategy.closedtrades.profit(lastTrade)
+        color resultColor = tradeProfit >= 0 ? color.green : color.red
+        string tradeTag = (closedDirection == 1 ? "LONG " : "SHORT ") + str.tostring(closedTradeNumber)
+        string resultTag = targetHit ? "TP" : stopped ? "SL" : "Cierre"
+        string historyTip = tradeTag + " · " + closedIds + "\nResultado: " + resultTag + "\nEntrada ejecutada: " + str.tostring(filledPrice, format.mintick) + "\n50%: " + str.tostring(submittedMid, format.mintick) + "\nSL: " + str.tostring(closedSL, format.mintick) + "\nTP: " + str.tostring(closedTP, format.mintick) + "\nP/L: " + str.tostring(tradeProfit, "#.##")
+        for i = 0 to 3
+            bool historyEnabled = showChochImpulse
+            if historyEnabled
+                float historyPrice = i == 0 ? submittedMid : i == 1 ? closedSL : i == 2 ? closedTP : submittedExtreme
+                color historyColor = i == 0 ? chochMidColor : i == 1 ? chochOriginColor : i == 2 ? color.green : chochExtremeColor
+                string historyText = i == 0 ? "50%" : i == 1 ? "Origen / SL" : i == 2 ? submittedTPMode : "Extremo"
+                line historyLine = line.new(submittedOriginTime, historyPrice, historyRightTime, historyPrice, xloc=xloc.bar_time, color=i == 0 ? chochMidColor : color.new(historyColor, 30), style=(i == 1 or i == 3) ? line.style_dotted : line.style_solid, width=i == 0 ? 2 : 1)
+                label historyLevel = label.new(historyRightTime, historyPrice, historyText, xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_left, color=i == 0 ? chochMidColor : color.new(historyColor, 70), textcolor=color.white, size=size.tiny, tooltip=historyTip)
+                array.push(completedTradeLines, historyLine)
+                array.push(completedTradeLabels, historyLevel)
+        if showChochEvents
+            label historyChoch = label.new(submittedOriginTime, closedSL + (closedDirection == 1 ? -1 : 1) * syminfo.mintick * 0, closedDirection == 1 ? "▴" : "▾", xloc=xloc.bar_time, yloc=yloc.price, style=label.style_none, color=color.new(chochEventColor, 100), textcolor=chochEventColor, size=size.huge, tooltip=historyTip)
+            array.push(completedTradeLabels, historyChoch)
+        // Borrar solo archivos propios antiguos; conservar niveles y pivots raw.
+        while array.size(completedTradeLines) > completedTradesLimit * (showChochImpulse ? 4 : 0)
+            line.delete(array.shift(completedTradeLines))
+        while array.size(completedTradeLabels) > completedTradesLimit * ((showChochImpulse ? 4 : 0) + (showChochEvents ? 1 : 0))
+            label.delete(array.shift(completedTradeLabels))
+    submittedOriginTime := na
+    submittedMid := na
+    submittedExtreme := na
+    submittedTPMode := ""
+    // Retirar el contexto temporal incluso si el SL rearma el mismo ciclo.
+    if array.size(cycleStructureLabels) > 0
+        for i = 0 to array.size(cycleStructureLabels) - 1
+            label.delete(array.get(cycleStructureLabels, i))
+        array.clear(cycleStructureLabels)
+
+    if enableExitAlerts and not exitAlertSent
+        if stopped
+            alert((closedDirection == -1 ? "SL SHORT " : "SL LONG ") + str.tostring(closedTradeNumber) + " " + closedIds + " | TF " + (timeframe.isminutes ? timeframe.period + "m" : timeframe.period), alert.freq_once_per_bar)
+            exitAlertSent := true
+        else if targetHit
+            alert((closedDirection == -1 ? "TP SHORT " : "TP LONG ") + str.tostring(closedTradeNumber) + " " + closedIds + " | TF " + (timeframe.isminutes ? timeframe.period + "m" : timeframe.period), alert.freq_once_per_bar)
+            exitAlertSent := true
+
+    if effectiveUseDAlembert
+        if stopped
+            if dAlembertLimitMode == "Unidades"
+                dAlembertUnits := math.min(dAlembertUnits + 1, dAlembertMaxUnits)
+            else
+                int maxUnitsByUSD = math.max(1, int(math.floor(math.max(riskUSD, dAlembertMaxUSD) / riskUSD)))
+                dAlembertUnits := math.min(dAlembertUnits + 1, maxUnitsByUSD)
+        else if targetHit
+            dAlembertUnits := math.max(1, dAlembertUnits - 1)
+    else
+        dAlembertUnits := 1
+
+    activeEntry := na
+    activeSL := na
+    activeTP := na
+    activeQty := na
+    activeRiskUSD := na
+    activeEstimatedCommission := na
+    activeTradeNumber := 0
+    activeDirection := 0
+    activeLevelIds := ""
+    orderSubmitted := false
+    entryAlertSent := false
+    processedClosedTrades := strategy.closedtrades
+
+    bool canOpenNext = stopped and closedTradeNumber < maxEntriesPerCycle
+
+    if closedDirection == -1
+        shortSetupEntry := na
+        shortSetupSL := na
+        shortSetupTPRaw := na
+        shortSetupExtreme := na
+        shortSetupBar := na
+        shortRetraceStarted := false
+
+        if canOpenNext
+            if nextEntryMode == "Al tocar SL"
+                shortState := 1
+                shortTradeNum := closedTradeNumber + 1
+                shortActivationBar := bar_index
+                shortCycleIds := closedIds
+            else
+                pendingNextShort := true
+                pendingNextSL := closedSL
+                pendingNextIds := closedIds
+                pendingNextTradeNum := closedTradeNumber + 1
+                shortState := 0
+                shortTradeNum := 0
+                shortActivationBar := na
+                shortCycleIds := ""
+        else
+            shortState := 0
+            shortTradeNum := 0
+            shortActivationBar := na
+            shortCycleIds := ""
+            if effectiveUseDAlembert and resetDAlembertPerCycle
+                dAlembertUnits := 1
+
+        shortOriginSession := 0
+
+    if closedDirection == 1
+        longSetupEntry := na
+        longSetupSL := na
+        longSetupTPRaw := na
+        longSetupExtreme := na
+        longSetupBar := na
+        longRetraceStarted := false
+
+        if canOpenNext
+            if nextEntryMode == "Al tocar SL"
+                longState := 1
+                longTradeNum := closedTradeNumber + 1
+                longActivationBar := bar_index
+                longCycleIds := closedIds
+            else
+                pendingNextLong := true
+                pendingNextSL := closedSL
+                pendingNextIds := closedIds
+                pendingNextTradeNum := closedTradeNumber + 1
+                longState := 0
+                longTradeNum := 0
+                longActivationBar := na
+                longCycleIds := ""
+        else
+            longState := 0
+            longTradeNum := 0
+            longActivationBar := na
+            longCycleIds := ""
+            if effectiveUseDAlembert and resetDAlembertPerCycle
+                dAlembertUnits := 1
+
+        longOriginSession := 0
+
+//══════════════════════════════════════════════════════════════════════════════
+// INICIALIZACIÓN
+//══════════════════════════════════════════════════════════════════════════════
+if barstate.isfirst
+    processedClosedTrades := strategy.closedtrades
+
+//══════════════════════════════════════════════════════════════════════════════
+// VISUALIZACIÓN ENTRADA / SL / TP
+// Muestra también el setup pendiente del CHoCH antes de entrar.
+//══════════════════════════════════════════════════════════════════════════════
+float visualEntry = activeDirection != 0 ? activeEntry : (shortState == 2 or shortState == 4) ? shortSetupEntry : (longState == 2 or longState == 4) ? longSetupEntry : na
+float visualSL = activeDirection != 0 ? activeSL : (shortState == 2 or shortState == 4) ? shortSetupSL : (longState == 2 or longState == 4) ? longSetupSL : na
+float visualTP = activeDirection != 0 ? activeTP : (shortState == 2 or shortState == 4) ? shortSetupTPRaw : (longState == 2 or longState == 4) ? longSetupTPRaw : na
+
+
+
+// Objetos reutilizados: solo el setup/operación vigente, sin trazas históricas.
+var currentEntryLines = array.new_line(4)
+var currentEntryLabels = array.new_label(4)
+if barstate.islast
+    for i = 0 to 3
+        line.delete(array.get(currentEntryLines, i))
+        label.delete(array.get(currentEntryLabels, i))
+        array.set(currentEntryLines, i, na)
+        array.set(currentEntryLabels, i, na)
+
+    bool pendingShortVisual = (shortState == 2 or shortState == 3 or shortState == 4) and shortCycleIds != ""
+    bool pendingLongVisual = (longState == 2 or longState == 3 or longState == 4) and longCycleIds != ""
+    bool pendingSetupVisual = pendingShortVisual or pendingLongVisual
+    bool showPendingImpulse = showChochImpulse and (pendingSetupVisual or activeDirection != 0)
+    int originBarVisual = pendingShortVisual ? shortSetupOriginBar : pendingLongVisual ? longSetupOriginBar : bar_index
+    int startBarVisual = pendingSetupVisual ? math.max(originBarVisual, bar_index - 9999) : bar_index
+    string cycleVisual = pendingShortVisual ? shortCycleIds : pendingLongVisual ? longCycleIds : activeLevelIds
+    int breakBarVisual = pendingShortVisual ? shortSetupBreakBar : pendingLongVisual ? longSetupBreakBar : bar_index
+    int lineRightVisual = math.max(bar_index + 1, breakBarVisual + 15)
+    float impulseMidVisual = pendingShortVisual ? shortSetupEntry : pendingLongVisual ? longSetupEntry : activeDirection != 0 ? submittedMid : visualEntry
+    for i = 0 to 3
+        float priceVisual = i == 0 ? (showPendingImpulse ? impulseMidVisual : visualEntry) : i == 1 ? (showPendingImpulse and pendingSetupVisual ? (pendingShortVisual ? shortSetupSL : longSetupSL) : visualSL) : i == 2 ? visualTP : pendingShortVisual ? shortSetupExtreme : pendingLongVisual ? longSetupExtreme : activeDirection != 0 ? submittedExtreme : na
+        bool enabledVisual = showPendingImpulse
+        color levelColorVisual = i == 0 ? chochMidColor : i == 1 ? chochOriginColor : i == 2 ? color.green : chochExtremeColor
+        string textVisual = i == 0 ? "50%" : i == 1 ? "Origen / SL" : i == 2 ? chochTPMode : "Extremo"
+        if enabledVisual and not na(priceVisual)
+            line ln = line.new(startBarVisual, priceVisual, lineRightVisual, priceVisual, color=i == 0 ? chochMidColor : color.new(levelColorVisual, i == 1 ? 30 : 20), style=(i == 1 or i == 3) ? line.style_dotted : line.style_solid, width=i == 0 ? 2 : 1)
+            label lbVisual = label.new(lineRightVisual, priceVisual, textVisual, xloc=xloc.bar_index, yloc=yloc.price, style=label.style_label_left, color=i == 0 ? chochMidColor : color.new(levelColorVisual, i == 1 ? 70 : 50), textcolor=color.white, size=size.tiny, tooltip="Nivel roto: " + cycleVisual)
+            array.set(currentEntryLines, i, ln)
+            array.set(currentEntryLabels, i, lbVisual)
+
+//══════════════════════════════════════════════════════════════════════════════
+// FIN
+//══════════════════════════════════════════════════════════════════════════════
+
+// Conservar el contexto durante la operación; limpiar al cancelarse o terminar.
+bool linkedCycleVisible = (shortState > 0 and shortCycleIds != "") or (longState > 0 and longCycleIds != "")
+if not linkedCycleVisible and array.size(cycleStructureLabels) > 0
+    for i = 0 to array.size(cycleStructureLabels) - 1
+        label.delete(array.get(cycleStructureLabels, i))
+    array.clear(cycleStructureLabels)
+
+
+// Contador visual: velas cerradas desde el origen/SL hasta la entrada.
+// Incluye la vela del origen; excluye la vela actual mientras está abierta.
+// No modifica los estados, los precios ni las órdenes de la estrategia.
+var label chochClosedBarsCounter = na
+if barstate.islast
+    bool counterShortPending = (shortState == 2 or shortState == 4) and shortCycleIds != ""
+    bool counterLongPending = (longState == 2 or longState == 4) and longCycleIds != ""
+    bool counterVisible = showChochEvents and (counterShortPending or counterLongPending) and activeDirection == 0 and strategy.position_size == 0 and not orderSubmitted
+    if counterVisible
+        int counterOriginBar = counterLongPending ? longSetupOriginBar : shortSetupOriginBar
+        float counterOriginPrice = counterLongPending ? longSetupSL : shortSetupSL
+        if not na(counterOriginBar) and not na(counterOriginPrice) and counterOriginBar >= 0 and counterOriginBar < array.size(tradeHistoryTimes)
+            int counterLastClosedBar = barstate.isconfirmed ? bar_index : bar_index - 1
+            int counterClosedBars = math.max(0, counterLastClosedBar - counterOriginBar + 1)
+            int counterOriginTime = array.get(tradeHistoryTimes, counterOriginBar)
+            float counterY = counterOriginPrice + syminfo.mintick * 8
+            string counterText = str.tostring(counterClosedBars) + " velas"
+            string counterTip = "Velas cerradas desde el origen / SL, incluida la vela del origen. No cuenta la vela abierta."
+            if na(chochClosedBarsCounter)
+                chochClosedBarsCounter := label.new(counterOriginTime, counterY, counterText, xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_down, color=color.new(chochEventColor, 20), textcolor=color.white, size=size.small, tooltip=counterTip)
+            else
+                label.set_xy(chochClosedBarsCounter, counterOriginTime, counterY)
+                label.set_text(chochClosedBarsCounter, counterText)
+        else
+            label.delete(chochClosedBarsCounter)
+            chochClosedBarsCounter := na
+    else
+        label.delete(chochClosedBarsCounter)
+        chochClosedBarsCounter := na
