@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V20</title>
+<title>Ayalga Quick Trade V21</title>
 <style>
     * {
         box-sizing: border-box;
@@ -229,6 +229,7 @@
             <button class="candle-button" data-candles="5">5</button>
             <button class="candle-button active" data-candles="10">10</button>
             <button class="candle-button" data-candles="15">15</button>
+            <button class="candle-button" data-candles="20">20</button>
         </div>
         <input id="candleCount" type="hidden" value="10">
     </div>
@@ -239,7 +240,9 @@
             <button class="tf-button active" data-tf="1">M1</button>
             <button class="tf-button" data-tf="2">M2</button>
             <button class="tf-button" data-tf="3">M3</button>
+            <button class="tf-button" data-tf="4">M4</button>
             <button class="tf-button" data-tf="5">M5</button>
+            <button class="tf-button" data-tf="6">M6</button>
         </div>
     </div>
 
@@ -276,8 +279,8 @@
     <div class="section">
         <label>RATIO RIESGO / BENEFICIO</label>
         <div class="row">
-            <button id="rr1" class="rr-button active">RR 1:1</button>
-            <button id="rr2" class="rr-button">RR 1:2</button>
+            <button id="rr1" class="rr-button">RR 1:1</button>
+            <button id="rr2" class="rr-button active">RR 1:2</button>
         </div>
     </div>
 
@@ -297,7 +300,7 @@
 
     <div class="section info-section">
         <div id="symbolDisplayHidden"></div>
-        <div id="rrDisplay">1:1</div>
+        <div id="rrDisplay">1:2</div>
         <div id="bidDisplay">---</div>
         <div id="askDisplay">---</div>
         <div id="minVolumeDisplay">---</div>
@@ -314,7 +317,7 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V20
+        Ayalga Quick Trade · V21
     </div>
 
 </div>
@@ -362,9 +365,9 @@ let symbolInfo = null;
 let lastValidBid = null;
 let lastValidAsk = null;
 
-let selectedRR = 1;
+let selectedRR = 2;
 
-// V20 d'Alembert
+// V21 d'Alembert
 // Paso de la progresión (1..4 o 1..5). Siempre arranca en X1.
 let selectedStep = 1;
 
@@ -521,15 +524,7 @@ function roundToDigits(value) {
 }
 
 function getTimeframeName(period) {
-    const names = {
-        1: "M1",
-        2: "M2",
-        5: "M5",
-        3: "M3",
-        30: "M30",
-        60: "H1",
-        240: "H4"
-    };
+    const names = { 1: "M1", 2: "M2", 3: "M3", 4: "M4", 5: "M5", 6: "M6" };
     return names[period] || String(period);
 }
 
@@ -546,7 +541,7 @@ function fmtTime(timestamp) {
 }
 
 // ============================================================
-// D'ALEMBERT V20
+// D'ALEMBERT V21
 // ============================================================
 
 function getMaxSteps() {
@@ -769,7 +764,7 @@ function getSymbolFromURL() {
 // ============================================================
 
 async function initialize() {
-    log("Ayalga Quick Trade V20 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
+    log("Ayalga Quick Trade V21 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
     log("Iniciando...");
     logTheoreticalRisk("Estado inicial");
 
@@ -1016,6 +1011,7 @@ function getDetailedSymbol() {
 // ============================================================
 
 function getClosedTrendbars(periodMinutes, count) {
+    if (periodMinutes === 6) return getClosedM6Trendbars(count);
     return new Promise((resolve, reject) => {
         const timeframeMs = periodMinutes * 60000;
         const now = Date.now();
@@ -1026,6 +1022,7 @@ function getClosedTrendbars(periodMinutes, count) {
             1: 1,
             2: 2,
             3: 3,
+            4: 4,
             5: 5
         };
 
@@ -1094,6 +1091,61 @@ function getClosedTrendbars(periodMinutes, count) {
             });
     });
 }
+
+// M6 no es un periodo nativo de Open API: el código 6 significa M10.
+// Construir intervalos M6 alineados en UTC usando únicamente M1 de cTrader.
+function aggregateClosedM6Bars(sourceBars, currentBarStart, count) {
+    const timeframeMs = 6 * 60000;
+    const unique = new Map();
+    for (const bar of sourceBars) {
+        if (
+            Number.isFinite(bar.timestampMs) &&
+            bar.timestampMs % 60000 === 0 &&
+            bar.timestampMs < currentBarStart &&
+            [bar.open, bar.high, bar.low, bar.close].every(Number.isFinite)
+        ) unique.set(bar.timestampMs, bar);
+    }
+    const ordered = [...unique.values()].sort((a, b) => a.timestampMs - b.timestampMs);
+    const groups = new Map();
+    for (const bar of ordered) {
+        const start = Math.floor(bar.timestampMs / timeframeMs) * timeframeMs;
+        if (!groups.has(start)) groups.set(start, []);
+        groups.get(start).push(bar);
+    }
+    const selectedGroups = [...groups.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .slice(-count);
+    if (selectedGroups.length < count) {
+        throw new Error(`cTrader devolvió datos para ${selectedGroups.length} velas M6 de ${count} necesarias.`);
+    }
+    return selectedGroups.map(([start, parts]) => {
+        // Nunca usar un bloque parcial ni sustituirlo por otro más antiguo.
+        const complete = parts.length === 6 &&
+            parts.every((bar, index) => bar.timestampMs === start + index * 60000);
+        if (!complete) {
+            throw new Error(`Datos M1 incompletos para M6 (${fmtTime(start)}). No se puede calcular el SL.`);
+        }
+        return {
+            timestampMs: start,
+            open: parts[0].open,
+            high: Math.max(...parts.map(bar => bar.high)),
+            low: Math.min(...parts.map(bar => bar.low)),
+            close: parts[5].close
+        };
+    });
+}
+
+async function getClosedM6Trendbars(count) {
+    const timeframeMs = 6 * 60000;
+    // Fijar el cierre antes de consultar: una respuesta tardía no incluye
+    // el bloque que estaba abierto cuando empezó el cálculo.
+    const currentBarStart = Math.floor(Date.now() / timeframeMs) * timeframeMs;
+    const sourceCount = (Math.max(count, 10) + 5) * 6;
+    const { bars: sourceBars } = await getClosedTrendbars(1, sourceCount);
+    const bars = aggregateClosedM6Bars(sourceBars, currentBarStart, count);
+    return { bars, currentBarStart, timeframeMs };
+}
+
 
 // ============================================================
 // SL
@@ -1492,7 +1544,7 @@ function normalizeVolumeDown(volume) {
 }
 
 // ============================================================
-// CÁLCULO DEL VOLUMEN V20 (riesgo = paso d'Alembert)
+// CÁLCULO DEL VOLUMEN V21 (riesgo = paso d'Alembert)
 // ============================================================
 
 function calculateVolumeFromRisk(side, sl) {
@@ -1608,7 +1660,7 @@ function calculateVolumeFromRisk(side, sl) {
     const maxSteps = getMaxSteps();
     const unit = getDAlembertUnit(target, maxSteps);
 
-    log("========== CÁLCULO DE VOLUMEN V20 ==========", "ok");
+    log("========== CÁLCULO DE VOLUMEN V21 ==========", "ok");
     log(`OBJETIVO ACUMULADO: ${formatMoney(target)} $ | PASOS: ${maxSteps} | CONSERVADOR: ${selectedConservador ? "ON" : "OFF"}`, "ok");
     log(`Unidad: ${formatMoney(unit)} $ | Paso X${selectedStep} → RIESGO OBJETIVO: ${formatMoney(risk)} $`, "ok");
     log(`Precio cálculo: ${formatPrice(currentPrice)} | SL: ${formatPrice(sl)}`, "ok");
@@ -1707,7 +1759,7 @@ async function handleFilledExecution(payload) {
     const realTotalRisk = Number.isFinite(realRiskAfterFill) ? realRiskAfterFill + commissionUsed : null;
     const targetRisk = Number(pendingTrade.targetRisk);
 
-    log("========== VERIFICACIÓN TRAS FILL V20 ==========", "ok");
+    log("========== VERIFICACIÓN TRAS FILL V21 ==========", "ok");
     log(`Entrada usada antes del fill: ${formatPrice(pendingTrade.calculationPrice)}`, "ok");
     log(`Entrada REAL: ${formatPrice(realEntry)}`, "ok");
     log(`SL definitivo: ${formatPrice(finalSL)}`, "ok");
@@ -1774,7 +1826,7 @@ async function handleFilledExecution(payload) {
 
             tpDistance = distanceSL * (grossProfitNeeded / realRiskAfterFill);
 
-            log("========== TP NETO V20 ==========", "ok");
+            log("========== TP NETO V21 ==========", "ok");
             log(`RR seleccionado al enviar: 1:${tradeRR}`, "ok");
             log(`Pérdida por precio hasta SL: ${realRiskAfterFill.toFixed(2)} $`, "ok");
             log(`Comisión estimada ida+vuelta: ${commissionForTP.toFixed(2)} $`, "ok");
@@ -1790,7 +1842,7 @@ async function handleFilledExecution(payload) {
             log("=================================", "ok");
 
         } else {
-            log("⚠️ TP NETO V20 NO CALCULABLE", "warning");
+            log("⚠️ TP NETO V21 NO CALCULABLE", "warning");
             tpDistance = distanceSL * (rrOk ? tradeRR : 1);
             log(`→ Se usa RR 1:${rrOk ? tradeRR : 1} BRUTO como respaldo.`, "warning");
         }
@@ -1969,7 +2021,7 @@ function testClosePosition() {
 }
 
 // ============================================================
-// EJECUTAR OPERACIÓN V20
+// EJECUTAR OPERACIÓN V21
 // ============================================================
 
 async function executeTrade(side) {
