@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V25</title>
+<title>Ayalga Quick Trade V26</title>
 <style>
     * {
         box-sizing: border-box;
@@ -317,20 +317,20 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V25
+        Ayalga Quick Trade · V26
     </div>
 
 </div>
 
 <script>
-// V25: diagnóstico independiente del SDK, ejecutado antes de los imports.
+// V26: diagnóstico independiente del SDK, ejecutado antes de los imports.
 (function () {
     const panel = document.getElementById("log");
     if (!panel) return;
     function diagnostic(message, level) {
         const line = document.createElement("div");
         const time = new Date().toLocaleTimeString("es-ES", { hour12: false });
-        line.textContent = "[" + time + "] [V25 DIAGNÓSTICO] " + message;
+        line.textContent = "[" + time + "] [V26 DIAGNÓSTICO] " + message;
         line.className = level === "error" ? "danger" : level === "ok" ? "success" : "warning";
         panel.appendChild(line);
         panel.scrollTop = panel.scrollHeight;
@@ -357,15 +357,15 @@
 
 import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api@0.0.5";
 
-// V25: importación por espacio de nombres. Una exportación ausente ya no
+// V26: importación por espacio de nombres. Una exportación ausente ya no
 // impide ejecutar el módulo completo antes de registrar el plugin.
-import * as SpotwareSDK from "https://esm.sh/@spotware-web-team/sdk@0.0.9";
+import * as SpotwareSDK from "https://esm.sh/@spotware-web-team/sdk@0.0.20";
 const {
     handleConfirmEvent, registerEvent, getLightSymbolList, getSymbol,
     subscribeQuotes, quoteEvent, executionEvent, createNewOrder,
     modifyOrderProtection, closePosition, ServerInterfaces
 } = SpotwareSDK;
-let getTrendbarList = SpotwareSDK.getTrendbarList;
+const getTrendbarList = SpotwareSDK.getTrendbarList;
 
 import {
     take,
@@ -383,12 +383,12 @@ import {
 
 let adapter = null;
 let connected = false;
-// V25: observabilidad de arranque, sin modificar las reglas de negociación.
+// V26: observabilidad de arranque, sin modificar las reglas de negociación.
 let startupStage = "MÓDULO CARGADO";
 let startupResponseReceived = false;
 function traceStartup(stage, detail = "") {
     startupStage = stage;
-    log("[V25 CONEXIÓN] " + stage + (detail ? " · " + detail : ""), "warning");
+    log("[V26 CONEXIÓN] " + stage + (detail ? " · " + detail : ""), "warning");
 }
 function safeError(error) {
     if (!error) return "sin detalle";
@@ -397,10 +397,10 @@ function safeError(error) {
 }
 setTimeout(() => {
     if (!connected) {
-        log("[V25 CONEXIÓN] SIN CONEXIÓN tras 12 s. Última fase: " + startupStage +
+        log("[V26 CONEXIÓN] SIN CONEXIÓN tras 12 s. Última fase: " + startupStage +
             ". Respuesta de registro recibida: " + (startupResponseReceived ? "sí" : "no"), "error");
     } else if (symbolId === null || symbolInfo === null) {
-        log("[V25 CONEXIÓN] Registro confirmado, pero símbolo/detalle pendientes. Última fase: " + startupStage, "error");
+        log("[V26 CONEXIÓN] Registro confirmado, pero símbolo/detalle pendientes. Última fase: " + startupStage, "error");
     }
 }, 12000);
 
@@ -811,31 +811,21 @@ function getSymbolFromURL() {
 // ============================================================
 
 async function initialize() {
-    log("Ayalga Quick Trade V25 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
+    log("Ayalga Quick Trade V26 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
     log("Iniciando...");
     const required = {handleConfirmEvent, registerEvent, getLightSymbolList, getSymbol,
         subscribeQuotes, quoteEvent, executionEvent, createNewOrder,
         modifyOrderProtection, closePosition, ServerInterfaces};
     const missing = Object.entries(required).filter(([name, value]) => value == null).map(([name]) => name);
     if (missing.length) {
-        log("SDK 0.0.9: faltan funciones críticas: " + missing.join(", "), "error");
+        log("SDK 0.0.20: faltan funciones críticas: " + missing.join(", "), "error");
         return; // No conectar ni permitir órdenes con un SDK incompleto.
     }
     if (typeof getTrendbarList !== "function") {
-        log("SDK 0.0.9: getTrendbarList no disponible. Comprobando SDK 0.0.20...", "warning");
-        try {
-            const newerSDK = await import("https://esm.sh/@spotware-web-team/sdk@0.0.20");
-            if (typeof newerSDK.getTrendbarList === "function") {
-                getTrendbarList = newerSDK.getTrendbarList;
-                log("getTrendbarList disponible en SDK 0.0.20.", "ok");
-            } else {
-                log("SDK 0.0.20 tampoco exporta getTrendbarList. El cálculo de SL queda bloqueado de forma segura.", "error");
-                log("Exportaciones relacionadas: " + Object.keys(newerSDK).filter(k => /trend|bar/i.test(k)).join(", "), "warning");
-            }
-        } catch (err) {
-            log("No se pudo consultar SDK 0.0.20: " + (err?.message || String(err)), "error");
-        }
+        log("SDK 0.0.20: getTrendbarList no disponible. Operaciones bloqueadas por seguridad.", "error");
+        return;
     }
+    traceStartup("SDK 0.0.20 unificado; dependencias comprobadas");
 
     logTheoreticalRisk("Estado inicial");
     traceStartup("SDK validado; comenzando adaptador");
@@ -846,13 +836,9 @@ async function initialize() {
         traceStartup("Adaptador creado", "tipo=" + typeof adapter);
 
 
-        traceStartup("Solicitando confirmación inicial");
-        handleConfirmEvent(adapter, {}).pipe(take(1)).subscribe({
-            next: () => { traceStartup("Confirmación inicial recibida"); log("Confirmación inicial recibida.", "ok"); },
-            error: err => { traceStartup("Error en confirmación", safeError(err)); log("Error en confirmación: " + safeError(err), "error"); }
-        });
-
-        traceStartup("Escuchando evento de registro", "registerEvent");
+        // V26: registrar la escucha ANTES de enviar la confirmación.
+        // Evita perder un evento de registro si el host responde inmediatamente.
+        traceStartup("Instalando escucha de registro antes de confirmar", "registerEvent");
         registerEvent(adapter)
             .pipe(
                 take(1),
@@ -860,7 +846,9 @@ async function initialize() {
                     startupResponseReceived = true;
                     traceStartup("Registro recibido de cTrader");
                     log("Plugin registrado correctamente.", "ok");
-                    handleConfirmEvent(adapter, {}).pipe(take(1)).subscribe();
+                    handleConfirmEvent(adapter, {}).pipe(take(1)).subscribe({
+                        error: err => log("Error en confirmación posterior: " + safeError(err), "error")
+                    });
                     connected = true;
                     traceStartup("Conectado; solicitando símbolos");
                     setStatus("CONECTADO");
@@ -879,6 +867,13 @@ async function initialize() {
                 error: err => { traceStartup("Error general de registro", safeError(err)); log("Error general de registro: " + safeError(err), "error"); },
                 complete: () => { if (!startupResponseReceived) traceStartup("Suscripción de registro finalizada SIN evento"); }
             });
+
+        traceStartup("Escucha instalada; enviando confirmación inicial");
+        handleConfirmEvent(adapter, {}).pipe(take(1)).subscribe({
+            next: () => { traceStartup("Confirmación inicial recibida"); log("Confirmación inicial recibida.", "ok"); },
+            error: err => { traceStartup("Error en confirmación", safeError(err)); log("Error en confirmación: " + safeError(err), "error"); },
+            complete: () => log("[V26 CONEXIÓN] Flujo de confirmación inicial completado.", "warning")
+        });
 
     } catch (error) {
         traceStartup("Excepción durante inicialización", safeError(error));
