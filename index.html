@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V21</title>
+<title>Ayalga Quick Trade V22</title>
 <style>
     * {
         box-sizing: border-box;
@@ -317,10 +317,41 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V21
+        Ayalga Quick Trade · V22
     </div>
 
 </div>
+
+<script>
+// V22: diagnóstico independiente del SDK, ejecutado antes de los imports.
+(function () {
+    const panel = document.getElementById("log");
+    if (!panel) return;
+    function diagnostic(message, level) {
+        const line = document.createElement("div");
+        const time = new Date().toLocaleTimeString("es-ES", { hour12: false });
+        line.textContent = "[" + time + "] [V22 DIAGNÓSTICO] " + message;
+        line.className = level === "error" ? "danger" : level === "ok" ? "success" : "warning";
+        panel.appendChild(line);
+        panel.scrollTop = panel.scrollHeight;
+    }
+    diagnostic("HTML y JavaScript básico cargados. Esperando al SDK de cTrader...", "ok");
+    window.addEventListener("error", function (event) {
+        const target = event.target;
+        const resource = target && (target.src || target.href);
+        const detail = event.message || (resource ? "No se pudo cargar: " + resource : "Error desconocido");
+        diagnostic("ERROR: " + detail + (event.filename ? " (" + event.filename + ":" + event.lineno + ")" : ""), "error");
+    }, true);
+    window.addEventListener("unhandledrejection", function (event) {
+        const reason = event.reason;
+        diagnostic("PROMESA RECHAZADA: " + (reason && (reason.stack || reason.message) || String(reason)), "error");
+    });
+    // Una carga correcta del HTML no implica que se haya ejecutado el módulo.
+    window.addEventListener("load", function () {
+        diagnostic("Carga de página finalizada. Comprueba si aparece 'Iniciando...' debajo.");
+    });
+})();
+</script>
 
 <script type="module">
 
@@ -764,7 +795,7 @@ function getSymbolFromURL() {
 // ============================================================
 
 async function initialize() {
-    log("Ayalga Quick Trade V21 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
+    log("Ayalga Quick Trade V22 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
     log("Iniciando...");
     logTheoreticalRisk("Estado inicial");
 
