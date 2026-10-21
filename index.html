@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V24</title>
+<title>Ayalga Quick Trade V25</title>
 <style>
     * {
         box-sizing: border-box;
@@ -317,20 +317,20 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V24
+        Ayalga Quick Trade · V25
     </div>
 
 </div>
 
 <script>
-// V24: diagnóstico independiente del SDK, ejecutado antes de los imports.
+// V25: diagnóstico independiente del SDK, ejecutado antes de los imports.
 (function () {
     const panel = document.getElementById("log");
     if (!panel) return;
     function diagnostic(message, level) {
         const line = document.createElement("div");
         const time = new Date().toLocaleTimeString("es-ES", { hour12: false });
-        line.textContent = "[" + time + "] [V24 DIAGNÓSTICO] " + message;
+        line.textContent = "[" + time + "] [V25 DIAGNÓSTICO] " + message;
         line.className = level === "error" ? "danger" : level === "ok" ? "success" : "warning";
         panel.appendChild(line);
         panel.scrollTop = panel.scrollHeight;
@@ -357,7 +357,7 @@
 
 import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api@0.0.5";
 
-// V24: importación por espacio de nombres. Una exportación ausente ya no
+// V25: importación por espacio de nombres. Una exportación ausente ya no
 // impide ejecutar el módulo completo antes de registrar el plugin.
 import * as SpotwareSDK from "https://esm.sh/@spotware-web-team/sdk@0.0.9";
 const {
@@ -383,6 +383,27 @@ import {
 
 let adapter = null;
 let connected = false;
+// V25: observabilidad de arranque, sin modificar las reglas de negociación.
+let startupStage = "MÓDULO CARGADO";
+let startupResponseReceived = false;
+function traceStartup(stage, detail = "") {
+    startupStage = stage;
+    log("[V25 CONEXIÓN] " + stage + (detail ? " · " + detail : ""), "warning");
+}
+function safeError(error) {
+    if (!error) return "sin detalle";
+    try { return error.message || JSON.stringify(error) || String(error); }
+    catch (_) { return String(error); }
+}
+setTimeout(() => {
+    if (!connected) {
+        log("[V25 CONEXIÓN] SIN CONEXIÓN tras 12 s. Última fase: " + startupStage +
+            ". Respuesta de registro recibida: " + (startupResponseReceived ? "sí" : "no"), "error");
+    } else if (symbolId === null || symbolInfo === null) {
+        log("[V25 CONEXIÓN] Registro confirmado, pero símbolo/detalle pendientes. Última fase: " + startupStage, "error");
+    }
+}, 12000);
+
 
 let symbolId = null;
 let symbolName = "";
@@ -790,7 +811,7 @@ function getSymbolFromURL() {
 // ============================================================
 
 async function initialize() {
-    log("Ayalga Quick Trade V24 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
+    log("Ayalga Quick Trade V25 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
     log("Iniciando...");
     const required = {handleConfirmEvent, registerEvent, getLightSymbolList, getSymbol,
         subscribeQuotes, quoteEvent, executionEvent, createNewOrder,
@@ -817,22 +838,31 @@ async function initialize() {
     }
 
     logTheoreticalRisk("Estado inicial");
+    traceStartup("SDK validado; comenzando adaptador");
 
     try {
+        traceStartup("Creando adaptador", "createClientAdapter");
         adapter = createClientAdapter({ logger });
+        traceStartup("Adaptador creado", "tipo=" + typeof adapter);
 
+
+        traceStartup("Solicitando confirmación inicial");
         handleConfirmEvent(adapter, {}).pipe(take(1)).subscribe({
-            next: () => log("Confirmación inicial recibida.", "ok"),
-            error: err => log("Error en confirmación: " + JSON.stringify(err), "error")
+            next: () => { traceStartup("Confirmación inicial recibida"); log("Confirmación inicial recibida.", "ok"); },
+            error: err => { traceStartup("Error en confirmación", safeError(err)); log("Error en confirmación: " + safeError(err), "error"); }
         });
 
+        traceStartup("Escuchando evento de registro", "registerEvent");
         registerEvent(adapter)
             .pipe(
                 take(1),
                 tap(() => {
+                    startupResponseReceived = true;
+                    traceStartup("Registro recibido de cTrader");
                     log("Plugin registrado correctamente.", "ok");
                     handleConfirmEvent(adapter, {}).pipe(take(1)).subscribe();
                     connected = true;
+                    traceStartup("Conectado; solicitando símbolos");
                     setStatus("CONECTADO");
                     updateButtons();
                     subscribeExecutionEvents();
@@ -840,16 +870,19 @@ async function initialize() {
                     loadSymbols();
                 }),
                 catchError(err => {
-                    log("Error registrando plugin: " + JSON.stringify(err), "error");
+                    traceStartup("Error en evento de registro", safeError(err));
+                    log("Error registrando plugin: " + safeError(err), "error");
                     return [];
                 })
             )
             .subscribe({
-                error: err => log("Error general de registro: " + JSON.stringify(err), "error")
+                error: err => { traceStartup("Error general de registro", safeError(err)); log("Error general de registro: " + safeError(err), "error"); },
+                complete: () => { if (!startupResponseReceived) traceStartup("Suscripción de registro finalizada SIN evento"); }
             });
 
     } catch (error) {
-        log("ERROR INICIANDO: " + error.message, "error");
+        traceStartup("Excepción durante inicialización", safeError(error));
+        log("ERROR INICIANDO: " + safeError(error), "error");
     }
 }
 
@@ -941,6 +974,7 @@ function processQuote(response) {
 // ============================================================
 
 function loadSymbols() {
+    traceStartup("Solicitando lista de símbolos");
     log("Buscando símbolos en cTrader...");
 
     getLightSymbolList(adapter, {}).pipe(take(1)).subscribe({
@@ -948,6 +982,7 @@ function loadSymbols() {
             try {
                 const payload = getPayload(response);
                 const symbols = getArray(payload, "Symbol", "symbol");
+                traceStartup("Lista de símbolos recibida", "cantidad=" + symbols.length);
                 log("Símbolos recibidos: " + symbols.length);
 
                 const requestedSymbol = getSymbolFromURL();
@@ -973,6 +1008,7 @@ function loadSymbols() {
                 symbolId = Number(getField(selectedSymbol, "Id", "id"));
                 symbolName = String(getField(selectedSymbol, "Name", "name"));
                 symbolDisplay.textContent = symbolName;
+                traceStartup("Símbolo seleccionado", symbolName);
                 log(`Símbolo detectado: ${symbolName} (ID ${symbolId})`, "ok");
                 getDetailedSymbol();
 
@@ -989,6 +1025,7 @@ function loadSymbols() {
 // ============================================================
 
 function getDetailedSymbol() {
+    traceStartup("Solicitando detalle del símbolo");
     log("Obteniendo información detallada de cTrader...");
 
     getSymbol(adapter, { symbolId: [symbolId] }).pipe(take(1)).subscribe({
@@ -1039,10 +1076,11 @@ function getDetailedSymbol() {
                     log("⚠️ La comisión del símbolo no se pudo interpretar.", "warning");
                 }
 
+                traceStartup("Detalle del símbolo recibido");
                 log("Información detallada recibida.", "ok");
 
                 subscribeQuotes(adapter, { symbolId: [symbolId] }).pipe(take(1)).subscribe({
-                    next: () => log("Suscripción de precios activa.", "ok"),
+                    next: () => { traceStartup("Suscripción de precios confirmada"); log("Suscripción de precios activa.", "ok"); },
                     error: error => log("Error suscribiendo precios: " + JSON.stringify(error), "error")
                 });
 
