@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V23</title>
+<title>Ayalga Quick Trade V24</title>
 <style>
     * {
         box-sizing: border-box;
@@ -317,20 +317,20 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V23
+        Ayalga Quick Trade · V24
     </div>
 
 </div>
 
 <script>
-// V23: diagnóstico independiente del SDK, ejecutado antes de los imports.
+// V24: diagnóstico independiente del SDK, ejecutado antes de los imports.
 (function () {
     const panel = document.getElementById("log");
     if (!panel) return;
     function diagnostic(message, level) {
         const line = document.createElement("div");
         const time = new Date().toLocaleTimeString("es-ES", { hour12: false });
-        line.textContent = "[" + time + "] [V23 DIAGNÓSTICO] " + message;
+        line.textContent = "[" + time + "] [V24 DIAGNÓSTICO] " + message;
         line.className = level === "error" ? "danger" : level === "ok" ? "success" : "warning";
         panel.appendChild(line);
         panel.scrollTop = panel.scrollHeight;
@@ -357,20 +357,15 @@
 
 import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api@0.0.5";
 
-import {
-    handleConfirmEvent,
-    registerEvent,
-    getLightSymbolList,
-    getSymbol,
-    subscribeQuotes,
-    quoteEvent,
-    executionEvent,
-    createNewOrder,
-    modifyOrderProtection,
-    closePosition,
-    getTrendbarList,
-    ServerInterfaces
-} from "https://esm.sh/@spotware-web-team/sdk@0.0.9";
+// V24: importación por espacio de nombres. Una exportación ausente ya no
+// impide ejecutar el módulo completo antes de registrar el plugin.
+import * as SpotwareSDK from "https://esm.sh/@spotware-web-team/sdk@0.0.9";
+const {
+    handleConfirmEvent, registerEvent, getLightSymbolList, getSymbol,
+    subscribeQuotes, quoteEvent, executionEvent, createNewOrder,
+    modifyOrderProtection, closePosition, ServerInterfaces
+} = SpotwareSDK;
+let getTrendbarList = SpotwareSDK.getTrendbarList;
 
 import {
     take,
@@ -795,8 +790,32 @@ function getSymbolFromURL() {
 // ============================================================
 
 async function initialize() {
-    log("Ayalga Quick Trade V23 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
+    log("Ayalga Quick Trade V24 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
     log("Iniciando...");
+    const required = {handleConfirmEvent, registerEvent, getLightSymbolList, getSymbol,
+        subscribeQuotes, quoteEvent, executionEvent, createNewOrder,
+        modifyOrderProtection, closePosition, ServerInterfaces};
+    const missing = Object.entries(required).filter(([name, value]) => value == null).map(([name]) => name);
+    if (missing.length) {
+        log("SDK 0.0.9: faltan funciones críticas: " + missing.join(", "), "error");
+        return; // No conectar ni permitir órdenes con un SDK incompleto.
+    }
+    if (typeof getTrendbarList !== "function") {
+        log("SDK 0.0.9: getTrendbarList no disponible. Comprobando SDK 0.0.20...", "warning");
+        try {
+            const newerSDK = await import("https://esm.sh/@spotware-web-team/sdk@0.0.20");
+            if (typeof newerSDK.getTrendbarList === "function") {
+                getTrendbarList = newerSDK.getTrendbarList;
+                log("getTrendbarList disponible en SDK 0.0.20.", "ok");
+            } else {
+                log("SDK 0.0.20 tampoco exporta getTrendbarList. El cálculo de SL queda bloqueado de forma segura.", "error");
+                log("Exportaciones relacionadas: " + Object.keys(newerSDK).filter(k => /trend|bar/i.test(k)).join(", "), "warning");
+            }
+        } catch (err) {
+            log("No se pudo consultar SDK 0.0.20: " + (err?.message || String(err)), "error");
+        }
+    }
+
     logTheoreticalRisk("Estado inicial");
 
     try {
@@ -1042,6 +1061,9 @@ function getDetailedSymbol() {
 // ============================================================
 
 function getClosedTrendbars(periodMinutes, count) {
+    if (typeof getTrendbarList !== "function") {
+        return Promise.reject(new Error("SDK incompatible: getTrendbarList no disponible. Orden bloqueada por seguridad."));
+    }
     if (periodMinutes === 6) return getClosedM6Trendbars(count);
     return new Promise((resolve, reject) => {
         const timeframeMs = periodMinutes * 60000;
