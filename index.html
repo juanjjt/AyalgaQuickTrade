@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ayalga Quick Trade V22</title>
+<title>Ayalga Quick Trade V23</title>
 <style>
     * {
         box-sizing: border-box;
@@ -317,20 +317,20 @@
     </div>
 
     <div class="plugin-footer">
-        Ayalga Quick Trade · V22
+        Ayalga Quick Trade · V23
     </div>
 
 </div>
 
 <script>
-// V22: diagnóstico independiente del SDK, ejecutado antes de los imports.
+// V23: diagnóstico independiente del SDK, ejecutado antes de los imports.
 (function () {
     const panel = document.getElementById("log");
     if (!panel) return;
     function diagnostic(message, level) {
         const line = document.createElement("div");
         const time = new Date().toLocaleTimeString("es-ES", { hour12: false });
-        line.textContent = "[" + time + "] [V22 DIAGNÓSTICO] " + message;
+        line.textContent = "[" + time + "] [V23 DIAGNÓSTICO] " + message;
         line.className = level === "error" ? "danger" : level === "ok" ? "success" : "warning";
         panel.appendChild(line);
         panel.scrollTop = panel.scrollHeight;
@@ -355,7 +355,7 @@
 
 <script type="module">
 
-import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api";
+import { createClientAdapter } from "https://esm.sh/@spotware-web-team/sdk-external-api@0.0.5";
 
 import {
     handleConfirmEvent,
@@ -370,17 +370,17 @@ import {
     closePosition,
     getTrendbarList,
     ServerInterfaces
-} from "https://esm.sh/@spotware-web-team/sdk";
+} from "https://esm.sh/@spotware-web-team/sdk@0.0.9";
 
 import {
     take,
     tap,
     catchError
-} from "https://esm.sh/rxjs";
+} from "https://esm.sh/rxjs@7.8.2";
 
 import {
     createLogger
-} from "https://esm.sh/@veksa/logger";
+} from "https://esm.sh/@veksa/logger@1.0.6";
 
 // ============================================================
 // VARIABLES
@@ -795,7 +795,7 @@ function getSymbolFromURL() {
 // ============================================================
 
 async function initialize() {
-    log("Ayalga Quick Trade V22 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
+    log("Ayalga Quick Trade V23 - d'Alembert pérdidas acumuladas + TP NETO + modo conservador", "ok");
     log("Iniciando...");
     logTheoreticalRisk("Estado inicial");
 
